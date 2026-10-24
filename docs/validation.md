@@ -34,6 +34,8 @@ Unit tests cover ambiguous proxy creation, injection/removal errors, cleanup
 failure reporting, independent cleanup context after cancellation, rejected
 configuration and targets, failing-baseline refusal, percentile calculations,
 request timeouts, response-size bounds, redirects and environment proxy refusal.
+The final unit race suite and vet also passed after regression tests were added
+to distinguish control/cleanup deadlines from cancellation of the whole run.
 
 ## Not claimed
 

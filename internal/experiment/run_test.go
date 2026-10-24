@@ -43,9 +43,11 @@ func TestLifecycleCleanup(t *testing.T) {
 	}{
 		{"success", func(*fakeControl, context.CancelFunc) {}, false, false},
 		{"ambiguous create", func(f *fakeControl, _ context.CancelFunc) { f.createErr = errors.New("lost response") }, true, false},
+		{"control deadline", func(f *fakeControl, _ context.CancelFunc) { f.createErr = context.DeadlineExceeded }, true, false},
 		{"injection failure", func(f *fakeControl, _ context.CancelFunc) { f.addErr = errors.New("injection failed") }, true, false},
 		{"removal failure", func(f *fakeControl, _ context.CancelFunc) { f.removeErr = errors.New("removal failed") }, true, false},
 		{"cleanup failure", func(f *fakeControl, _ context.CancelFunc) { f.deleteErr = errors.New("server unavailable") }, true, false},
+		{"cleanup deadline", func(f *fakeControl, _ context.CancelFunc) { f.deleteErr = context.DeadlineExceeded }, true, false},
 		{"cancel during fault", func(f *fakeControl, cancel context.CancelFunc) { f.onAdd = cancel }, true, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -75,6 +77,9 @@ func TestLifecycleCleanup(t *testing.T) {
 			}
 			if tc.wantErr && (r.Status == "complete" || r.Error == "") {
 				t.Fatalf("hidden error: %+v", r)
+			}
+			if tc.wantErr && !tc.canceled && r.Status != "failed" {
+				t.Fatalf("operational failure classified as cancellation: %+v", r)
 			}
 		})
 	}

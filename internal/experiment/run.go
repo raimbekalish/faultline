@@ -81,12 +81,16 @@ func Run(ctx context.Context, cfg Config, revision string) (Report, error) {
 }
 
 func run(parent context.Context, cfg Config, revision string, ctl control, target string) (report Report, err error) {
+	executionCtx := parent
 	report = Report{SchemaVersion: 1, Status: "failed", Config: cfg, Target: target, GoVersion: runtime.Version(), Revision: revision, ToxiproxyVersion: "2.12.0", StartedAt: time.Now().UTC()}
 	defer func() {
 		report.FinishedAt = time.Now().UTC()
 		if err != nil {
 			report.Error = err.Error()
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			// An individual control/readiness/cleanup timeout is an operational
+			// failure, not cancellation of the experiment. The deferred local
+			// cancel below must not change that classification.
+			if parent.Err() != nil || errors.Is(context.Cause(executionCtx), context.DeadlineExceeded) {
 				report.Status = "canceled"
 			}
 		} else {
@@ -105,6 +109,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 	}
 	report.RunID = "faultline-" + hex.EncodeToString(id)
 	ctx, cancel := context.WithTimeout(parent, MaxDuration)
+	executionCtx = ctx
 	defer cancel()
 	client := localhttp.New(time.Duration(cfg.RequestTimeoutMS) * time.Millisecond)
 	defer client.CloseIdleConnections()

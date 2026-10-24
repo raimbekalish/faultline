@@ -28,6 +28,9 @@ can contain partial or empty phases. `cleanup_complete` concerns the engine's
 proxy, not the subsequent Compose teardown; the shell exit status also covers
 that teardown. Invalid CLI flags return usage and exit 2 before creating resources
 and do not emit an experiment report. Other execution errors exit 1.
+`canceled` means the parent context was canceled or the overall execution deadline
+expired. Individual control, readiness and cleanup timeouts are operational
+failures and use `failed` unless the experiment itself was also canceled.
 
 ## Reproducibility and limits
 
