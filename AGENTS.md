@@ -27,6 +27,16 @@ over speculative interfaces or mocked product features.
 - Run formatting, vet and race tests where supported. Clearly report unrun checks.
 - Update README, architecture, roadmap and decisions when behavior changes.
 
+## Verification commands
+
+- Host Go: `make check` (format verification, vet, unit race tests).
+- Docker only: build the `dev` target and run the command documented in README.
+- Real faults: `./scripts/experiment.sh test` (isolated Compose stack, unit and
+  integration race tests, automatic teardown).
+- CLI smoke: `./scripts/experiment.sh -samples 5 -latency 100ms`; capture stdout
+  under ignored `artifacts/` when inspecting JSON. Keep progress on stderr.
+- Run integration tests through the wrapper, never against a shared proxy server.
+
 ## Git workflow
 
 - Use the repository-local Git identity associated with the owner's GitHub account.

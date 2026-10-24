@@ -8,11 +8,11 @@
 
 ## 1 — Reproducible local experiment
 
-- [ ] Isolated frontend → Toxiproxy → dependency sample
-- [ ] Baseline, injected latency and recovery measurements
-- [ ] CLI JSON report with raw samples and comparisons
-- [ ] Cancellation, timeouts, ownership and deterministic cleanup
-- [ ] Real Toxiproxy integration tests including dependency timeouts
+- [x] Isolated frontend → Toxiproxy → dependency sample
+- [x] Baseline, injected latency and recovery measurements
+- [x] CLI JSON report with raw samples and comparisons
+- [x] Cancellation, timeouts, ownership and deterministic cooperative cleanup
+- [x] Real Toxiproxy integration tests including dependency timeouts
 
 ## 2 — Explain failures with traces
 

@@ -43,3 +43,38 @@ latency distributions. These small samples validate causal behavior; they do not
 claim statistically rigorous performance benchmarks or saturation capacity.
 
 See [ADR 0001](decisions/0001-local-vertical-slice.md) for scope decisions.
+
+## Implemented lifecycle
+
+1. Validate sample count and durations before any control request.
+2. Generate a cryptographically random 128-bit ownership identifier. Register
+   proxy deletion before sending create, covering ambiguous POST outcomes.
+3. Create one proxy on the fixed data port, upstream `dependency:8080`. A second
+   runner in the same stack fails to bind instead of reusing the first proxy.
+4. Exercise `frontend:8080/work` until ready (five seconds maximum).
+5. Collect baseline; refuse injection if any baseline request fails.
+6. Add a downstream latency toxic with zero jitter and toxicity 1; collect fault
+   observations, including HTTP errors and client request deadlines.
+7. Remove the toxic and collect recovery; recovery failures fail the run.
+8. Always delete the owned proxy with a fresh five-second context. Report
+   cleanup errors together with any original error. Only then finalize JSON.
+
+The frontend calls `toxiproxy:8666/value` with a 250 ms timeout. The dependency
+returns a constant JSON value. Latency below that timeout increases request
+duration; latency above it causes a real HTTP 504. No application handler sleeps
+to simulate network effects. HTTP transports ignore environment proxies and
+refuse redirects. Bodies are capped at 64 KiB. Workload phases issue one request
+at a time; there is no unbounded worker pool.
+
+The two-minute engine deadline bounds the workload independently of the CLI's
+SIGINT/SIGTERM cancellation. Sample HTTP servers bound headers, reads, writes,
+idle connections and graceful shutdown. Runtime containers have 64 MiB RAM,
+0.5 CPU and 64-process limits each. The test container gets 1 GiB and two CPUs.
+Image versions are pinned by manifest digest. Runtime images contain only static
+Go binaries; the compiler and race detector remain in the development stage.
+
+The shell entrypoint owns startup and teardown, not the Go engine. The runner has
+no Docker access. Compose startup has a 30-second readiness wait; builds/downloads
+are outside the engine deadline. The shell trap handles ordinary failures and
+signals, but cannot guarantee cleanup after SIGKILL or daemon failure. No durable
+crash recovery or shared-server lease is claimed.
