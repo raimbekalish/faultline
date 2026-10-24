@@ -12,11 +12,15 @@ import (
 	"time"
 
 	"github.com/raimbekalish/faultline/internal/experiment"
+	"github.com/raimbekalish/faultline/internal/telemetry"
 )
 
 var revision = "development"
 
 func execute(ctx context.Context, args []string, out, stderr io.Writer) int {
+	if len(args) == 1 && args[0] == "evidence" {
+		return evidence(ctx, out, stderr)
+	}
 	if len(args) == 0 || args[0] != "run" {
 		fmt.Fprintln(stderr, "usage: faultline run [-samples 10] [-latency 100ms] [-request-timeout 1s]")
 		return 2
@@ -39,7 +43,17 @@ func execute(ctx context.Context, args []string, out, stderr io.Writer) int {
 		fmt.Fprintln(stderr, err)
 		return 2
 	}
-	report, err := experiment.Run(ctx, cfg, revision)
+	tracing, err := telemetry.NewFromMode(ctx, "faultline-runner", os.Getenv("FAULTLINE_TRACING"))
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
+	report, err := experiment.RunWithTelemetry(ctx, cfg, revision, tracing)
+	// Run returns only after fault cleanup. Export is independently bounded and
+	// cannot hold the fault open, including on experiment cancellation.
+	shutdown, cancel := context.WithTimeout(context.Background(), telemetry.ShutdownTimeout)
+	report.Telemetry = tracing.Shutdown(shutdown)
+	cancel()
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	if writeErr := enc.Encode(report); writeErr != nil {

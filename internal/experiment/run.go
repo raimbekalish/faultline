@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/raimbekalish/faultline/internal/localhttp"
+	"github.com/raimbekalish/faultline/internal/telemetry"
 	"github.com/raimbekalish/faultline/internal/toxiproxy"
 )
 
@@ -47,22 +48,23 @@ type Comparison struct {
 }
 
 type Report struct {
-	SchemaVersion    int        `json:"schema_version"`
-	RunID            string     `json:"run_id"`
-	Status           string     `json:"status"`
-	StartedAt        time.Time  `json:"started_at"`
-	FinishedAt       time.Time  `json:"finished_at"`
-	Config           Config     `json:"config"`
-	Target           string     `json:"target"`
-	GoVersion        string     `json:"go_version"`
-	Revision         string     `json:"revision"`
-	ToxiproxyVersion string     `json:"toxiproxy_version"`
-	Baseline         Phase      `json:"baseline"`
-	Fault            Phase      `json:"fault"`
-	Recovery         Phase      `json:"recovery"`
-	Comparison       Comparison `json:"fault_vs_baseline"`
-	CleanupComplete  bool       `json:"cleanup_complete"`
-	Error            string     `json:"error,omitempty"`
+	SchemaVersion    int              `json:"schema_version"`
+	RunID            string           `json:"run_id"`
+	Status           string           `json:"status"`
+	StartedAt        time.Time        `json:"started_at"`
+	FinishedAt       time.Time        `json:"finished_at"`
+	Config           Config           `json:"config"`
+	Target           string           `json:"target"`
+	GoVersion        string           `json:"go_version"`
+	Revision         string           `json:"revision"`
+	ToxiproxyVersion string           `json:"toxiproxy_version"`
+	Baseline         Phase            `json:"baseline"`
+	Fault            Phase            `json:"fault"`
+	Recovery         Phase            `json:"recovery"`
+	Comparison       Comparison       `json:"fault_vs_baseline"`
+	CleanupComplete  bool             `json:"cleanup_complete"`
+	Error            string           `json:"error,omitempty"`
+	Telemetry        *telemetry.Stats `json:"telemetry,omitempty"`
 }
 
 type control interface {
@@ -75,12 +77,16 @@ type control interface {
 // Run owns exactly one proxy in a disposable Compose stack. Concurrent runners
 // in one stack fail on the fixed data port rather than reusing another proxy.
 func Run(ctx context.Context, cfg Config, revision string) (Report, error) {
-	c := toxiproxy.New()
-	defer c.Close()
-	return run(ctx, cfg, revision, c, Target)
+	return RunWithTelemetry(ctx, cfg, revision, nil)
 }
 
-func run(parent context.Context, cfg Config, revision string, ctl control, target string) (report Report, err error) {
+func RunWithTelemetry(ctx context.Context, cfg Config, revision string, tracing *telemetry.Runtime) (Report, error) {
+	c := toxiproxy.New()
+	defer c.Close()
+	return run(ctx, cfg, revision, c, Target, tracing)
+}
+
+func run(parent context.Context, cfg Config, revision string, ctl control, target string, tracing *telemetry.Runtime) (report Report, err error) {
 	executionCtx := parent
 	report = Report{SchemaVersion: 1, Status: "failed", Config: cfg, Target: target, GoVersion: runtime.Version(), Revision: revision, ToxiproxyVersion: "2.12.0", StartedAt: time.Now().UTC()}
 	defer func() {
@@ -132,7 +138,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 	defer readyCancel()
 	for {
 		var p Phase
-		p, err = measure(readyCtx, client, target, 1)
+		p, err = measure(readyCtx, client, target, 1, observation{tracing, report.RunID, "readiness"})
 		if err == nil && p.Summary.Failures == 0 {
 			break
 		}
@@ -142,7 +148,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 		case <-time.After(50 * time.Millisecond):
 		}
 	}
-	report.Baseline, err = measure(ctx, client, target, cfg.Samples)
+	report.Baseline, err = measure(ctx, client, target, cfg.Samples, observation{tracing, report.RunID, "baseline"})
 	if err != nil {
 		return report, err
 	}
@@ -152,7 +158,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 	if err = ctl.AddLatency(ctx, report.RunID, time.Duration(cfg.LatencyMS)*time.Millisecond); err != nil {
 		return report, fmt.Errorf("inject latency: %w", err)
 	}
-	report.Fault, err = measure(ctx, client, target, cfg.Samples)
+	report.Fault, err = measure(ctx, client, target, cfg.Samples, observation{tracing, report.RunID, "fault"})
 	report.Comparison = Comparison{
 		MeanDeltaMS:      report.Fault.Summary.MeanMS - report.Baseline.Summary.MeanMS,
 		P95DeltaMS:       report.Fault.Summary.P95MS - report.Baseline.Summary.P95MS,
@@ -164,7 +170,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 	if err = ctl.RemoveLatency(ctx, report.RunID); err != nil {
 		return report, fmt.Errorf("remove latency: %w", err)
 	}
-	report.Recovery, err = measure(ctx, client, target, cfg.Samples)
+	report.Recovery, err = measure(ctx, client, target, cfg.Samples, observation{tracing, report.RunID, "recovery"})
 	if err == nil && report.Recovery.Summary.Failures != 0 {
 		err = fmt.Errorf("recovery has failures after removing latency")
 	}

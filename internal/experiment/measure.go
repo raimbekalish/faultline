@@ -8,13 +8,15 @@ import (
 	"sort"
 	"time"
 
-	"github.com/raimbekalish/faultline/internal/localhttp"
+	"github.com/raimbekalish/faultline/internal/telemetry"
 )
 
 type Sample struct {
 	DurationMS float64 `json:"duration_ms"`
 	Status     int     `json:"status"`
 	Error      string  `json:"error,omitempty"`
+	TraceID    string  `json:"trace_id,omitempty"`
+	SpanID     string  `json:"span_id,omitempty"`
 }
 
 type Summary struct {
@@ -58,9 +60,15 @@ func summarize(samples []Sample) Summary {
 
 // measure includes failed-request duration in the distribution; transport and
 // non-2xx outcomes are measurements, while parent cancellation aborts the phase.
-func measure(ctx context.Context, client *http.Client, target string, count int) (phase Phase, err error) {
+type observation struct {
+	tracing *telemetry.Runtime
+	runID   string
+	phase   string
+}
+
+func measure(ctx context.Context, client *http.Client, target string, count int, obs observation) (phase Phase, err error) {
 	defer func() { phase.Summary = summarize(phase.Samples) }()
-	for range count {
+	for i := range count {
 		if err := ctx.Err(); err != nil {
 			return phase, err
 		}
@@ -69,16 +77,9 @@ func measure(ctx context.Context, client *http.Client, target string, count int)
 			return phase, err
 		}
 		start := time.Now()
-		resp, requestErr := client.Do(req)
-		sample := Sample{}
-		if resp != nil {
-			sample.Status = resp.StatusCode
-			_, bodyErr := localhttp.ReadBody(resp.Body)
-			_ = resp.Body.Close()
-			if requestErr == nil {
-				requestErr = bodyErr
-			}
-		}
+		result := obs.tracing.Do(client, req, "/work", telemetry.Metadata{RunID: obs.runID, Phase: obs.phase, Observation: i})
+		requestErr := result.Err
+		sample := Sample{Status: result.Status, TraceID: result.TraceID, SpanID: result.SpanID}
 		sample.DurationMS = float64(time.Since(start)) / float64(time.Millisecond)
 		if requestErr != nil {
 			sample.Error = requestErr.Error()
