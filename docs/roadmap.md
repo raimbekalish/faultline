@@ -4,7 +4,7 @@
 
 - [x] Public standalone repository, MIT license and verified commit identity
 - [x] Architecture, contributor instructions and first design decision
-- [ ] Executable Go foundation with bounded transport and tests
+- [x] Go foundation with bounded transport, measurement and race-tested units
 
 ## 1 — Reproducible local experiment
 

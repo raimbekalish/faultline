@@ -1,0 +1,7 @@
+.git
+artifacts
+bin
+.env*
+node_modules
+coverage.out
+*.test

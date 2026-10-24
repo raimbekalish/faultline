@@ -25,7 +25,8 @@ implemented yet. No hosted service or paid infrastructure is required.
 
 ## Development status
 
-Repository bootstrap is complete. The initial executable vertical slice is next.
+Repository bootstrap and the bounded Go transport/measurement foundation are
+complete. The initial executable vertical slice is next.
 Do not aim this software at production or unrelated systems.
 
 ## License
