@@ -1,0 +1,16 @@
+# Local output and development state
+/bin/
+/artifacts/
+/coverage.out
+*.test
+*.prof
+.DS_Store
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
+node_modules/
+dist/
+.idea/
+.vscode/
