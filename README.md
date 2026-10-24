@@ -25,8 +25,9 @@ implemented yet. No hosted service or paid infrastructure is required.
 
 ## Development status
 
-Repository bootstrap and the bounded Go transport/measurement foundation are
-complete. The initial executable vertical slice is next.
+The Go CLI, sample services, bounded transport and experiment lifecycle are
+implemented and unit tested. Compose orchestration and real-fault validation
+are being added to complete the first runnable milestone.
 Do not aim this software at production or unrelated systems.
 
 ## License

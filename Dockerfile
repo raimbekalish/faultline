@@ -4,3 +4,13 @@ ENV GOTOOLCHAIN=local CGO_ENABLED=1
 COPY go.mod ./
 COPY . .
 CMD ["go", "test", "-race", "./..."]
+
+FROM dev AS build
+ARG REVISION=development
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.revision=${REVISION}" -o /out/faultline ./cmd/faultline \
+    && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/sample ./cmd/sample
+
+FROM scratch AS runtime
+COPY --from=build /out/ /app/
+USER 65532:65532
+ENTRYPOINT ["/app/faultline"]
