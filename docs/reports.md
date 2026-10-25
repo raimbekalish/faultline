@@ -76,3 +76,13 @@ experiment observation. HTTP errors do not by themselves make a trace incomplete
 Partial/malformed traces remain `complete: false` and include `retrieval_error`
 when collection ends. Missing evidence has no inferred cause. JSON fields and
 schema versions are unchanged. See [tracing](tracing.md) for interpretation.
+
+## Optional environment provenance
+
+Schema 1 permits an optional `environment` object with its own explicit schema
+version. New finalized execution reports record allowlisted process/build/spec
+facts, methodology, an explicit tracing state, and optional wrapper-observed
+Docker/image metadata. Legacy reports keep this absent; export never reconstructs
+it. Missing/null tracing facts inside a present environment record are invalid.
+See [portable evidence](evidence.md) for field scope, privacy and version rules.
+Raw measurement, status, cleanup and tracing fields retain their prior semantics.

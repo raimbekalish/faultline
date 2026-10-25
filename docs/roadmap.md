@@ -46,12 +46,25 @@ reviewed allowlist/ownership design; this milestone keeps only the fixed sample.
 - [x] Component, API, production-build and actual-data Chrome verification
 - [x] Existing fault/tracing, persistence and recovery regressions
 
-The dashboard is read-only. Portable evidence bundles and recorded environment
-provenance are recommended next. Browser execution requires a separate reviewed
-ownership/cancellation/security design.
+The dashboard remains read-only. Milestone 5A adds portable evidence/provenance.
+Browser execution requires a separate reviewed ownership/cancellation/security
+design.
 
 ## Later — Broader reliability scenarios
 
 Additional fault types, controlled concurrent traffic, repeated comparisons and
 documented benchmark methodology.
 Choose each feature from measured user needs. CI requires owner approval.
+
+## 5A — Portable evidence and environment provenance
+
+- [x] Versioned bounded archives, canonical specs/hashes and original report bytes
+- [x] Shared semantic validation and a CGO-disabled offline verifier/inspector
+- [x] Atomic no-replace export of complete/failed/canceled final reports
+- [x] Allowlisted execution facts and observed Docker/image metadata when supplied
+- [x] Read-only dashboard downloads and explicit missing-provenance information
+- [x] Actual new/legacy/canceled exports, deterministic repeats and offline checks
+
+Recommended next: compare two bundles offline with environment/configuration
+difference warnings, reusing existing comparison semantics. Cross-platform release
+packaging and a broader archive-compatibility matrix remain separate work.

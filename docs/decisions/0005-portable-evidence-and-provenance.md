@@ -47,9 +47,8 @@ or HTML viewer are added.
 Export writes a private sibling temporary file, syncs/closes it and atomically
 links it to a new destination without replacement. Existing files/symlinks are
 refused. No rename fallback can overwrite a concurrent destination. Link support
-on a local filesystem is required. Cancellation before publication removes the
-temporary file; cancellation after the commit point may leave a valid published
-bundle. Directory-sync failures after publication are reported explicitly. A
+on a local filesystem is required. Observed cancellation before publication removes the temporary file;
+cancellation racing the commit point may leave a valid published bundle. Directory-sync failures after publication are reported explicitly. A
 crash/power cut can leave a temporary file; no backup or repair guarantee is added.
 
 The dashboard can download the same validated bytes through a same-origin GET
