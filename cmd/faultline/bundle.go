@@ -12,7 +12,7 @@ import (
 
 func executeBundle(ctx context.Context, args []string, out, stderr io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: faultline bundle {export|verify|inspect}")
+		fmt.Fprintln(stderr, "usage: faultline bundle {export|verify|inspect|compare}")
 		return 2
 	}
 	if args[0] != "export" {
