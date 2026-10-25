@@ -147,3 +147,115 @@ make check frontend-check
 See [validation](validation.md) for actual export hashes, clean-commit experiments,
 network-disabled verification, browser downloads, failed checks and remaining limits;
 [ADR 0005](decisions/0005-portable-evidence-and-provenance.md) records the design.
+
+## Offline comparison — result schema 1
+
+```sh
+./artifacts/bin/faultline-bundle compare LEFT.flb RIGHT.flb
+# The full native CLI delegates to the same offline command:
+./artifacts/bin/faultline bundle compare LEFT.flb RIGHT.flb
+```
+
+Each input independently passes the existing archive, checksum, schema and raw-
+observation validation. The comparison package revalidates the logical payloads;
+it never opens files, queries history or collects environment information. Bundle
+format 1 is unchanged. Output has `schema_version: 1` and
+`kind: "offline_bundle_comparison"`. It is deterministic for the same ordered
+inputs: no current timestamps, paths or verification-machine facts are added.
+
+`left` and `right` identify original history/run IDs, timestamps, status, spec/hash,
+cleanup and SHA-256 of original report bytes. These are logical recorded-payload
+identities, not whole-ZIP hashes or authenticated executions. Configuration lists
+all five properties: spec version, samples, latency, request timeout and canonical
+spec hash. `same_spec` requires both equal fields and equal hashes.
+
+`provenance` classifies each recorded property `equal`, `different` or `unknown`,
+with nullable left/right values. Two absent fields are **unknown**, never equal.
+Legacy revision/Go/Toxiproxy version labels and explicit, non-null telemetry flags
+are retained when present. Missing runner OS/architecture, methodology, Docker or
+images stay unknown; no data is borrowed from this machine. Image IDs, pinned
+references and revision labels are compared literally, without remote resolution.
+
+Every phase contains each side's `samples_recorded`, `samples_configured`,
+`availability` (complete/partial/missing), and summary. Zero observations gives a
+null summary; an observed zero duration remains a real zero. Summary failure rates
+retain their original **fraction** units. `right_minus_left` contains mean/p95
+latency changes in **ms**, and failure-rate changes in **percentage points**.
+The `absolute` field is the signed difference, not an absolute-value operation.
+Relative percentages are `(right-left)/left*100`. They are null with
+`relative_status: "zero_reference"` for a zero left value, including 0/0. A
+non-finite/overflowing percentage is null with `not_representable`. Otherwise
+status is `available`; relative reversal generally is not simple negation because
+the reference changes. No rounding or replacement of stored statistics occurs.
+
+### Comparability policy
+
+`assessment` never asserts controlled execution or statistical significance;
+`controlled_experiment_established` and `statistical_significance_assessed` remain
+false. Differences do not constitute performance-improvement or causal claims.
+
+| Classification | Exact rule |
+| --- | --- |
+| `not_comparable` | Either report failed/canceled, cleanup is unconfirmed, any phase is incomplete/missing, identities conflict, or known methodologies differ. All cross-run deltas are null; side measurements remain available. |
+| `descriptive_only` | Both reports are complete/clean/full, but configuration differs, required provenance is unknown, any known provenance differs, or revision labels are dirty/development/test. Descriptive deltas are available. |
+| `recorded_conditions_match` | Both reports are complete/clean/full, specs/hash match, required recorded conditions match, no known provenance differs, and revision labels are clean hex prefixes/hashes. This establishes recorded equality only. |
+
+Required conditions are environment version, revision, runner OS/architecture, Go
+version, methodology, tracing mode, Docker server version, sample/Toxiproxy image
+IDs and Toxiproxy pinned reference. Jaeger ID/reference are additionally required
+only when tracing is explicitly enabled on both sides. An absent local sample
+reference or Jaeger-off field remains unknown but is not a required condition.
+Any known difference, including an optional property, downgrades matching conditions.
+
+Input contradictions may fail validation before assessment: for example, a report
+claiming completion without successful cleanup is invalid evidence.
+
+Current validation supports only `serial-http-nearest-rank-v1`; another recorded
+methodology is unsupported evidence and is rejected before comparison. The policy
+also withholds deltas if future supported known methodologies differ. Missing
+legacy methodology allows descriptive arithmetic with an explicit unknown reason.
+Matching hashes do not establish the same environment; matching recorded fields
+omit unrecorded load, scheduling, host resources and other confounders.
+
+A reused history/run identifier with changed original report bytes or contradictory
+history metadata is an identity conflict. Identical recorded runs are explicitly
+labeled `same_recorded_run`: zeros are an identity check, not independent replication.
+Different identifiers do not attest that execution was independent.
+
+### Examples and exit codes
+
+```sh
+# An eligible full pair; matching conditions require the recorded fields above:
+faultline-bundle compare run-a.flb run-b.flb
+
+# A deterministic identity check. Warns same_recorded_run, not replication:
+faultline-bundle compare run-a.flb run-a.flb
+
+# Both complete, with different latency/timeout/specs: descriptive_only:
+faultline-bundle compare latency-80.flb latency-400.flb
+
+# Complete legacy evidence: unavailable fields stay unknown, descriptive_only:
+faultline-bundle compare recorded-environment.flb legacy.flb
+
+# Valid canceled evidence: not_comparable, phase deltas null:
+faultline-bundle compare complete.flb canceled.flb
+faultline-bundle inspect canceled.flb
+
+# Corrupt/unsupported inputs fail without a comparison result:
+faultline-bundle compare complete.flb corrupt.flb
+```
+
+Exit 0 means two valid inputs produced a result, including valid non-comparable
+pairs. Automation must check `assessment.descriptive_deltas_available` before
+using deltas. Exit 1 means invalid/unsupported input, I/O/output failure or
+cancellation; exit 2 means usage. No output/export files are created. Inputs are
+read sequentially, each retaining the 2 MiB archive/1 MiB report limits; comparison
+output contains summaries, not duplicate raw observations/errors. Cancellation is
+cooperative and filesystem stalls retain the existing OS limitation. All data
+remains local. Use `inspect` for raw observations, original errors and trace IDs.
+
+No new dependency or dashboard/API feature is needed. Existing history/report
+comparison now calls the same pure absolute-delta helper, preserving its schema,
+fraction-valued failure-rate deltas and behavior. See
+[ADR 0006](decisions/0006-offline-evidence-comparison.md) and the validation record
+for actual native/network-disabled comparisons and remaining test limits.

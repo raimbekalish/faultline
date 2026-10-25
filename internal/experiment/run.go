@@ -161,11 +161,7 @@ func run(parent context.Context, cfg Config, revision string, ctl control, targe
 		return report, fmt.Errorf("inject latency: %w", err)
 	}
 	report.Fault, err = measure(ctx, client, target, cfg.Samples, observation{tracing, report.RunID, "fault"})
-	report.Comparison = Comparison{
-		MeanDeltaMS:      report.Fault.Summary.MeanMS - report.Baseline.Summary.MeanMS,
-		P95DeltaMS:       report.Fault.Summary.P95MS - report.Baseline.Summary.P95MS,
-		FailureRateDelta: report.Fault.Summary.FailureRate - report.Baseline.Summary.FailureRate,
-	}
+	report.Comparison = CompareSummaries(report.Baseline.Summary, report.Fault.Summary)
 	if err != nil {
 		return report, err
 	}

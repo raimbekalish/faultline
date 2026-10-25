@@ -211,3 +211,19 @@ export machine. Optional report metadata requires no SQLite migration and legacy
 records remain unchanged. Bundle/JSON/provenance versions fail closed when unknown.
 The dashboard adds an ID-scoped GET download using the same builder and guards.
 See [evidence](evidence.md) and [ADR 0005](decisions/0005-portable-evidence-and-provenance.md).
+
+## Offline comparison
+
+`internal/bundlecompare` consumes logical evidence and implements deterministic
+configuration/provenance comparison, measurement availability, relative-change
+edge handling and explicit eligibility. It has no filesystem, database or network
+operations. `bundlecli` owns two independent bounded archive reads and versioned
+JSON presentation. The CGO-disabled verifier and full CLI share this command.
+
+`experiment.CompareSummaries` centralizes the existing absolute right-minus-left
+arithmetic for reports, record validation, history and offline comparison. Sample
+summary calculations remain in the existing engine summarizer. Old history JSON
+units/fields are preserved; the new offline result explicitly labels percentage
+points and nullable relative percentages. No bundle, report or database migration.
+No dashboard/API expansion. See [ADR 0006](decisions/0006-offline-evidence-comparison.md)
+and [offline comparison](evidence.md#offline-comparison--result-schema-1).

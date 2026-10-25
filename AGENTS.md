@@ -84,6 +84,13 @@ over speculative interfaces or mocked product features.
 - SHA-256 is integrity metadata, not authenticity or execution attestation.
 - Publish exports atomically without replacing files/symlinks. Surface failed
   writes/cleanup; test actual temporary files, cancellation and partial reports.
+- `faultline-bundle compare LEFT RIGHT` validates both independently. Keep pure
+  comparison separate from paths/presentation and share absolute delta arithmetic.
+  Never treat missing provenance as equal, missing samples as zero, or metadata
+  equality as controlled execution. Failed/canceled/partial pairs have no deltas.
+- Comparison schema 1 uses ms and failure-rate percentage points; relative values
+  are null for zero references or nonrepresentable arithmetic. Preserve format 1
+  and existing history/API fraction units. No current-machine capture in compare.
 - The dashboard downloads only by validated ID, never filesystem paths. It stays
   read-only and never makes historical Jaeger references appear permanently live.
 

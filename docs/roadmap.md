@@ -65,6 +65,18 @@ Choose each feature from measured user needs. CI requires owner approval.
 - [x] Read-only dashboard downloads and explicit missing-provenance information
 - [x] Actual new/legacy/canceled exports, deterministic repeats and offline checks
 
-Recommended next: compare two bundles offline with environment/configuration
-difference warnings, reusing existing comparison semantics. Cross-platform release
+Offline comparison is implemented in Milestone 5B. Cross-platform release
 packaging and a broader archive-compatibility matrix remain separate work.
+
+## 5B — Offline evidence comparison
+
+- [x] Independently validated, database-free CGO-disabled comparison command
+- [x] Shared delta arithmetic and explicit ms/percentage-point/relative units
+- [x] Literal configuration/provenance differences with unknowns preserved
+- [x] Full/partial/missing measurements and conservative comparability assessment
+- [x] Real exported records, reverse/identity/legacy/canceled and bounded-memory tests
+- [x] Existing fault/tracing, history, archive and frontend regressions
+
+Recommended release-readiness work: platform-specific verifier packaging and
+verification, versioned JSON contract fixtures, broader filesystem/architecture
+testing and focused archive/parser security review before a tagged release.
