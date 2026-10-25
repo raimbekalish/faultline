@@ -117,7 +117,7 @@ func TestRecordedEnvironmentPersistsWithoutInventingDockerFacts(t *testing.T) {
 		t.Fatal(err)
 	}
 	hash, _ := sp.Hash()
-	if r.Environment == nil || r.Environment.SpecHash != hash || r.Environment.Launch != nil || r.Environment.TracingEnabled || r.Environment.RunnerOS != runtime.GOOS {
+	if r.Environment == nil || r.Environment.SpecHash != hash || r.Environment.Launch != nil || *r.Environment.TracingEnabled || r.Environment.RunnerOS != runtime.GOOS {
 		t.Fatalf("incorrect recorded facts: %+v", r.Environment)
 	}
 }

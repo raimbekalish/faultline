@@ -31,7 +31,7 @@ type Record struct {
 	RunnerOS       string  `json:"runner_os"`
 	RunnerArch     string  `json:"runner_arch"`
 	Methodology    string  `json:"measurement_methodology"`
-	TracingEnabled bool    `json:"tracing_enabled"`
+	TracingEnabled *bool   `json:"tracing_enabled"`
 	Launch         *Launch `json:"container_runtime,omitempty"`
 }
 
@@ -44,7 +44,7 @@ var toxRef = regexp.MustCompile(`^ghcr.io/shopify/toxiproxy:[0-9]+\.[0-9]+\.[0-9
 var jaegerRef = regexp.MustCompile(`^cr.jaegertracing.io/jaegertracing/jaeger:[0-9]+\.[0-9]+\.[0-9]+@sha256:[a-f0-9]{64}$`)
 
 func Capture(hash, rev, goVer string, tracing bool, launch *Launch) *Record {
-	r := &Record{1, hash, rev, goVer, runtime.GOOS, runtime.GOARCH, Methodology, tracing, nil}
+	r := &Record{1, hash, rev, goVer, runtime.GOOS, runtime.GOARCH, Methodology, &tracing, nil}
 	if launch != nil {
 		copy := *launch
 		copy.Images = append([]Image(nil), launch.Images...)
@@ -53,7 +53,7 @@ func Capture(hash, rev, goVer string, tracing bool, launch *Launch) *Record {
 	return r
 }
 func (r Record) Validate() error {
-	if r.SchemaVersion != 1 || !hex64.MatchString(r.SpecHash) || !revision.MatchString(r.Revision) || !goVersion.MatchString(r.GoVersion) || !platform.MatchString(r.RunnerOS) || !platform.MatchString(r.RunnerArch) || r.Methodology != Methodology {
+	if r.TracingEnabled == nil || r.SchemaVersion != 1 || !hex64.MatchString(r.SpecHash) || !revision.MatchString(r.Revision) || !goVersion.MatchString(r.GoVersion) || !platform.MatchString(r.RunnerOS) || !platform.MatchString(r.RunnerArch) || r.Methodology != Methodology {
 		return fmt.Errorf("invalid environment provenance")
 	}
 	if r.Launch != nil {
@@ -117,4 +117,25 @@ func DecodeLaunch(reader io.Reader) (*Launch, error) {
 		return nil, err
 	}
 	return &l, nil
+}
+
+// UnmarshalJSON keeps versioned provenance strict even though historical report
+// schema 1 permits other optional fields. Absence of a tracing fact is not false.
+func (r *Record) UnmarshalJSON(b []byte) error {
+	if err := jsonstrict.Validate(b); err != nil {
+		return err
+	}
+	type plain Record
+	var p plain
+	d := json.NewDecoder(bytes.NewReader(b))
+	d.DisallowUnknownFields()
+	if err := d.Decode(&p); err != nil {
+		return err
+	}
+	result := Record(p)
+	if err := result.Validate(); err != nil {
+		return err
+	}
+	*r = result
+	return nil
 }

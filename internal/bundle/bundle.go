@@ -63,7 +63,7 @@ func digest(name string, b []byte) Digest {
 	return Digest{name, len(b), hex.EncodeToString(h[:])}
 }
 func (e Evidence) Validate() error {
-	if !historyID.MatchString(e.History.ID) || e.History.CreatedAt.IsZero() || e.History.FinishedAt.Before(e.History.CreatedAt) || len(e.Report) > MaxReport {
+	if !historyID.MatchString(e.History.ID) || e.History.CreatedAt.IsZero() || e.History.FinishedAt.IsZero() || e.History.FinishedAt.Before(e.History.CreatedAt) || len(e.Report) > MaxReport {
 		return fmt.Errorf("invalid history metadata or report size")
 	}
 	if err := e.Spec.Validate(); err != nil {

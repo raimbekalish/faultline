@@ -1,6 +1,7 @@
 package provenance
 
 import (
+	"bytes"
 	"encoding/json"
 	"runtime"
 	"strings"
@@ -47,5 +48,16 @@ func TestLaunchStrictBoundsAndMissingData(t *testing.T) {
 	l.Images[0].ImageID = "mutated"
 	if r.Validate() != nil {
 		t.Fatal("capture did not snapshot launch")
+	}
+}
+
+func TestMissingTracingFactAndUnsupportedFieldsAreRejected(t *testing.T) {
+	r := Capture(strings.Repeat("a", 64), "development", runtime.Version(), false, nil)
+	b, _ := json.Marshal(r)
+	for _, bad := range [][]byte{bytes.Replace(b, []byte(`,"tracing_enabled":false`), nil, 1), bytes.Replace(b, []byte(`"tracing_enabled":false`), []byte(`"tracing_enabled":null`), 1), bytes.Replace(b, []byte(`"schema_version":1`), []byte(`"schema_version":2`), 1), bytes.Replace(b, []byte(`"schema_version":1`), []byte(`"schema_version":1,"hostname":"private"`), 1)} {
+		var got Record
+		if err := json.Unmarshal(bad, &got); err == nil {
+			t.Fatal("accepted incomplete/unsupported provenance", string(bad))
+		}
 	}
 }

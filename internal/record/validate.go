@@ -37,7 +37,7 @@ func Validate(r experiment.Report, sp spec.Spec) error {
 		if r.Environment.Validate() != nil || r.Environment.SpecHash != hash || r.Environment.Revision != r.Revision || r.Environment.GoVersion != r.GoVersion {
 			return bad()
 		}
-		if (r.Telemetry != nil && r.Telemetry.Enabled) != r.Environment.TracingEnabled {
+		if (r.Telemetry != nil && r.Telemetry.Enabled) != *r.Environment.TracingEnabled {
 			return bad()
 		}
 	}

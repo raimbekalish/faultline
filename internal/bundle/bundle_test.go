@@ -257,3 +257,39 @@ func FuzzReadNeverPanics(f *testing.F) {
 		_, _ = Read(context.Background(), bytes.NewReader(b))
 	})
 }
+
+func TestPartialFaultAndFailureBeforeRunID(t *testing.T) {
+	e := fixture("canceled")
+	var r experiment.Report
+	_ = json.Unmarshal(e.Report, &r)
+	r.Fault = experiment.Phase{Samples: []experiment.Sample{{DurationMS: 1, Status: 0, Error: "context canceled"}}}
+	r.Fault.Summary = experiment.Summarize(r.Fault.Samples)
+	r.Comparison = experiment.Comparison{MeanDeltaMS: -2, P95DeltaMS: -4, FailureRateDelta: 1}
+	e.Report, _ = json.Marshal(r)
+	b, err := Build(context.Background(), e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Read(context.Background(), bytes.NewReader(b))
+	if err != nil || !strings.Contains(strings.Join(got.Warnings, " "), "fault: 1/2") {
+		t.Fatal(got.Warnings, err)
+	}
+	e = fixture("failed")
+	_ = json.Unmarshal(e.Report, &r)
+	r.RunID = ""
+	r.CleanupComplete = false
+	r.Baseline = experiment.Phase{}
+	r.Fault = experiment.Phase{}
+	r.Recovery = experiment.Phase{}
+	r.Comparison = experiment.Comparison{}
+	e.History.RunID = ""
+	e.Report, _ = json.Marshal(r)
+	b, err = Build(context.Background(), e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err = Read(context.Background(), bytes.NewReader(b))
+	if err != nil || !strings.Contains(strings.Join(got.Warnings, " "), "cleanup was not confirmed") {
+		t.Fatal(got.Warnings, err)
+	}
+}
