@@ -47,7 +47,7 @@ cleanup() {
     wait "$viewer_pid" 2>/dev/null || :
   fi
   if ! compose down --volumes --remove-orphans --timeout 8 >&2; then
-    echo "Cleanup failed. Recover with: FAULTLINE_PROJECT=$FAULTLINE_PROJECT docker compose -p $FAULTLINE_PROJECT -f $root/deploy/compose.yaml down --volumes" >&2
+    echo "Cleanup failed. Recover with: FAULTLINE_PROJECT=$FAULTLINE_PROJECT docker compose -p $FAULTLINE_PROJECT -f $root/deploy/compose.yaml -f $root/deploy/compose.tracing.yaml -f $root/deploy/compose.ui.yaml down --volumes --remove-orphans --timeout 8" >&2
     code=1
   else
     # Remove only this run's image tags; leave shared base images/build cache.

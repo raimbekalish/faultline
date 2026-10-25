@@ -47,9 +47,10 @@ no ingestion port is published, and it has no configured external exporter.
 
 Without `--view`, all tracing endpoints remain internal and the stack is removed
 immediately after the command. Generated evidence is local and ignored by Git.
-If forcibly interrupted, the base README's exact-project teardown also removes
-the optional Jaeger service via Compose's orphan cleanup. Do not target a shared
-or unrelated project.
+If forcibly interrupted, use the README's exact-project teardown with all three
+Compose files. This selects the optional Jaeger service and both the internal and
+viewer networks; the base file alone cannot select all tracing resources. Do not
+target a shared or unrelated project.
 
 ## Reading a trace
 
@@ -65,6 +66,15 @@ faultline-runner:     CLIENT GET /work       ← observation trace_id/span_id
 The dependency client talks through Toxiproxy. Toxiproxy is transparent to HTTP
 headers and emits no spans. Its downstream toxic delays responses; it does not
 add 80/400 ms of application processing to the dependency server span.
+
+The evidence `complete` flag validates this exact topology in one retrieved
+snapshot: four unique nonzero canonical span IDs, the four service/kind/operation
+roles shown above, one runner root, and exactly one same-trace `CHILD_OF` edge
+per child. Extra, duplicate, malformed, foreign, or incorrectly connected spans
+remain incomplete. Span arrival order does not matter. Separate snapshots are
+never combined, and an HTTP timeout can still have a structurally complete trace.
+The flag does not establish experiment metadata correlation or a causal diagnosis
+by itself; integration tests check those fields against actual observations.
 
 Actual integration evidence from the initial successful milestone-2 run:
 

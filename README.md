@@ -127,10 +127,14 @@ the exact `faultline-…` project, then run:
 
 ```sh
 FAULTLINE_PROJECT=<exact-project-name> docker compose -p <exact-project-name> \
-  -f deploy/compose.yaml down --volumes --timeout 5
+  -f deploy/compose.yaml -f deploy/compose.tracing.yaml -f deploy/compose.ui.yaml \
+  down --volumes --remove-orphans --timeout 8
 ```
 
-Never substitute another project's name. The control API has no authentication;
+Use all three files even if tracing was disabled: this also selects any optional
+Jaeger container and viewer network left by an interrupted run. Teardown does not
+create missing services. Never substitute another project's name.
+The control API has no authentication;
 isolation assumes a trusted local Docker host. Do not expose it or use production
 services. These tests show a small causal latency/timeout effect, not production
 capacity or statistical significance.
