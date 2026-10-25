@@ -52,6 +52,7 @@ services:
     <<: *runtime
     profiles: [tools]
     command: [run]
+    stop_grace_period: 12s
   test:
     image: faultline-test:${FAULTLINE_PROJECT:?use scripts/experiment.sh}
     build:
@@ -62,7 +63,7 @@ services:
     cpus: 2
     mem_limit: 1g
     pids_limit: 256
-    command: [go, test, -race, -count=1, -tags=integration, -v, ./...]
+    command: [go, test, -p, "1", -race, -count=1, -tags=integration, -v, ./...]
 
 networks:
   lab:
