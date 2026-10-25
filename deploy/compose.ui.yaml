@@ -1,0 +1,10 @@
+# Explicit --view only: random loopback query/UI port; ingestion stays internal.
+services:
+  jaeger:
+    # Docker does not publish host ports from an internal-only network. Only
+    # Jaeger joins this opt-in bridge; sample services retain internal isolation.
+    networks: [lab, viewer]
+    ports:
+      - "127.0.0.1::16686"
+networks:
+  viewer: {}
