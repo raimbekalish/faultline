@@ -642,3 +642,150 @@ Faultline containers, networks, temporary image tags or volumes remained. The
 owned final dashboard server was stopped; prior review servers were replaced or
 expired. Shared base images/BuildKit caches and ignored local evidence were retained.
 No unrelated project cleanup, public deployment, CI or paid service was performed.
+
+# Milestone 5B validation — offline evidence comparison
+
+Date: 2026-10-25 (America/Los_Angeles). Native macOS/ARM64 and Docker Linux/ARM64,
+pinned Go 1.26.8, Node 24.11.0; no new dependency or bundle format change.
+
+## Approved PR #4 merge
+
+PR #4 was OPEN/MERGEABLE at approved head
+`89fa35ed2c6959ecd593e36af315c674d76094c4` and exact expected base
+`bd3cc64d0224c0a7e4a70054c9484a5023f7d47e`. The SHA-gated regular merge produced
+`34770c4387fc5bc29593b562633f3a60e16a49ea`, verified on GitHub as MERGED with
+those two parents. All five original commits remained reachable with the owner's
+verified GitHub noreply attribution. Local main synchronized cleanly before
+creating `codex/offline-bundle-comparison`; no published history was rewritten.
+
+## Implemented contract and actual unit checks
+
+`faultline-bundle compare LEFT RIGHT` independently validates both archives with
+the existing reader. The pure comparison module consumes validated logical
+payloads, preserves actual side summaries and outputs version-1 JSON with ordered
+configuration/provenance classifications, identity assessment and explicit units.
+The full native CLI delegates `bundle compare` to the same command. Existing
+verify/inspect JSON and bundle/report/SQLite versions remain supported.
+
+The former identical absolute-delta formulas were extracted into one pure
+`experiment.CompareSummaries` helper used by engine reports, record validation,
+history and offline comparison. Existing sample summarization and phase lifecycle
+were not changed. Relative arithmetic and comparability rules live only in the
+new comparison module. It captures no current-machine facts and performs no I/O.
+
+`make check cli offline` passed: shell/Go formatting, vet, full unit race suite,
+exporter and CGO-disabled verifier builds. Focused tests passed for:
+
+- Known-condition pairs, identical inputs, reversed order and byte-deterministic
+  repeated JSON. Absolute differences reverse sign; relative values use the new
+  left reference and therefore need not be simple negations.
+- Different latency, timeout, sample count, revision, Go version, OS, architecture,
+  Docker version, image ID/reference and tracing mode. Dirty/development labels
+  downgrade classification; unknown provenance never becomes equal.
+- Legacy recorded labels/explicit telemetry flags, absent metadata and null
+  telemetry flags. No runner/Docker/methodology data is inferred from this machine.
+- Failed/canceled full or partial reports, missing phases, unconfirmed cleanup,
+  conflicting identities and unassigned run IDs. Ineligible pair deltas are null;
+  measured zeros remain actual measurements rather than unavailable summaries.
+- Zero references (including 0/0), positive-to-zero changes, fraction-to-percentage-
+  point units and overflowing relative percentages. No nonfinite JSON is emitted.
+- Unsupported methodology rejection plus the explicit rule withholding deltas
+  for differing known methods. Current input support recognizes only methodology v1.
+- Left and right malformed/corrupt/oversized inputs, missing files, usage errors,
+  canceled contexts and failed output. Invalid input emits no comparison result.
+- Near-limit report payloads with bounded summary-only comparison output, without
+  copying large raw errors or observations into the result.
+
+Existing archive safety/corruption/semantic tests passed. A two-worker, 10-second
+archive fuzz smoke passed with 823 executions and two additional interesting
+inputs, without a panic. This is bounded smoke coverage, not a full security audit.
+
+## Actual re-exported experiment evidence
+
+The end-to-end test re-exported four original persisted records into a private
+owned temporary directory: the clean Milestone 5A 80 ms and 400 ms runs, one real
+legacy run, and the real SIGTERM-canceled run. No input measurements were fabricated.
+Those source databases and older source bundle artifacts were preserved.
+
+The verifier binary and bundle copies were moved into an isolated temporary
+directory and invoked with `PATH=/nonexistent`, without database/Docker commands.
+Real, reverse, identical, legacy and canceled comparisons all passed. Repeated
+outputs were byte-identical, the full-CLI alias matched the standalone result,
+and SHA-256 checks confirmed inputs remained unchanged.
+
+For the real left 80 ms / right 400 ms pair:
+
+| Fault-phase metric | Signed right-minus-left | Relative change |
+| --- | ---: | ---: |
+| Mean request latency | +170.0357542 ms | +204.4640491% |
+| p95 request latency | +170.689167 ms | +201.2132111% |
+| Failure rate | +100 percentage points | null: zero reference |
+
+Classification was `descriptive_only`: samples/latency/config hashes, tracing mode
+and sample image identifiers differed. These deltas do not isolate causality or
+establish statistical significance. Reversing the pair reversed absolute signs;
+relative references changed as specified. Comparing the exact same recorded run
+produced `recorded_conditions_match` with a `same_recorded_run` reason, not an
+independent replication claim. The legacy pair remained `descriptive_only` with
+missing facts unknown. The canceled pair was `not_comparable` with null deltas
+and an unavailable recovery summary.
+
+The actual input bundle SHA-256 values (re-export matched existing evidence):
+
+- Left: `bb6c3d4ca25d3db32b83f5cdd189027085fb61cab86d796e5dc0dde435ea8572`
+- Right: `e265b73a29f2deaa079045996aafc9cf064b05949193389c10319ceff07caea5`
+
+## Offline isolation, resource bounds and regressions
+
+The final CGO-disabled Linux/ARM64 binary ran in a read-only scratch image with
+network disabled, 0.5 CPU, 64 MiB RAM, 32 PIDs, dropped capabilities and no SQLite,
+database, Docker client/socket, shell or collector. It successfully compared both
+the real files and two synthetic resource-only bundles with report payloads near
+1 MiB each. Real output was 10,654 bytes; bounded-fixture output was 9,599 bytes.
+Those synthetic failed/cleanup-unconfirmed inputs correctly had no deltas; they
+were never presented as actual measured experiments. The owned image was removed.
+
+Dependency inspection confirmed no history, `database/sql` connection package or
+SQLite driver. Standard `database/sql/driver` value interfaces remain transitive
+Go dependencies, not a database engine. Comparison has no runtime external service
+or SQL access.
+
+Both real wrapper suites passed: `./scripts/experiment.sh test` and
+`./scripts/experiment.sh --tracing test`, including actual faults, latency/recovery,
+timeouts, active cancellation/owned cleanup, trace export/query, persisted CLI
+runs and SQLite journal recovery. Existing history/API regressions passed after
+the shared-helper refactor. `make frontend-check` passed a clean install, format
+checks, nine frontend tests, strict TypeScript and production build. Browser
+regressions were not rerun: no frontend/API response behavior changed. The API's
+comparison arithmetic/shape is covered by existing Go integration/unit checks.
+
+All final checks passed without an implementation or test failure in this
+milestone. Expected negative-test errors and mode-specific/crash-fixture skips
+remain intentional. Logs/JSON evidence under ignored `artifacts/` include
+`m5b-checks-final.log`, `m5b-frontend.log`, `m5b-disabled.log`, `m5b-tracing.log`,
+`m5b-fuzz.log`, `m5b-real-validation.log`, comparison JSON variants and the two
+scratch outputs. Generated test inputs/exports and scratch context are temporary;
+comparison itself creates no files.
+
+## Limits and release-readiness recommendation
+
+Matching recorded conditions, identifiers or hashes establish neither authenticity,
+independent execution, equal unrecorded environments, significance nor causality.
+Short revision/image identifiers are compared literally. Missing optional sample
+references and Jaeger-off metadata remain unknown; they are not required conditions.
+Unknown methodologies are refused, not interpreted using an assumed algorithm.
+Only existing schema-1 bundles and the supported methodology are accepted.
+
+No new dashboard/API behavior, experiment target, fault type, collection, CI or
+paid infrastructure was introduced. No new native listener was started. File/CPU
+bounds and cancellation remain cooperative through normal local I/O; kernel/FS
+stalls retain existing limitations. No comprehensive parser audit, Windows,
+Linux/AMD64 or unusual-filesystem matrix was performed. Recommended next is a
+release-readiness pass for platform-specific verifier artifacts, versioned JSON
+contract fixtures, broader filesystem/platform tests and archive/parser review.
+
+Final inventory found no Faultline containers, networks, image tags, volumes or
+native dashboard servers. All newly created temporary export/bounds files and the
+scratch context were removed. Preexisting Milestone 5A source bundles/databases
+were preserved; comparison JSON/logs and shared build caches remain ignored local
+artifacts. No unrelated Docker resources were pruned or modified.

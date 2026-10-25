@@ -148,6 +148,7 @@ make cli offline
 ./artifacts/bin/faultline bundle export -db artifacts/faultline.sqlite -out artifacts/run.flb RUN_ID
 ./artifacts/bin/faultline-bundle verify artifacts/run.flb
 ./artifacts/bin/faultline-bundle inspect artifacts/run.flb
+./artifacts/bin/faultline-bundle compare LEFT.flb RIGHT.flb
 ```
 
 Copy the platform-appropriate verifier with the bundle for offline use. The
@@ -155,6 +156,12 @@ archive preserves actual reports/specifications and includes checksum metadata;
 checksums do not establish authenticity. New runs record allowlisted environment
 facts; missing historical provenance stays unavailable. Run details also offer a
 same-origin download. See [format, safety and portability limits](docs/evidence.md).
+
+Offline comparison validates both inputs, reports right-minus-left phase changes,
+and distinguishes matching recorded conditions, descriptive-only differences and
+non-comparable partial/failed evidence. Missing provenance stays unknown; relative
+changes with zero references remain unavailable. It makes no significance or
+causality claim. See [comparison rules and examples](docs/evidence.md#offline-comparison--result-schema-1).
 
 ## Optional distributed tracing
 
