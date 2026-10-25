@@ -5,3 +5,7 @@ bin
 node_modules
 coverage.out
 *.test
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
