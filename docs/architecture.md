@@ -25,6 +25,9 @@ Code boundaries:
 - `internal/sample`: HTTP sample services
 - `internal/telemetry`: explicit OpenTelemetry providers, safe propagation, HTTP spans
 - `internal/tracequery`: bounded retrieval from the pinned local Jaeger query API
+- `internal/spec`: strict versioned specifications and canonical configuration hashes
+- `internal/execution`: durable intent, engine invocation, export and finalization order
+- `internal/history`: SQLite migrations, immutable reports, validated queries/comparison
 - `deploy/`: sample topology
 - `scripts/`: reproducible developer entrypoints
 
@@ -113,6 +116,49 @@ partial evidence. Tests also verify observation IDs and correlation metadata.
 An explicit `--view` overlay publishes only the query/UI endpoint to a random
 loopback port and limits the viewer lifetime to five minutes. There are no
 persistent volumes, published ingestion/admin endpoints, or external targets.
-Compose teardown includes Jaeger and uses eight seconds for graceful service
+Compose teardown includes Jaeger and uses twelve seconds for graceful service
 and exporter shutdown. See [tracing](tracing.md), [reports](reports.md), and
 [ADR 0002](decisions/0002-bounded-optional-tracing.md).
+
+## Reproducible execution and persistence
+
+```text
+specification / legacy flags → execution → existing experiment engine
+                                  │                  │
+                             intent commit      proxy cleanup
+                                  │                  │
+                                SQLite ← export shutdown → final report commit
+```
+
+The engine lifecycle and instrumentation are unchanged. A specification maps directly to
+the existing configuration; it cannot change topology. Legacy flag runs remain
+ephemeral unless `-db` is explicit. File-based runs opt into local history.
+
+Execution commits a uniquely identified intent before calling the engine, then
+finalizes under a fresh three-second context after cleanup and telemetry shutdown.
+No database transaction is held through traffic generation or injection. Failure
+before the intent commit prevents engine execution. Failure after execution leaves
+the committed intent, returns an error and preserves the actual engine report on
+stdout. A subsequent stdout failure does not undo a committed history record.
+
+SQLite stores indexed identity/status/timestamps and canonical spec/report JSON,
+with transactional migration/version checks. Completed reports are immutable;
+failed and canceled reports may contain partial observations. An unfinished intent
+is not labeled with an inferred failure cause. There is no per-request checkpoint.
+Read/compare paths validate records, bound payloads/list sizes and use no fault
+control or collector access. Summary validation reuses the engine's existing
+pure calculation through a small exported wrapper, checking raw samples rather
+than only plausible metric ranges. Trace IDs persist as references only.
+
+The pinned mattn driver uses bundled C SQLite. The CLI is statically linked in
+the existing compiler image; samples retain their previous CGO-disabled build.
+Scratch execution with real SQLite was verified. Persistent container commands
+mount only the selected input and history directory and run as the host's non-root
+UID/GID. Query commands start no sample or collector services. Integration packages
+are serialized because the fixed test topology shares one proxy port.
+
+DELETE journaling, `synchronous=EXTRA`, bounded lock waits and short transactions
+favor durability over throughput. A subprocess test exercises real hot-journal
+recovery. Filesystem/VM/hardware failures remain outside that guarantee. Details,
+commands and comparison semantics are in [history](history.md) and
+[ADR 0003](decisions/0003-specifications-and-sqlite-history.md).

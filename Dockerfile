@@ -8,7 +8,7 @@ CMD ["go", "test", "-race", "./..."]
 
 FROM dev AS build
 ARG REVISION=development
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.revision=${REVISION}" -o /out/faultline ./cmd/faultline \
+RUN CGO_ENABLED=1 go build -tags netgo,osusergo -trimpath -ldflags="-s -w -linkmode external -extldflags '-static' -X main.revision=${REVISION}" -o /out/faultline ./cmd/faultline \
     && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/sample ./cmd/sample
 
 FROM scratch AS runtime

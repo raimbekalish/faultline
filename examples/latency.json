@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "samples_per_phase": 10,
+  "latency_ms": 80,
+  "request_timeout_ms": 1000
+}

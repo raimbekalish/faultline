@@ -10,6 +10,8 @@
 !.env.example
 *.sqlite
 *.sqlite-*
+*.db
+*.db-*
 node_modules/
 dist/
 .idea/
