@@ -3,11 +3,17 @@ package main
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/raimbekalish/faultline/internal/experiment"
+	"github.com/raimbekalish/faultline/internal/history"
+	"github.com/raimbekalish/faultline/internal/spec"
 )
 
 type brokenWriter struct{}
@@ -47,5 +53,41 @@ func TestSpecificationAndHistoryUsageValidation(t *testing.T) {
 	}
 	if _, err := os.Stat(missing); !os.IsNotExist(err) {
 		t.Fatal("query created a missing database")
+	}
+}
+
+func TestHistoryCLIRejectsInconsistentStoredStatistics(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "history.sqlite")
+	s, err := history.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sp := spec.FromConfig(experiment.Config{Samples: 2, LatencyMS: 80, RequestTimeoutMS: 1000})
+	phase := experiment.Phase{Samples: []experiment.Sample{{DurationMS: 1, Status: 200}, {DurationMS: 5, Status: 200}}, Summary: experiment.Summary{Requests: 2, MinMS: 1, MeanMS: 3, P50MS: 1, P95MS: 5, P99MS: 5, MaxMS: 5}}
+	r := experiment.Report{SchemaVersion: 1, RunID: "faultline-0123456789abcdef0123456789abcdef", Status: "complete", Config: sp.Config(), Target: experiment.Target, StartedAt: time.Now().Add(-time.Second), FinishedAt: time.Now(), CleanupComplete: true, Baseline: phase, Fault: phase, Recovery: phase}
+	id, err := s.Start(ctx, sp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Finish(ctx, id, r); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec("UPDATE runs SET report_json=json_set(report_json,'$.fault.summary.mean_ms',2) WHERE id=?", id); err != nil {
+		t.Fatal(err)
+	}
+	for _, args := range [][]string{{"history", "list", "-db", path}, {"history", "show", "-db", path, id}, {"history", "compare", "-db", path, id, id}} {
+		var out, stderr bytes.Buffer
+		if code := execute(ctx, args, &out, &stderr); code != 1 || out.Len() != 0 || !strings.Contains(stderr.String(), history.ErrCorrupt.Error()) {
+			t.Fatalf("accepted corrupt history: args=%v code=%d stdout=%s stderr=%s", args, code, out.String(), stderr.String())
+		}
 	}
 }

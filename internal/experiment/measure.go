@@ -36,6 +36,10 @@ type Phase struct {
 	Summary Summary  `json:"summary"`
 }
 
+// Summarize exposes the engine's existing calculation for persistence integrity
+// checks. It includes failed samples and does not mutate the supplied slice.
+func Summarize(samples []Sample) Summary { return summarize(samples) }
+
 func summarize(samples []Sample) Summary {
 	s := Summary{Requests: len(samples)}
 	if len(samples) == 0 {
