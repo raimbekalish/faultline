@@ -49,36 +49,53 @@ func New() *Client       { return &Client{base: "http://jaeger:16686", http: loc
 func (c *Client) Close() { c.http.CloseIdleConnections() }
 
 type rawTrace struct {
+	TraceID   string                `json:"traceID"`
+	Spans     []rawSpan             `json:"spans"`
+	Processes map[string]rawProcess `json:"processes"`
+}
+
+type rawProcess struct {
+	Service string `json:"serviceName"`
+}
+
+type rawReference struct {
+	Type    string `json:"refType"`
 	TraceID string `json:"traceID"`
-	Spans   []struct {
-		TraceID    string `json:"traceID"`
-		SpanID     string `json:"spanID"`
-		Operation  string `json:"operationName"`
-		ProcessID  string `json:"processID"`
-		Duration   int64  `json:"duration"`
-		References []struct {
-			Type    string `json:"refType"`
-			TraceID string `json:"traceID"`
-			SpanID  string `json:"spanID"`
-		} `json:"references"`
-		Tags []struct {
-			Key   string `json:"key"`
-			Value any    `json:"value"`
-		} `json:"tags"`
-	} `json:"spans"`
-	Processes map[string]struct {
-		Service string `json:"serviceName"`
-	} `json:"processes"`
+	SpanID  string `json:"spanID"`
+}
+
+type rawTag struct {
+	Key   string `json:"key"`
+	Value any    `json:"value"`
+}
+
+type rawSpan struct {
+	TraceID    string         `json:"traceID"`
+	SpanID     string         `json:"spanID"`
+	Operation  string         `json:"operationName"`
+	ProcessID  string         `json:"processID"`
+	Duration   int64          `json:"duration"`
+	References []rawReference `json:"references"`
+	Tags       []rawTag       `json:"tags"`
 }
 
 func decode(id string, body []byte) (Record, error) {
 	r := Record{TraceID: id}
+	if !validTraceID(id) {
+		return r, fmt.Errorf("invalid trace ID")
+	}
 	var response struct {
 		Data []json.RawMessage `json:"data"`
 	}
 	if err := json.Unmarshal(body, &response); err != nil {
 		return r, err
 	}
+	// The trace-by-ID endpoint must return at most one trace object. Combining
+	// separate objects could fabricate a complete graph from partial snapshots.
+	if len(response.Data) > 1 {
+		return r, fmt.Errorf("query returned multiple trace objects")
+	}
+	referencesValid := true
 	for _, data := range response.Data {
 		var raw rawTrace
 		if err := json.Unmarshal(data, &raw); err != nil {
@@ -93,10 +110,17 @@ func decode(id string, body []byte) (Record, error) {
 				return r, fmt.Errorf("span belongs to another trace")
 			}
 			span := Span{TraceID: id, SpanID: s.SpanID, Service: raw.Processes[s.ProcessID].Service, Operation: s.Operation, DurationMS: float64(s.Duration) / 1000}
-			for _, ref := range s.References {
-				if ref.Type == "CHILD_OF" && ref.TraceID == id {
+			// The fixed topology permits no links and at most one same-trace
+			// CHILD_OF reference. Never silently discard an ambiguous parent.
+			if len(s.References) > 1 {
+				referencesValid = false
+			}
+			if len(s.References) == 1 {
+				ref := s.References[0]
+				if ref.Type == "CHILD_OF" && ref.TraceID == id && validSpanID(ref.SpanID) {
 					span.ParentSpanID = ref.SpanID
-					break
+				} else {
+					referencesValid = false
 				}
 			}
 			for _, tag := range s.Tags {
@@ -121,15 +145,13 @@ func decode(id string, body []byte) (Record, error) {
 			r.Spans = append(r.Spans, span)
 		}
 	}
-	// Four is the expected sample topology, not proof of semantic completeness;
-	// tests additionally verify services, metadata, IDs and every parent edge.
-	r.Complete = len(r.Spans) == 4
+	r.Complete = referencesValid && completeSampleTopology(r)
 	return r, nil
 }
 
 func (c *Client) fetch(ctx context.Context, id string) (Record, error) {
 	r := Record{TraceID: id}
-	if !traceIDPattern.MatchString(id) {
+	if !validTraceID(id) {
 		return r, fmt.Errorf("invalid trace ID")
 	}
 	req, _ := http.NewRequestWithContext(ctx, "GET", c.base+"/api/traces/"+id, nil)
@@ -159,32 +181,33 @@ func (c *Client) Collect(ctx context.Context, ids []string) ([]Record, error) {
 	}
 	records := make([]Record, len(ids))
 	for i, id := range ids {
-		if !traceIDPattern.MatchString(id) {
+		if !validTraceID(id) {
 			return nil, fmt.Errorf("invalid trace ID")
 		}
 		records[i].TraceID = id
 	}
 	for {
-		complete := true
 		for i, id := range ids {
+			if ctx.Err() != nil {
+				break
+			}
 			if records[i].Complete {
 				continue
 			}
 			r, err := c.fetch(ctx, id)
-			if len(r.Spans) >= len(records[i].Spans) {
+			// A corrected complete snapshot supersedes even a larger malformed
+			// response. Keep one observed snapshot; never merge spans across polls.
+			if r.Complete || len(r.Spans) >= len(records[i].Spans) {
 				records[i] = r
 			}
 			if err != nil {
 				records[i].RetrievalError = "Jaeger query failed"
 			}
-			if !records[i].Complete {
-				complete = false
-			}
 			if ctx.Err() != nil {
 				break
 			}
 		}
-		complete = true
+		complete := true
 		for _, r := range records {
 			if !r.Complete {
 				complete = false

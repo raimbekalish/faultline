@@ -18,6 +18,12 @@ dependency client → dependency server. Metadata identifies the run and phase.
 Record optional trace/span IDs in schema-1 samples; existing fields keep their
 meaning. A missing span is unknown telemetry, not proof a service was not called.
 
+Classify completeness by the fixed sample graph, not its span count alone:
+unique valid IDs, one span for each expected service/kind/operation, one runner
+root, and the three exact same-trace parent edges. Reject ambiguous references
+and never deduplicate or join separate snapshots to manufacture completeness.
+This validates structure; observation correlation is checked separately.
+
 The bounded nonblocking SDK queue holds at most 256 spans per process, batches
 32, and exports asynchronously with finite timeouts and no retries. Trace data
 may be dropped under pressure. SDK export failures must not affect fault cleanup.

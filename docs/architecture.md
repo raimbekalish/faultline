@@ -103,8 +103,12 @@ memory limiter. It is absent by default. SDK queues, batches, attributes, events
 export calls and shutdown waits are bounded. A full queue drops spans rather
 than blocking application traffic. The query adapter polls at most 300 trace IDs
 under one caller deadline and retains explicit missing/partial results. Its
-current four-span completeness flag is a topology expectation; tests also verify
-every ID, service, parent relationship and correlation field.
+completeness flag validates four unique nonzero span IDs, expected service/kind/
+operation roles, exactly one runner root and all three same-trace parent edges.
+Ambiguous references and duplicate/extra spans are rejected. It never assembles
+one trace from separate query objects or polls. A corrected complete snapshot
+supersedes an earlier larger malformed response; query failures retain observed
+partial evidence. Tests also verify observation IDs and correlation metadata.
 
 An explicit `--view` overlay publishes only the query/UI endpoint to a random
 loopback port and limits the viewer lifetime to five minutes. There are no

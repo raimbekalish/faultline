@@ -65,7 +65,14 @@ fault cleanup result. The engine always cleans up before export shutdown starts.
 
 The `evidence` command emits a separate schema-1 diagnostic envelope containing
 two ordinary reports (80/400 ms latency), retrieved trace summaries and raw Jaeger
-responses. `complete` means four spans were retrieved for the expected topology;
-the integration tests additionally validate IDs, metadata, services and parent
-relationships. Partial/missing traces include `retrieval_error`; their cause is
-unknown. See [tracing](tracing.md) for commands and interpretation.
+responses. `complete` requires one observed trace snapshot with four unique,
+valid nonzero span IDs, the expected service/kind/operation roles, one runner
+root, and the exact runner-client → frontend-server → frontend-client →
+dependency-server parent chain. Every child must have one same-trace `CHILD_OF`
+reference; ambiguous, foreign, or unsupported references are incomplete. Separate
+snapshots are never joined and duplicate spans are never silently deduplicated.
+Integration tests additionally correlate the root ID and metadata with each
+experiment observation. HTTP errors do not by themselves make a trace incomplete.
+Partial/malformed traces remain `complete: false` and include `retrieval_error`
+when collection ends. Missing evidence has no inferred cause. JSON fields and
+schema versions are unchanged. See [tracing](tracing.md) for interpretation.
