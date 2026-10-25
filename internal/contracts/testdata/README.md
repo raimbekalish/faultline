@@ -8,7 +8,8 @@ platform labels exercise syntax only. No environment is inferred during tests.
 `v1/*.json` evidence inputs deliberately include complete provenance without launch
 metadata, legacy missing provenance, and canceled/partial evidence with unconfirmed
 cleanup. Expected inspect/verify/compare JSON freezes field names, units, nulls,
-reason ordering and semantics. Whitespace is ignored, not property order. The
+reason ordering and semantics. Whitespace is ignored, not property order: deterministic CLI byte output is
+intentional, so field-order changes also require review. The
 format-1 SHA freezes the deterministic archive built from the complete fixture,
 including its original report bytes. These are source fixtures, not `.flb` binaries.
 The unsupported manifest must be rejected; corrupt/header/Unicode cases live in

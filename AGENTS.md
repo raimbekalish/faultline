@@ -29,7 +29,8 @@ over speculative interfaces or mocked product features.
 
 ## Verification commands
 
-- Host Go: `make check` (format verification, vet, unit race tests).
+- Host Go: `make check` (format verification, vet, unit race tests; Python 3.10+
+  also runs standard-library packaging tests).
 - Docker only: build the `dev` target and run the command documented in README.
 - Real faults: `./scripts/experiment.sh test` (isolated Compose stack, unit and
   integration race tests, automatic teardown).
@@ -102,3 +103,17 @@ over speculative interfaces or mocked product features.
   features belong on `codex/` branches with reviewed pull requests.
 - Keep main stable. Never force-push, fabricate dates, or create empty commits.
 - Never commit credentials, generated reports, caches, datasets or large binaries.
+
+## Release candidates
+
+- `scripts/package-release.py` only builds new ignored local candidate directories;
+  require clean committed source. Never tag, upload or create a GitHub Release
+  without explicit approval. Do not overwrite previous candidates/evidence.
+- Offline builds use CGO=0; native local packages use host CGO and freshly built
+  locked assets. Cross-compilation is build evidence, not runtime qualification.
+- Keep synthetic compatibility fixtures labeled and small; review schema, units,
+  nulls and reason changes rather than automatically regenerating expected output.
+- Use distinct `FAULTLINE_SCREENSHOT_DIR` / `FAULTLINE_BROWSER_OUTPUT` paths when
+  preserving earlier browser evidence. Record emulated runtimes as emulated.
+- Parser/header/Unicode regression and bounded fuzz checks complement real evidence;
+  never describe them as a comprehensive security audit or hashes as authenticity.

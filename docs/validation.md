@@ -789,3 +789,201 @@ native dashboard servers. All newly created temporary export/bounds files and th
 scratch context were removed. Preexisting Milestone 5A source bundles/databases
 were preserved; comparison JSON/logs and shared build caches remain ignored local
 artifacts. No unrelated Docker resources were pruned or modified.
+
+## Milestone 6A — Release readiness (2026-10-25)
+
+### Approved merge and candidate source
+
+PR #5 was OPEN/MERGEABLE/CLEAN with approved head
+`1f0bc04f0848eda1098d3670fca6be64e02b8f0d` and base
+`34770c4387fc5bc29593b562633f3a60e16a49ea`. GitHub regular merge produced
+`53d3d498203f420c7055c217857e26746a5043b0`, with exactly those parents. All three
+feature commits remain reachable with the repository owner's noreply attribution.
+Local main fast-forwarded to that remote SHA, clean. Work continued on
+`codex/release-readiness`; no tag, release, CI or remote asset publication.
+
+Final **local candidate** label: `0.1.0-rc.1`, executable/source revision
+`b8d5efd56389757f7320387972e0f10cf1071ab5`. The subsequent documentation commit does
+not change executables/assets. These are review artifacts, not the final tagged
+release: rebuild from the approved merge revision after review. Prior candidate
+attempts and repeated builds remain separate, never overwritten.
+
+Host: macOS 26.6.2 ARM64, Go 1.26.8, Apple clang 21.0.0, Python 3.12.6, Node 24.11.0,
+npm 11.6.1; local Docker Desktop ARM64 Linux VM and installed Chrome/Rosetta 2.
+No Windows machine or physical Intel runtime was available. These validation facts
+are not inserted into historical experiment provenance.
+
+### Parser findings and negative tests
+
+Reproduction log: `artifacts/m6-parser-reproduction.log`. The pre-fix implementation
+accepted the adversarial cases below; the new rejection tests failed as intended:
+
+- `status` / `ſtatus` and `s` / escaped long-s duplicate keys: encoding/json uses
+  Unicode simple folding while the previous check only lowercased keys.
+- Unpaired escaped high/low UTF-16 surrogates: encoding/json silently substituted
+  replacement characters. Valid paired surrogates, emoji and literal escaped
+  backslashes remain accepted; invalid UTF-8 remains rejected.
+- Nonzero per-entry central-directory disk, conflicting/unsupported local/central
+  reader versions, and contradictory local CRC/sizes when a descriptor exists.
+
+The fixes retain valid format-1 exports and reject these malformed cases. Existing
+regressions also reject duplicate/missing/traversal/absolute/symlink/compressed
+entries, prefixes/trailers, CRC/digest corruption, rehashed inconsistent statistics,
+excessive sizes/depth, invalid identities and unsupported versions. New actual
+filesystem checks reject directories, FIFOs and dangling symlinks. Short reads and
+mid-read cancellation fail; no extraction occurs. Focused race runs passed in
+`m6-parser-fixed.log` / `m6-parser-final.log`.
+
+This is a targeted review, not a comprehensive or independent security audit.
+Filesystem syscalls remain cooperatively cancellable, not interruptible guarantees;
+trusted local directories are required. No authenticity claim follows from CRC or
+SHA-256. See SECURITY.md for limits.
+
+### Stable public contracts
+
+`internal/contracts/testdata` contains small explicitly **synthetic** fixtures;
+they are not experimental measurements. Complete, legacy missing-provenance and
+canceled/partially measured evidence freeze verify/inspect/compare output. The
+complete fixture also freezes deterministic archive bytes via SHA-256. Unsupported
+manifest and invalid/ambiguous JSON fixtures reject. API/history fixtures replay
+through real temporary SQLite files, including pagination, partial detail,
+comparison, missing-record errors and fraction-valued legacy comparison units.
+
+Fixed fixture timestamps/IDs deliberately exercise identity, ordering and raw
+report hashes. Whitespace is ignored for JSON comparisons; encoder field ordering
+is frozen to make intentional deterministic CLI byte changes reviewable, not as a
+claim that JSON object order has semantic meaning. No wall-clock paths/host facts
+are snapped. Fixture changes require review, with no auto-update switch.
+
+### Candidate inventory and reproducibility
+
+Selected packages: `artifacts/release-candidates/m6a-final/`. Five archives, about
+34 MiB total, plus outer SHA256SUMS. Each contains member SHA256SUMS, LICENSE,
+USAGE.md and VERSION.json. Local package also has matching built assets/examples.
+Only binaries, metadata/instructions and known static files appear in archives.
+No database, evidence, credentials, test output or build cache is included.
+
+| Filename | SHA-256 |
+| --- | --- |
+| `faultline-bundle_0.1.0-rc.1_b8d5efd56389_darwin_amd64.tar.gz` | `b9cf0156eceabd0f1dd7ac23ae2842475f7a198b081720771e2a2ab84ae0a1e4` |
+| `faultline-bundle_0.1.0-rc.1_b8d5efd56389_darwin_arm64.tar.gz` | `0fdf3ff6bef5527226e9b94fd9620d1b5aa9e485370ea032647f26ee9823a1e5` |
+| `faultline-bundle_0.1.0-rc.1_b8d5efd56389_linux_amd64.tar.gz` | `af109d3e2e84e725104b2159e48a73a1f0cb0ddba2584fe343a326460ce74dfa` |
+| `faultline-bundle_0.1.0-rc.1_b8d5efd56389_linux_arm64.tar.gz` | `882b4db9b42bf611ee02b42dce076874261d27226d6b41f5c0c6163c9b02ff62` |
+| `faultline-local_0.1.0-rc.1_b8d5efd56389_darwin_arm64.tar.gz` | `e1402c088310fb276dfd50fb423791392b462166b4a700a17b115ebf8ad97cfd` |
+
+A second clean-source build into `m6a-final-repeat` produced identical complete
+archive hashes for all five. This verifies repeatability on the recorded
+compiler/SDK/toolchain, not independent cross-machine reproducibility. Packager
+unit tests prove stable tar metadata/order, exclusive output, unsafe-path rejection
+and cleanup on failed publication. Native binaries are unsigned/unnotarized; no
+external-download Gatekeeper qualification or minimum-OS support promise.
+
+### Actual installation and platform tests
+
+Clean private directories, both checksum levels checked, instructions read:
+
+| Target | Actual execution | Result |
+| --- | --- | --- |
+| macOS ARM64 offline/local | Native host; no build tools on PATH | PASS version, verify, inspect, deterministic compare; CLI real history |
+| macOS AMD64 offline | Installed Rosetta 2 on ARM64 macOS | PASS version, verify, inspect, compare; no Intel hardware claim |
+| Linux ARM64 offline | ARM64 Docker Linux VM, scratch | PASS version, verify, inspect, deterministic compare |
+| Linux AMD64 offline | Docker Desktop AMD64 emulation, scratch | PASS same workflow; no bare-metal x86 claim |
+| Windows AMD64 offline evaluation | Cross-build only; PE32+ inspected | BUILD ONLY, unsupported/unpackaged; evaluation binary removed |
+
+Logs: `m6-native-smoke-final.log`, `m6-macos-amd64.log`, `m6-linux-smoke.log`,
+`m6-windows.log`. Other native local package targets were not built/tested and are
+not advertised. CGO-disabled dependency graph excludes database/sql, history and
+the SQLite driver (`m6-offline-dependencies.txt`). Standard-library driver interfaces
+may be transitive, but no database is opened by offline commands.
+
+Linux images had no shell, SQLite, Docker client/socket, collector or external
+service. Network was disabled; root filesystem read-only; user 65532, capabilities
+removed, no-new-privileges, 0.5 CPU, 64 MiB and 32 PIDs. Real 80/400 ms exported
+bundles were used. A separate clearly synthetic **resource-only** fixture with
+1,048,542 report bytes and many unique JSON keys passed two-input comparison under
+the same 64 MiB bound (`m6-bounds.log`); output was 9,834 bytes. This exercises a
+near-limit path, not a universal peak-memory guarantee. Inputs and result semantics
+were not used as new measured experimental evidence.
+
+### Actual dashboard and source journey
+
+The extracted local candidate ran native CLI queries and dashboard with no Go/C/Node
+programs on its PATH, against a copy of real `artifacts/m5-clean/history.sqlite`.
+Its health, static assets and real Chrome test passed. Chrome exercised overview,
+filtering/pagination, raw trace references, actual measurement/delta formatting,
+keyboard selection/download, comparison, responsive desktop/mobile layout, browser
+errors and external requests. **1 browser test passed**; no external requests or
+console/page errors. Screenshots are under `artifacts/m6-browser/`; the reviewed
+README preview is an unmodified copy of that real overview, not a fixture render.
+Original bundles/database hashes stayed unchanged; copied data and listener removed.
+
+The complete source quick start also ran anew, after each isolated stack teardown:
+
+| New real run | Baseline mean | Fault mean / p95 | Fault failures | Recovery mean | Cleanup |
+| --- | --- | --- | --- | --- | --- |
+| 80 ms, tracing off, 10 samples/phase | 0.473763 ms | 82.563208 / 84.823709 ms | 0/10 | 0.227875 ms | confirmed |
+| 400 ms, tracing on, 5 samples/phase | 0.815392 ms | 253.854234 / 259.145417 ms | 5/5 HTTP 504 | 0.368842 ms | confirmed |
+
+Both recorded revision `b8d5efd`, completed, with zero baseline/recovery failures.
+New actual database: `artifacts/m6-real/history.sqlite`; raw stdout JSON:
+`m6-real-80.json`, `m6-real-400.json`. Native candidate exported both finalized
+records, then the offline tool verified/inspected/compared them without toolchain
+programs. Export SHA-256 values:
+
+- 80 ms: `e947348d5220293e63be892eaf53127969fdd8e47d9fe85eca1316dc34837361`
+- 400 ms: `56ac03c6bcb5bc1c6a33753f46fd55c1b4034671ab5d4c8fc381288d76b9041d`
+
+Fresh comparison: `descriptive_only`; fault right-minus-left mean +171.291026 ms,
+p95 +174.321708 ms, failures +100 percentage points. Relative failure-rate change
+is null/zero_reference. Configurations, sample counts and tracing differ; these
+are end-to-end request observations, not statistical significance or an isolated
+causal estimate. See `m6-fresh-evidence.log` and `m6-real/comparison.json`.
+Actual new records/bundles are intentionally retained, separate from fixtures.
+
+### Regression command results and failures corrected
+
+- `make check`: PASS formatting, shell endpoint-selection checks, 2 packaging
+  tests, vet and all Go unit race packages, including SQLite migrations, rollback,
+  locks, failed/canceled writes, process-exit/hot-journal recovery, API and cleanup.
+  Final log `m6-check-final.log`; `go mod verify`: all modules verified.
+- `CGO_ENABLED=0 go test ./internal/bundle ./internal/bundlecli
+  ./internal/bundlecompare ./internal/jsonstrict ./internal/contracts`: PASS.
+- `./scripts/experiment.sh test`: PASS real nontracing integration race suite;
+  `m6-integration-disabled.log`.
+- `./scripts/experiment.sh --tracing test`: PASS real tracing integration race
+  suite; `m6-integration-tracing.log`. Includes real export/query/topology/timeouts,
+  active-fault cancellation and owned cleanup. Tests remain wrapper-isolated.
+- `go test ./internal/bundle -run '^$' -fuzz FuzzReadNeverPanics -fuzztime=20s
+  -parallel=2`: PASS, 397,810 executions. JSON `FuzzValidate` with the same bounds:
+  PASS, 669,167 executions. Both elapsed about 21 s; no panics/failing inputs.
+  New interesting corpus cases are coverage inputs, not vulnerabilities. Short
+  fuzz smoke is not exhaustive security validation.
+- `make frontend-check`: PASS locked install (audit reported 0 vulnerabilities),
+  formatting, **9 tests**, TypeScript and Vite production build. This is not a
+  comprehensive dependency vulnerability audit. Final log `m6-frontend-final.log`.
+- Native and four-target package runtime checks, repeated-build hash comparison,
+  real-data Chrome and network-disabled/resource tests: PASS as detailed above.
+
+The first new Makefile check failed because the Python test received an accidental
+shell-file argument; wiring was corrected before final checks. The first clean
+install caught dashboard --version emitting JSON on stderr; stdout handling was
+fixed in a separate commit and candidates rebuilt/retested. An initial prettier
+command used the wrong working-directory path and was corrected. Expected pre-fix
+adversarial failures are retained in the reproduction log. No unresolved test
+failure remains; unrun native platform/Gatekeeper checks are explicit above.
+
+### Cleanup and release recommendation
+
+`m6-cleanup.log` confirms no Faultline test containers, networks, tagged images or
+volumes, no native dashboard processes/listener and no owned extraction/build/
+export temporary paths. Every wrapper and package test removed only owned resources;
+no global prune, other-project action or prior evidence/database deletion.
+Build caches/base images and intentionally retained candidates/evidence/logs remain.
+
+**NO-GO for a first tagged release now**: this PR needs review/approval and candidate
+packages must be rebuilt/reverified from the approved merge SHA before explicit
+owner approval to tag/publish. No additional confirmed code blocker is known for
+the narrowly documented platform scope. Native non-ARM64-mac local packages,
+Windows, minimum OS versions, physical Intel qualification, signing/notarization
+and independent-builder reproduction are not claimed. They need qualification
+before expanding release support, not invented passing results.

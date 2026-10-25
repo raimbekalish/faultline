@@ -1,28 +1,81 @@
 # Faultline
 
-Local-first reliability experiments for containerized distributed systems.
+Local-first reliability experiments with portable, inspectable evidence.
 
-Faultline measures a real HTTP application before, during, and after network
-latency injected into its dependency using Toxiproxy. The first working milestone
-is a Go CLI with a disposable Docker Compose sample stack, automated real-fault
-tests and JSON reports. This is an early-stage project with a deliberately small
-scope.
+A timeout is more useful when you can reproduce the injected fault, see the actual
+requests and traces, confirm recovery, and hand the recorded results to someone
+else. Faultline does that for a small containerized microservice topology: measure
+baseline traffic, inject owned dependency latency, measure failures, remove the
+fault, and measure recovery.
 
-## Scope
+Go powers the bounded experiment engine, OpenTelemetry correlation, SQLite history
+and read-only loopback API. React presents real persisted measurements. Portable
+`.flb` bundles carry raw observations, validated summaries, configuration and
+recorded provenance; a standalone tool verifies, inspects and compares them offline.
 
-- Go experiment engine and CLI
-- A small, isolated Docker Compose sample application
-- Bounded HTTP measurements, explicit fault ownership, cancellation and cleanup
-- Machine-readable reports and automated tests against real network faults
+```mermaid
+flowchart LR
+  CLI[Go experiment runner] --> Frontend[Sample frontend]
+  Frontend --> Proxy[Toxiproxy]
+  Proxy --> Dependency[Sample dependency]
+  CLI --> History[(Local SQLite history)]
+  Frontend -. optional spans .-> Jaeger[Temporary Jaeger]
+  Dependency -. optional spans .-> Jaeger
+  CLI -. optional spans .-> Jaeger
+  History --> API[Read-only loopback API]
+  API --> UI[React dashboard]
+  History --> Bundle[Portable .flb evidence]
+  Bundle --> Offline[Offline verify / inspect / compare]
+```
 
-Optional OpenTelemetry tracing and local Jaeger correlate observations across
-the real sample services. Versioned JSON specifications and local SQLite history
-support repeatable runs, inspection and comparisons. A read-only local dashboard
-visualizes persisted evidence through a protected loopback API.
-No hosted service or paid infrastructure is required.
+Faultline is an early open-source release candidate, not production chaos tooling.
+It targets only its isolated sample services. It has no arbitrary targets, browser
+fault control, hosted service, AI analysis or statistical-significance claims.
+Toxiproxy emits no spans. Temporary Jaeger traces are not included in bundles.
+
+![Faultline dashboard showing actual persisted 80 ms and 400 ms experiments](docs/images/dashboard.png)
+
+Actual persisted experiments, viewed through the packaged dashboard during Chrome
+validation; this is recorded evidence, not frontend fixture data.
+
+## Installation and first use
+
+No tagged release or downloadable assets have been published by this milestone.
+Local candidate packages and tested platform details are described in
+[release preparation](docs/release.md). Do not download binaries from an assumed
+release URL. A package already built from reviewed source can be extracted into a
+new directory, then used without installing build tools:
+
+```sh
+./faultline-bundle --version
+./faultline-bundle verify /path/to/run-a.flb
+./faultline-bundle inspect /path/to/run-a.flb
+./faultline-bundle compare /path/to/run-a.flb /path/to/run-b.flb
+```
+
+Only this portable evidence workflow is independent of Docker, SQLite, Jaeger and
+network access. Full experiments require local Docker/Compose and the source
+wrapper. The native CLI/dashboard packages embed SQLite; build them with CGO/C,
+but use no system SQLite at runtime. A prebuilt dashboard needs no Node at runtime.
+
+| Component | Build prerequisites | Runtime requirements |
+| --- | --- | --- |
+| `faultline-bundle` | Go; CGO disabled | Matching OS/CPU, regular `.flb` files |
+| Native CLI/history/export | Go and C compiler | Matching OS/CPU, local database/filesystem |
+| Dashboard | Go/C plus Node/npm for assets | Native binary + matching assets + existing SQLite history |
+| Full experiments | Pinned container builds via wrapper | Docker/Compose, Git, POSIX shell, local Unix socket |
+
+**Runtime-tested candidate targets:** offline macOS ARM64 natively, macOS AMD64 via
+Rosetta 2, Linux ARM64 in Docker's Linux VM, Linux AMD64 via Docker emulation.
+Only macOS ARM64 has a tested native CLI/dashboard package. Emulation is not an
+Intel hardware or broad OS-version qualification. Windows cross-compilation was
+evaluated but runtime behavior is unverified and unsupported. See the
+[full matrix and limitations](docs/release.md#platform-evidence).
 
 ## Engineering documentation
 
+- [Candidate packages, platform evidence and release checklist](docs/release.md)
+- [Security boundary and disclosure](SECURITY.md)
 - [Architecture](docs/architecture.md)
 - [Decisions](docs/decisions/0001-local-vertical-slice.md)
 - [Roadmap](docs/roadmap.md)
@@ -83,7 +136,7 @@ cancellation:
 ./scripts/experiment.sh test
 ```
 
-With Go 1.26 and a C compiler (CGO enabled), `make check` runs formatting verification, vet and unit
+With Go 1.26.8, a C compiler (CGO enabled) and Python 3.10+, `make check` runs formatting verification, vet and unit
 race tests, plus shell endpoint-selection regressions. The shell checks can run
 alone with `sh scripts/test-wrapper.sh`. Without host Go:
 

@@ -227,3 +227,23 @@ units/fields are preserved; the new offline result explicitly labels percentage
 points and nullable relative percentages. No bundle, report or database migration.
 No dashboard/API expansion. See [ADR 0006](decisions/0006-offline-evidence-comparison.md)
 and [offline comparison](evidence.md#offline-comparison--result-schema-1).
+
+## Release and compatibility boundary
+
+The offline executable remains CGO-disabled/database-free; native CLI/dashboard
+builds retain embedded CGO SQLite. Dashboard assets travel with their matching
+native binary. Full experiments still enter through the source Compose wrapper;
+no native package bypasses fixed-topology ownership or cleanup.
+
+`internal/buildinfo` exposes executable version/revision/toolchain/target metadata
+through `--version`, independently of experiment provenance. The standard-library
+packager builds known files into deterministic, no-replace local candidates with
+license/instructions/checksums. No release tag/upload path exists in the script.
+`internal/contracts/testdata` freezes synthetic format-1 evidence and public JSON;
+Go API tests replay those inputs through real temporary SQLite databases.
+
+The parser now rejects simple-fold-equivalent JSON duplicates and invalid surrogate
+escapes, and validates central disk/reader-version/local descriptor consistency.
+This narrows malformed input acceptance without changing valid format 1. No schema
+or database migration, statistics algorithm, fault transport or tracing change.
+See [release matrix](release.md), [security](../SECURITY.md) and ADR 0007.
