@@ -15,8 +15,9 @@ scope.
 - Bounded HTTP measurements, explicit fault ownership, cancellation and cleanup
 - Machine-readable reports and automated tests against real network faults
 
-The dashboard, distributed tracing and SQLite history are planned; they are not
-implemented yet. No hosted service or paid infrastructure is required.
+Optional OpenTelemetry tracing and local Jaeger correlate observations across
+the real sample services. The dashboard and SQLite history remain planned.
+No hosted service or paid infrastructure is required.
 
 ## Engineering documentation
 
@@ -26,6 +27,7 @@ implemented yet. No hosted service or paid infrastructure is required.
 - [Contributor instructions](AGENTS.md)
 - [Report format and measurement limits](docs/reports.md)
 - [Validation record](docs/validation.md)
+- [Distributed tracing and failure correlation](docs/tracing.md)
 
 ## Run an experiment
 
@@ -88,11 +90,27 @@ docker run --rm --network=none --cpus=2 --memory=1g faultline-dev \
 The integration build tag is intentionally opt-in: `go test ./...` alone does
 not prove network injection. No GitHub Actions or hosted CI is configured.
 
+## Optional distributed tracing
+
+```sh
+./scripts/experiment.sh --tracing -samples 5 -latency 80ms
+./scripts/experiment.sh --tracing test
+./scripts/experiment.sh --tracing evidence > artifacts/evidence.json
+```
+
+The evidence command runs 80/400 ms faults and saves real observations, correlated
+span summaries and raw Jaeger responses. Add `--view` after `--tracing` to publish
+the query UI on a random loopback port for five minutes; stderr prints its URL.
+Ingestion and administrative endpoints stay internal. Default experiments start
+no Jaeger service and create no SDK provider. See [tracing](docs/tracing.md) for
+exact viewing commands, bounded export, interpretation, and overhead measurement.
+
 ## Safety and cleanup
 
 Only the checked-in sample topology is supported; arbitrary target URLs are
 not accepted. Each invocation gets a unique Compose project and internal network.
-No host ports are published. Containers do not receive the Docker socket, host
+No host ports are published by default; explicit `--view` publishes only the
+loopback Jaeger query/UI port. Containers do not receive the Docker socket, host
 networking or elevated privileges. Runtime services use non-root users, read-only
 filesystems, dropped capabilities and CPU/memory/process limits.
 
