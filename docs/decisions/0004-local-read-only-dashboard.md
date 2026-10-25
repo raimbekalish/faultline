@@ -46,3 +46,8 @@ binding without a container port-forwarding exception. No dashboard container,
 socket mount or host networking is needed. Node is needed to build, not serve.
 There is no live push/polling or persistent browser storage of reports. Retention,
 arbitrary targets, fault execution and authentication remain out of scope.
+
+Primary references: [React TypeScript guidance](https://react.dev/learn/typescript),
+[Vite toolchain requirements](https://vite.dev/guide/), and
+[Go HTTP server documentation](https://pkg.go.dev/net/http). Exact npm versions
+and transitive integrity hashes are pinned in `web/package-lock.json`.

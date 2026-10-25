@@ -37,8 +37,21 @@ Per-request checkpoints, backup/export/retention and automatic crash-state
 resolution remain future work. User-owned application targets require a separate
 reviewed allowlist/ownership design; this milestone keeps only the fixed sample.
 
-## 4 — Dashboard and broader reliability scenarios
+## 4A — Local reliability dashboard
 
-A React/TypeScript UI over a stable local API, additional fault types, controlled
-concurrent traffic, repeated comparisons and documented benchmark methodology.
+- [x] Versioned, protected loopback API using validated SQLite history
+- [x] Snapshot cursor pagination, filters/search and recorded-status counts
+- [x] React overview/history/detail/comparison and raw-observation inspection
+- [x] Explicit partial/unfinished/missing-telemetry states and zero-based charts
+- [x] Component, API, production-build and actual-data Chrome verification
+- [x] Existing fault/tracing, persistence and recovery regressions
+
+The dashboard is read-only. Portable evidence bundles and recorded environment
+provenance are recommended next. Browser execution requires a separate reviewed
+ownership/cancellation/security design.
+
+## Later — Broader reliability scenarios
+
+Additional fault types, controlled concurrent traffic, repeated comparisons and
+documented benchmark methodology.
 Choose each feature from measured user needs. CI requires owner approval.
