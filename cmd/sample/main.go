@@ -14,6 +14,7 @@ import (
 
 	"github.com/raimbekalish/faultline/internal/localhttp"
 	"github.com/raimbekalish/faultline/internal/sample"
+	"github.com/raimbekalish/faultline/internal/telemetry"
 )
 
 func main() {
@@ -33,7 +34,18 @@ func main() {
 		}
 		return
 	}
-	handler, err := sample.Handler(*role, client)
+	tracing, err := telemetry.NewFromMode(context.Background(), "faultline-"+*role, os.Getenv("FAULTLINE_TRACING"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), telemetry.ShutdownTimeout)
+		defer cancel()
+		if stats := tracing.Shutdown(ctx); stats != nil && (stats.ShutdownError != "" || stats.ExportFailures > 0) {
+			fmt.Fprintln(os.Stderr, "telemetry export incomplete")
+		}
+	}()
+	handler, err := sample.Handler(*role, client, tracing)
 	if err != nil {
 		log.Fatal(err)
 	}

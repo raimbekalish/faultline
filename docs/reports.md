@@ -16,6 +16,7 @@ local file; build/progress messages use stderr. Reports are ignored by Git.
 | `fault_vs_baseline` | Mean/p95 latency deltas (ms), failure-rate delta |
 | `cleanup_complete` | Owned proxy deletion was acknowledged, or proxy was already absent |
 | `error` | Original and cleanup errors when applicable |
+| `telemetry` | Optional runner-only export counters and shutdown outcome; absent when disabled |
 
 Each sample stores `duration_ms`, HTTP `status` (0 when no response was received),
 and an optional `error`. Any non-2xx status, transport error, deadline or oversized
@@ -48,3 +49,30 @@ dependency's latency; a 400 ms toxic produces roughly a 250 ms frontend response
 not a completed 400 ms dependency call. Zero baseline failures is a precondition
 for injection. A fault is allowed to cause failures; recovery failures invalidate
 the run. Future repeated trials and concurrent load need a separate methodology.
+
+## Optional trace correlation (additive schema-1 extension)
+
+With `--tracing`, samples also contain `trace_id` and `span_id` identifying the
+runner's root HTTP client span. Without tracing those keys and `telemetry` are
+omitted, preserving the original JSON shape. Existing fields and their units
+retain their meaning; consumers should tolerate additive optional fields.
+
+Span IDs are correlation handles, not proof that Jaeger stored the trace. Export
+can fail or drop spans. `telemetry.exported_spans` and `export_failures` describe
+only the runner and acknowledged exporter batches, not service delivery or queue
+drops. Telemetry shutdown failure does not change the experiment's status or
+fault cleanup result. The engine always cleans up before export shutdown starts.
+
+The `evidence` command emits a separate schema-1 diagnostic envelope containing
+two ordinary reports (80/400 ms latency), retrieved trace summaries and raw Jaeger
+responses. `complete` requires one observed trace snapshot with four unique,
+valid nonzero span IDs, the expected service/kind/operation roles, one runner
+root, and the exact runner-client → frontend-server → frontend-client →
+dependency-server parent chain. Every child must have one same-trace `CHILD_OF`
+reference; ambiguous, foreign, or unsupported references are incomplete. Separate
+snapshots are never joined and duplicate spans are never silently deduplicated.
+Integration tests additionally correlate the root ID and metadata with each
+experiment observation. HTTP errors do not by themselves make a trace incomplete.
+Partial/malformed traces remain `complete: false` and include `retrieval_error`
+when collection ends. Missing evidence has no inferred cause. JSON fields and
+schema versions are unchanged. See [tracing](tracing.md) for interpretation.

@@ -1,0 +1,41 @@
+# Minimal Jaeger v2: OTLP/HTTP in, bounded transient memory, query API/UI out.
+service:
+  extensions: [jaeger_storage, jaeger_query]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [jaeger_storage_exporter]
+  telemetry:
+    logs:
+      level: warn
+    metrics:
+      level: none
+extensions:
+  jaeger_storage:
+    backends:
+      local:
+        memory:
+          max_traces: 2000
+  jaeger_query:
+    storage:
+      traces: local
+    http:
+      endpoint: 0.0.0.0:16686
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 128
+    spike_limit_mib: 32
+  batch:
+    timeout: 100ms
+    send_batch_size: 32
+    send_batch_max_size: 64
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: local

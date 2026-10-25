@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/raimbekalish/faultline/internal/localhttp"
+	"github.com/raimbekalish/faultline/internal/telemetry"
 	"github.com/raimbekalish/faultline/internal/toxiproxy"
 )
 
@@ -89,6 +91,13 @@ func TestRealLatencyAndRecovery(t *testing.T) {
 			if r.Status != "complete" || !r.CleanupComplete {
 				t.Fatalf("incomplete: %+v", r)
 			}
+			for _, phase := range []Phase{r.Baseline, r.Fault, r.Recovery} {
+				for _, sample := range phase.Samples {
+					if sample.TraceID != "" || sample.SpanID != "" {
+						t.Fatal("disabled engine emitted trace IDs")
+					}
+				}
+			}
 			if r.Baseline.Summary.Failures != 0 || r.Recovery.Summary.Failures != 0 || r.Fault.Summary.Failures != tc.failures {
 				t.Fatalf("unexpected outcomes: %+v", r)
 			}
@@ -121,7 +130,15 @@ func TestRealCancellationCleansActiveFault(t *testing.T) {
 	}
 	done := make(chan result, 1)
 	go func() {
-		r, err := Run(ctx, Config{Samples: 100, LatencyMS: 100, RequestTimeoutMS: 1000}, "integration-test")
+		rt, initErr := telemetry.NewFromMode(ctx, "faultline-runner", os.Getenv("FAULTLINE_TRACING"))
+		if initErr != nil {
+			done <- result{err: initErr}
+			return
+		}
+		r, err := RunWithTelemetry(ctx, Config{Samples: 100, LatencyMS: 100, RequestTimeoutMS: 1000}, "integration-test", rt)
+		shutdown, cancel := context.WithTimeout(context.Background(), telemetry.ShutdownTimeout)
+		r.Telemetry = rt.Shutdown(shutdown)
+		cancel()
 		done <- result{r, err}
 	}()
 	deadline := time.After(10 * time.Second)

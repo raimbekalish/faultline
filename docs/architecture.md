@@ -9,7 +9,7 @@ CLI / engine --> frontend --> Toxiproxy data port --> dependency
 ```
 
 One Compose project owns the sample stack and its private network. No service
-ports are published to the host. The runner and sample services use explicit
+ports are published to the host by default. The runner and sample services use explicit
 service names; the first release does not accept arbitrary network targets.
 
 The Go engine runs baseline, latency and recovery phases in sequence. It owns
@@ -17,12 +17,14 @@ one uniquely named proxy and fault, measures bounded serial HTTP traffic, and
 removes its resources on success, error or cooperative cancellation. A shell
 entrypoint tears down only its own Compose project as a second cleanup layer.
 
-Planned code boundaries:
+Code boundaries:
 
 - `cmd/faultline`: CLI parsing, signal handling and report output
 - `internal/experiment`: lifecycle, measurement and comparison
 - `internal/toxiproxy`: bounded control API client
 - `internal/sample`: HTTP sample services
+- `internal/telemetry`: explicit OpenTelemetry providers, safe propagation, HTTP spans
+- `internal/tracequery`: bounded retrieval from the pinned local Jaeger query API
 - `deploy/`: sample topology
 - `scripts/`: reproducible developer entrypoints
 
@@ -78,3 +80,39 @@ no Docker access. Compose startup has a 30-second readiness wait; builds/downloa
 are outside the engine deadline. The shell trap handles ordinary failures and
 signals, but cannot guarantee cleanup after SIGKILL or daemon failure. No durable
 crash recovery or shared-server lease is claimed.
+
+## Optional tracing lifecycle
+
+`Run` retains its disabled behavior; `RunWithTelemetry` accepts an explicit SDK
+runtime. The engine records optional root trace/span IDs for each sample and
+passes validated run/phase/observation metadata. It owns no exporter shutdown.
+The CLI waits for the engine to finish proxy cleanup, then shuts down telemetry
+under a fresh two-second timeout and records runner-only export statistics.
+Telemetry loss cannot prolong an injected fault or hide a cleanup error.
+
+Known sample routes have server spans; HTTP calls have client spans ending after
+body reads. Existing request/client deadlines and response limits remain in place.
+W3C trace context and allowlisted baggage connect the four spans per observation.
+Readiness is tagged separately; health checks and Toxiproxy control operations are
+not traced. Status/error attributes distinguish HTTP failures from dependency
+client deadlines. Raw request errors are classified before recording, avoiding
+credentials and arbitrary network strings in spans. Providers are not global.
+
+The tracing overlay adds memory-only Jaeger with bounded trace storage and a
+memory limiter. It is absent by default. SDK queues, batches, attributes, events,
+export calls and shutdown waits are bounded. A full queue drops spans rather
+than blocking application traffic. The query adapter polls at most 300 trace IDs
+under one caller deadline and retains explicit missing/partial results. Its
+completeness flag validates four unique nonzero span IDs, expected service/kind/
+operation roles, exactly one runner root and all three same-trace parent edges.
+Ambiguous references and duplicate/extra spans are rejected. It never assembles
+one trace from separate query objects or polls. A corrected complete snapshot
+supersedes an earlier larger malformed response; query failures retain observed
+partial evidence. Tests also verify observation IDs and correlation metadata.
+
+An explicit `--view` overlay publishes only the query/UI endpoint to a random
+loopback port and limits the viewer lifetime to five minutes. There are no
+persistent volumes, published ingestion/admin endpoints, or external targets.
+Compose teardown includes Jaeger and uses eight seconds for graceful service
+and exporter shutdown. See [tracing](tracing.md), [reports](reports.md), and
+[ADR 0002](decisions/0002-bounded-optional-tracing.md).

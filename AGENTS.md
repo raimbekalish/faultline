@@ -36,6 +36,18 @@ over speculative interfaces or mocked product features.
 - CLI smoke: `./scripts/experiment.sh -samples 5 -latency 100ms`; capture stdout
   under ignored `artifacts/` when inspecting JSON. Keep progress on stderr.
 - Run integration tests through the wrapper, never against a shared proxy server.
+- `sh scripts/test-wrapper.sh` checks Docker endpoint precedence without a daemon.
+  `DOCKER_CONTEXT` overrides `DOCKER_HOST`; reject the endpoint actually selected.
+- Tracing: `./scripts/experiment.sh --tracing test`; default `test` must also pass
+  without Jaeger. `--tracing evidence` retains reports and real query responses.
+- Run `python3 scripts/measure-tracing-overhead.py` alone when measuring overhead.
+- Keep providers explicit, queues nonblocking/bounded, export after fault cleanup,
+  and response-body reads inside client spans. Preserve existing HTTP deadlines.
+- Do not record headers, bodies, raw URLs/errors or arbitrary baggage in spans.
+  Only validated run/phase/observation metadata may propagate. Toxiproxy has no spans.
+- Schema 1 permits documented optional fields; disabled reports omit tracing keys.
+- No published collector/admin ports. UI publication requires explicit `--view`
+  and must bind loopback, use an ephemeral port, and have a bounded lifetime.
 
 ## Git workflow
 

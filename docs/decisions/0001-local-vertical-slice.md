@@ -30,3 +30,6 @@ The initial tool cannot test arbitrary user applications. This is an intentional
 safety boundary. The architecture remains extensible through concrete lifecycle
 and transport boundaries, without premature plugin abstractions or microservices.
 Small serial samples show latency and timeout effects, not production throughput.
+
+Milestone 2 implements the deferred tracing work after the lifecycle tests passed;
+see [ADR 0002](0002-bounded-optional-tracing.md). UI and SQLite remain deferred.

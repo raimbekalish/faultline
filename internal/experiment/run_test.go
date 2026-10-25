@@ -59,7 +59,7 @@ func TestLifecycleCleanup(t *testing.T) {
 			tc.configure(f, cancel)
 			cfg := DefaultConfig()
 			cfg.Samples = 2
-			r, err := run(ctx, cfg, "test", f, s.URL)
+			r, err := run(ctx, cfg, "test", f, s.URL, nil)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("err=%v", err)
 			}
@@ -88,14 +88,14 @@ func TestLifecycleCleanup(t *testing.T) {
 func TestInvalidConfigAndCanceledParentCannotCreateProxy(t *testing.T) {
 	for _, cfg := range []Config{{}, {101, 100, 1000}, {1, 0, 1000}, {1, 5001, 1000}, {1, 100, 9}, {1, 100, 5001}} {
 		f := &fakeControl{}
-		if _, err := run(context.Background(), cfg, "test", f, ""); err == nil || f.created {
+		if _, err := run(context.Background(), cfg, "test", f, "", nil); err == nil || f.created {
 			t.Fatalf("accepted config: %+v", cfg)
 		}
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	f := &fakeControl{}
-	if _, err := run(ctx, DefaultConfig(), "test", f, ""); !errors.Is(err, context.Canceled) || f.created {
+	if _, err := run(ctx, DefaultConfig(), "test", f, "", nil); !errors.Is(err, context.Canceled) || f.created {
 		t.Fatal("canceled run created proxy")
 	}
 }
@@ -110,7 +110,7 @@ func TestBaselineFailurePreventsInjection(t *testing.T) {
 	}))
 	defer s.Close()
 	f := &fakeControl{}
-	r, err := run(context.Background(), DefaultConfig(), "test", f, s.URL)
+	r, err := run(context.Background(), DefaultConfig(), "test", f, s.URL, nil)
 	if err == nil || f.added || !f.deleted || r.Baseline.Summary.Failures != 10 {
 		t.Fatalf("report=%+v control=%+v err=%v", r, f, err)
 	}

@@ -16,9 +16,12 @@
 
 ## 2 — Explain failures with traces
 
-Instrument the sample with OpenTelemetry. Correlate experiment/run IDs with
-traces, inspect dependency spans, and add an optional local Jaeger profile.
-Keep collector overhead measurable and optional.
+- [x] Official OpenTelemetry SDK; W3C propagation and meaningful HTTP spans
+- [x] Observation trace/span IDs plus validated run/phase correlation
+- [x] Optional bounded, memory-only Jaeger with internal ingestion
+- [x] Real export/retrieval and parent/status tests for latency, timeout and recovery
+- [x] Disabled experiments and cancellation/cleanup/export-failure regressions
+- [x] Record repeated enabled/disabled overhead measurements and loopback UI verification
 
 ## 3 — Reproducible experiment definitions and history
 
