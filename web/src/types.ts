@@ -29,7 +29,23 @@ export interface Phase {
   samples: Sample[] | null;
   summary: Summary;
 }
+export interface Environment {
+  schema_version: number;
+  spec_hash: string;
+  faultline_revision: string;
+  go_version: string;
+  runner_os: string;
+  runner_arch: string;
+  measurement_methodology: string;
+  tracing_enabled: boolean;
+  container_runtime?: {
+    schema_version: number;
+    docker_server_version: string;
+    images: { component: string; image_id: string; reference?: string }[];
+  };
+}
 export interface Report {
+  environment?: Environment;
   schema_version: number;
   status: Status;
   run_id: string;
