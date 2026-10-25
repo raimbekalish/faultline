@@ -7,6 +7,7 @@ export default defineConfig({
     channel: "chrome",
     screenshot: "only-on-failure",
   },
-  outputDir: "../artifacts/browser-results",
+  outputDir:
+    process.env.FAULTLINE_BROWSER_OUTPUT || "../artifacts/browser-results",
   reporter: [["list"]],
 });

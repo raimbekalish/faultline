@@ -1,7 +1,11 @@
+import { join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import { ms, deltaMS, deltaPP } from "../src/format";
 import type { Page, Entry, Comparison } from "../src/types";
+
+const screenshot = (name: string) =>
+  join(process.env.FAULTLINE_SCREENSHOT_DIR || "../artifacts", name);
 
 test("actual persisted evidence: overview, filtering, raw traces, comparison and responsive navigation", async ({
   page,
@@ -60,7 +64,7 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
     Math.min(6, data.items.length),
   );
   await page.screenshot({
-    path: "../artifacts/m4-overview.png",
+    path: screenshot("m4-overview.png"),
     fullPage: true,
   });
   await page
@@ -89,7 +93,7 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
       exact: false,
     }),
   ).toBeVisible();
-  await page.screenshot({ path: "../artifacts/m4-detail.png", fullPage: true });
+  await page.screenshot({ path: screenshot("m4-detail.png"), fullPage: true });
   const exported = await request.get(`/api/v1/runs/${right.id}/bundle`);
   expect(exported.status()).toBe(200);
   expect(exported.headers()["content-type"]).toBe("application/zip");
@@ -136,7 +140,7 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
     }),
   ).toBeVisible();
   await page.screenshot({
-    path: "../artifacts/m4-comparison.png",
+    path: screenshot("m4-comparison.png"),
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -149,7 +153,7 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.screenshot({ path: "../artifacts/m4-mobile.png", fullPage: true });
+  await page.screenshot({ path: screenshot("m4-mobile.png"), fullPage: true });
   await page.goto(`/#/runs/${right.id}`);
   await expect(
     page.getByRole("heading", { name: "Baseline → fault → recovery" }),
@@ -160,7 +164,7 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
     ),
   ).toBe(true);
   await page.screenshot({
-    path: "../artifacts/m4-mobile-detail.png",
+    path: screenshot("m4-mobile-detail.png"),
     fullPage: true,
   });
   await page.keyboard.press("ControlOrMeta+Home");
