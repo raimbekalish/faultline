@@ -43,7 +43,7 @@ Verify actual static execution and race tests rather than assuming compatibility
 ## Storage and durability
 
 Use SQLite `database/sql` with one connection per store, a 500 ms busy timeout,
-foreign keys on, immediate write transactions, DELETE rollback journaling and
+foreign keys on, immediate execution-write transactions, DELETE rollback journaling and
 `synchronous=EXTRA`. The extra directory sync favors durability over throughput;
 only intent and finalization commits are needed per run. Keep the database on a
 local filesystem. Do not disable journaling, use shared cache, or hold SQL locks
@@ -80,3 +80,8 @@ References: [mattn CGO/build requirements](https://github.com/mattn/go-sqlite3),
 [modernc platforms and dependencies](https://pkg.go.dev/modernc.org/sqlite),
 [SQLite synchronous/journal pragmas](https://sqlite.org/pragma.html),
 [SQLite atomic commit and recovery](https://sqlite.org/atomiccommit.html).
+
+Query-only opens now use deferred transactions so dashboard read snapshots do not
+reserve SQLite's writer lock. They still permit hot-journal recovery. This does
+not change execution write transactions or remove DELETE-journal reader/writer
+contention; queries remain bounded. See ADR 0004.

@@ -397,3 +397,123 @@ apply: no power-cut, disk-full, physical I/O or cross-platform testing was added
 Jaeger remains transient. No cleanup guarantee after SIGKILL/daemon failure is
 introduced. No CI, new service, product feature, new PR or merge is part of this
 review.
+
+# Milestone 4A validation — local reliability dashboard
+
+Date: 2026-10-24 (America/Los_Angeles). Native macOS/ARM64 and Docker Linux/ARM64;
+Go 1.26.8, Node 24.11.0, Chrome 156.0.8078.47, Playwright 1.64.1.
+
+## Approved PR #2 merge
+
+Immediately before merging, GitHub reported PR #2 OPEN and MERGEABLE at exactly
+`602817280c7004711a66f8328a9a379f99235503`. Its base and remote main still matched
+`73e2430f7ebd356b641a9f8d97a96579c11b3b32`. A regular merge with a required head
+SHA produced `ed0552ca15d64a565142d670c9eea78960bbc8db`. GitHub reported MERGED.
+The new main has the old main and approved feature head as its two parents.
+All six individual commits remain reachable with the owner's verified noreply
+attribution. Local main fast-forwarded cleanly before creating
+`codex/reliability-dashboard`. No squash, rebase, force-push or author-date edits.
+
+## Implemented boundary and integrity checks
+
+The dashboard serves a static React/TypeScript/Vite build plus a GET-only `/api/v1`
+API from one native loopback origin. No Go dependency, database migration, engine,
+fault transport, tracing instrumentation or legacy command/report change was
+needed. Typed API responses reuse history validation and comparison calculations.
+Query connections now defer transaction begin without reserving the writer lock;
+execution connections retain immediate writes and existing cleanup ordering.
+
+Real temporary SQLite API/history tests passed for empty data, malformed/missing
+IDs, corrupt summaries, unavailable stores, unknown/duplicate queries, cursor
+ordering/ties, pagination, status/search filters, bounded limits, comparisons and
+partial/canceled/unfinished records. SQL search injection strings remain literal.
+Host/Origin/method/CSP and static-directory refusal tests passed. A real native
+listener served HTTP then expired at its configured lifetime, with connection
+refusal after shutdown. SQLite recovery/write-failure tests remain intact.
+
+## Final actual checks
+
+- `make check` passed natively using a checksum-verified repository-local Go SDK:
+  shell checks, Go formatting, vet and full unit race tests. `go mod verify` passed.
+- `make frontend-check` passed: clean `npm ci --ignore-scripts`, Prettier checks,
+  eight Vitest tests in two files, strict TypeScript and production Vite build.
+  Component cases include loading/error/empty, canceled partial reports, unfinished
+  intents, missing trace references, cursor navigation, filters and numeric units.
+  The final JS bundle was 249.56 kB (76.80 kB gzip); CSS 19.73 kB (5.44 kB gzip).
+  These are bundle sizes, not measured browser performance/overhead claims.
+- `./scripts/experiment.sh test` and `./scripts/experiment.sh --tracing test`
+  both passed with race tests and package serialization. Real CLI/history
+  roundtrips, repeated persisted experiments, active-fault cancellation,
+  latency/recovery, timeout classification, owned-proxy cleanup, exporter-loss
+  cleanup and real trace export/query correlation passed in their applicable
+  mode. Both suites passed real hot-journal recovery. Only mode-specific cases
+  and the parent-process crash fixture skipped.
+- `FAULTLINE_TEST_URL=http://127.0.0.1:53446 npm --prefix web run test:browser`
+  passed against the production Go server and newly generated experiment data.
+  The single end-to-end Chrome test uses no intercepted/fake backend responses.
+  It verifies API cursor pages, history filtering, exact displayed measurements
+  and comparison deltas, keyboard point selection and skip navigation, actual
+  tracing-enabled IDs, actual tracing-disabled missing IDs, and 390 px mobile
+  overview/detail page overflow. It asserted no browser errors or external
+  requests. Desktop screenshots used 1440 px width.
+- The documented startup script completed a lockfile install/build and served
+  the real history DB. A final `-ttl 1s` startup exited successfully; both that
+  listener and the earlier browser-test server were confirmed closed. SIGTERM
+  stopped the earlier owned server. No native dashboard process remains.
+- List/detail/compare requests against all three fresh records left the SQLite
+  file byte-for-byte unchanged (SHA-256 comparison); file mode remained 0600.
+  The initial visual inspection also opened the prior Milestone 3 database.
+  No permanent Jaeger availability is assumed by any view.
+
+## Real data shown in the browser
+
+Three new experiments ran through the existing isolated wrapper, into ignored
+`artifacts/m4-history/history.sqlite`. All completed and confirmed fault cleanup.
+
+| Injected latency / tracing | Samples per phase | Baseline mean | Fault mean | Recovery mean | Fault failures |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 80 ms / disabled | 10 | 0.63 ms | 89.71 ms | 0.49 ms | 0/10 |
+| 400 ms / enabled | 5 | 0.82 ms | 253.55 ms | 0.43 ms | 5/5 (504) |
+| 100 ms / disabled, legacy flags | 5 | 0.61 ms | 101.19 ms | 0.25 ms | 0/5 |
+
+These are individual runs with different configurations, not controlled tracing
+benchmarks or statistical significance evidence. The actual comparison of 80 ms
+(left) and 400 ms (right) showed +163.84 ms fault mean, +134.47 ms fault p95 and
++100 percentage points of fault failures, with the differing specs visible.
+
+Actual browser screenshots are local ignored artifacts:
+`m4-overview.png`, `m4-detail.png`, `m4-comparison.png`, `m4-mobile.png` and
+`m4-mobile-detail.png`. Logs include `m4-checks-final.log`, `m4-frontend-final.log`,
+`m4-browser-final.log`, `m4-disabled-final.log`, `m4-tracing-final.log` and
+`m4-startup-final.log`. Fresh original reports are `m4-run-{80,400,100}.json`.
+Screenshots, reports, databases, toolchains and caches are not committed.
+
+## Failures found and resolved
+
+Type checking caught missing Vite CSS declarations and an icon import during the
+view-module split; both were fixed. The initial contention regression relied on a
+query transaction reserving a writer lock. After readers became deferred, that
+test failed as expected; it now explicitly acquires a real SQLite write lock and
+still proves bounded failure preserves the intent. The first full native `./...`
+run also included the downloaded SDK's compiler test corpus under `artifacts/`.
+Moving that SDK under a hidden artifacts directory excluded it from package
+traversal; the full project checks then passed. The initial real disabled suite
+failed on the old lock fixture; both complete real suites were rerun and passed.
+No failing check remains. Negative exporter/SQLite diagnostics are intentional.
+
+## Resources and limits
+
+All wrapper-created containers, networks and disposable image tags were removed.
+Docker inventories confirmed no Faultline containers, networks, image tags or
+volumes remained. Cleanup tests preserved unrelated sentinel proxies. No global
+prune/reset, Docker socket mount, published collector endpoint, CI or paid service
+was used. Shared base images/build caches and ignored local evidence remain.
+
+The native UI is IPv4-loopback only and trusts the local user/build assets. It is
+not an authentication boundary against other local programs. Global counts describe
+metadata and do not validate off-page report bodies. Large histories may hit the
+query deadline; no large-history benchmark, full accessibility audit, Firefox/
+Safari, Windows or Linux/AMD64 build/browser matrix was run. Native macOS/ARM64
+and Docker Linux/ARM64 race checks passed. Existing power-loss/disk-full durability
+limits remain. Traces remain transient. The dashboard is read-only; portable
+reports and recorded environment provenance are recommended next.

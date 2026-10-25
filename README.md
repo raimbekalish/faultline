@@ -17,7 +17,8 @@ scope.
 
 Optional OpenTelemetry tracing and local Jaeger correlate observations across
 the real sample services. Versioned JSON specifications and local SQLite history
-support repeatable runs, inspection and comparisons. The dashboard remains planned.
+support repeatable runs, inspection and comparisons. A read-only local dashboard
+visualizes persisted evidence through a protected loopback API.
 No hosted service or paid infrastructure is required.
 
 ## Engineering documentation
@@ -30,6 +31,7 @@ No hosted service or paid infrastructure is required.
 - [Validation record](docs/validation.md)
 - [Distributed tracing and failure correlation](docs/tracing.md)
 - [Specifications, persistent history and recovery](docs/history.md)
+- [Local dashboard, API and browser verification](docs/dashboard.md)
 
 ## Run an experiment
 
@@ -114,6 +116,26 @@ report after fault cleanup. A failed final write leaves an unfinished intent and
 returns an error. Unfinished entries do not imply a known failure cause. Trace
 IDs survive as references, while transient Jaeger data does not. See
 [history commands and durability limits](docs/history.md) before relying on storage.
+
+## Local reliability dashboard
+
+Inspect actual SQLite history: recorded-status counts, searchable runs,
+baseline/fault/recovery charts, raw observations, historical trace references and
+comparisons of completed runs. Experiment services and Jaeger can be stopped.
+
+With Node 22.12+, Go 1.26+ and a C compiler installed:
+
+```sh
+# Generate history if needed; its isolated sample stack tears down afterward:
+./scripts/experiment.sh run -spec examples/latency.json
+
+# Build and serve UI + API on one ephemeral loopback origin:
+./scripts/dashboard.sh -db artifacts/faultline.sqlite
+```
+
+Open the printed `http://127.0.0.1:…` URL. Ctrl-C stops the server; it also expires
+after one hour by default. The dashboard has no fault execution or Docker access.
+See [dashboard commands, API and limitations](docs/dashboard.md).
 
 ## Optional distributed tracing
 

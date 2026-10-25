@@ -9,3 +9,4 @@ coverage.out
 *.sqlite-*
 *.db
 *.db-*
+web

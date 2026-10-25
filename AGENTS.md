@@ -46,7 +46,7 @@ over speculative interfaces or mocked product features.
 - Do not record headers, bodies, raw URLs/errors or arbitrary baggage in spans.
   Only validated run/phase/observation metadata may propagate. Toxiproxy has no spans.
 - Schema 1 permits documented optional fields; disabled reports omit tracing keys.
-- No published collector/admin ports. UI publication requires explicit `--view`
+- No published collector/admin ports. Collector UI publication requires explicit `--view`
   and must bind loopback, use an ephemeral port, and have a bounded lifetime.
 - History uses CGO SQLite; native builds require a C compiler. Keep the CLI static
   in Docker and sample services CGO-disabled. Do not use a system SQLite override.
@@ -59,6 +59,18 @@ over speculative interfaces or mocked product features.
   process-exit recovery, not SQL mocks. Keep integration packages serialized.
 - History stores trace references, not durable Jaeger data. Comparison is
   descriptive; matching spec hashes do not establish identical environments.
+- Dashboard: `make frontend-check` checks formatting, component tests and build.
+  `./scripts/dashboard.sh -db PATH` serves UI/API on a bounded native loopback
+  listener; Go, CGO/C and Node are build prerequisites. Never implicitly add CORS,
+  remote bindings, browser fault execution or external fonts/assets.
+- Keep dashboard queries in history and reuse record validation. Validate each
+  returned record and show partial/unavailable evidence explicitly. Global counts
+  describe status metadata, not integrity of off-page report payloads.
+- Run `FAULTLINE_TEST_URL=http://127.0.0.1:PORT npm --prefix web run test:browser`
+  against real persisted 80 ms and 400 ms experiments. Component fixtures must
+  never supply real application metrics or replace this browser integration test.
+- Query connections use deferred transactions without writer reservations;
+  execution stores retain immediate writes. Preserve hot-journal recovery.
 
 ## Git workflow
 

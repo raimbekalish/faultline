@@ -3,11 +3,13 @@ package history
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/raimbekalish/faultline/internal/experiment"
 	"github.com/raimbekalish/faultline/internal/spec"
 )
+
+var ErrNotComparable = errors.New("comparison requires two completed runs with successful cleanup")
 
 type PhaseComparison struct {
 	Phase string                `json:"phase"`
@@ -35,7 +37,7 @@ func (s *Store) Compare(ctx context.Context, left, right string) (Comparison, er
 		return Comparison{}, err
 	}
 	if a.Status != "complete" || b.Status != "complete" {
-		return Comparison{}, fmt.Errorf("comparison requires two completed runs with successful cleanup")
+		return Comparison{}, ErrNotComparable
 	}
 	var ar, br experiment.Report
 	if err := json.Unmarshal(a.Report, &ar); err != nil {

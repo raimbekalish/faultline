@@ -293,6 +293,11 @@ func TestBusyWriteIsBounded(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	// Query connections use deferred transactions. Acquire a real writer lock
+	// explicitly instead of relying on BeginTx to reserve one for a reader.
+	if _, err := tx.ExecContext(ctx, "UPDATE runs SET status=status WHERE id=?", id); err != nil {
+		t.Fatal(err)
+	}
 	deadline, cancel := context.WithTimeout(ctx, 30*time.Millisecond)
 	defer cancel()
 	start := time.Now()

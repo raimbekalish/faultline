@@ -162,3 +162,35 @@ favor durability over throughput. A subprocess test exercises real hot-journal
 recovery. Filesystem/VM/hardware failures remain outside that guarantee. Details,
 commands and comparison semantics are in [history](history.md) and
 [ADR 0003](decisions/0003-specifications-and-sqlite-history.md).
+
+## Local reliability dashboard
+
+```text
+React + TypeScript + SVG (static Vite build)
+                 │ same-origin GET /api/v1
+native Go HTTP server (127.0.0.1, bounded lifetime)
+                 │
+history Browse / Get / Compare → existing SQLite database
+```
+
+`cmd/dashboard` owns listener/signal/lifetime shutdown; `internal/dashboard`
+owns transport validation and typed JSON projections. `internal/history` owns
+snapshot pagination, filters, counts, comparisons and record integrity. The UI
+renders validated summaries and observations rather than recalculating experiment
+statistics. Views live under `web/src/views`, with shared request/format/chart
+components. No router, UI kit or chart runtime is required beyond React/React DOM.
+
+Lists validate fetched records before projecting summaries; detail retains the
+original report, including partial samples and optional trace IDs. Global counts
+describe status metadata, not integrity of unreturned payloads. Query connections
+use deferred transactions; execution retains immediate writes. DELETE journal read
+snapshots can briefly contend with writers; three-second deadlines bound queries.
+Hot-journal recovery can write to disk even though the API offers no mutations.
+
+Exact Host/Origin validation, cross-site fetch rejection, GET-only routes,
+concurrency/header/time limits and a restrictive CSP protect the loopback server.
+Built assets and API share one origin. There are no Docker ports/socket mounts,
+third-party fonts/requests, collector calls or experiment execution routes. The
+one-hour default lifetime is explicitly bounded to eight hours. Shutdown waits for
+requests before closing SQLite. See [dashboard](dashboard.md) and
+[ADR 0004](decisions/0004-local-read-only-dashboard.md).
