@@ -57,6 +57,12 @@ func open(ctx context.Context, path string, create bool) (*Store, error) {
 	}
 	u := url.URL{Scheme: "file", Path: abs}
 	q := url.Values{"mode": {"rw"}, "_busy_timeout": {"500"}, "_foreign_keys": {"on"}, "_synchronous": {"EXTRA"}, "_txlock": {"immediate"}}
+	// Query-only callers still need hot-journal recovery, but must not reserve
+	// SQLite's writer lock merely by opening a read snapshot. Execution stores
+	// retain immediate writes.
+	if !create {
+		q.Set("_txlock", "deferred")
+	}
 	u.RawQuery = q.Encode()
 	db, err := sql.Open("sqlite3", u.String())
 	if err != nil {

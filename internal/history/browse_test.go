@@ -97,3 +97,28 @@ func TestBrowseEmptyInvalidAndCanceled(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestExistingReaderDoesNotReserveWriter(t *testing.T) {
+	writer, path := newStore(t)
+	reader, err := OpenExisting(context.Background(), path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.Close()
+	tx, err := reader.db.BeginTx(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	// Before the first SELECT, a deferred read transaction holds no writer
+	// reservation. The engine's independent intent can commit normally.
+	if _, err = writer.Start(context.Background(), testSpec()); err != nil {
+		t.Fatalf("reader reserved writer lock: %v", err)
+	}
+	if err = tx.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = reader.Browse(context.Background(), Filter{Limit: 20}); err != nil {
+		t.Fatal(err)
+	}
+}
