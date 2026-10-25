@@ -13,7 +13,13 @@ while [ "$#" -gt 0 ]; do
 done
 if [ "$view" = 1 ] && [ "$tracing" != 1 ]; then echo "--view requires --tracing" >&2; exit 2; fi
 # Refuse remote Docker endpoints; experiments are local-only in this milestone.
-docker_endpoint=${DOCKER_HOST:-$(docker context inspect --format '{{.Endpoints.docker.Host}}')}
+if [ -n "${DOCKER_CONTEXT:-}" ]; then
+  docker_endpoint=$(docker context inspect "$DOCKER_CONTEXT" --format '{{.Endpoints.docker.Host}}')
+elif [ -n "${DOCKER_HOST:-}" ]; then
+  docker_endpoint=$DOCKER_HOST
+else
+  docker_endpoint=$(docker context inspect --format '{{.Endpoints.docker.Host}}')
+fi
 case "$docker_endpoint" in
   unix://*) ;;
   *) echo "Faultline requires a local Docker Unix socket; remote endpoints are refused." >&2; exit 2 ;;

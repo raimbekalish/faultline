@@ -79,7 +79,8 @@ cancellation:
 ```
 
 With Go 1.26 installed, `make check` runs formatting verification, vet and unit
-race tests. Without host Go:
+race tests, plus shell endpoint-selection regressions. The shell checks can run
+alone with `sh scripts/test-wrapper.sh`. Without host Go:
 
 ```sh
 docker build --target dev -t faultline-dev .

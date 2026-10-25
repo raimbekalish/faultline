@@ -139,6 +139,11 @@ without establishing statistical significance or universal overhead bounds.
    network. Docker returned `invalid IP:0`. Added an explicit Jaeger-only viewer
    bridge and a fail-fast port guard. Actual loopback UI/query retrieval and
    signal teardown then passed. The failed check also completed teardown.
+3. Final safety review found that the inherited preflight preferred `DOCKER_HOST`
+   even when `DOCKER_CONTEXT` selected another endpoint. Updated it to follow
+   Docker's precedence. `sh scripts/test-wrapper.sh` passed four shell cases,
+   including a remote context with a local host variable and the reverse. These
+   guard tests use a CLI stub and contact no daemon; fault tests remain real.
 
 No hosted CI, cross-platform matrix, long soak, production workload, statistically
 controlled benchmark, or SIGKILL/daemon-crash trace durability test was run.
