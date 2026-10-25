@@ -1,4 +1,4 @@
-.PHONY: test integration experiment check frontend-check dashboard
+.PHONY: test integration experiment check frontend-check dashboard cli offline
 
 test:
 	go test -race -count=1 ./...
@@ -24,3 +24,11 @@ frontend-check:
 
 dashboard:
 	./scripts/dashboard.sh
+
+cli:
+	mkdir -p artifacts/bin
+	CGO_ENABLED=1 go build -trimpath -o artifacts/bin/faultline ./cmd/faultline
+
+offline:
+	mkdir -p artifacts/bin
+	CGO_ENABLED=0 go build -trimpath -o artifacts/bin/faultline-bundle ./cmd/faultline-bundle

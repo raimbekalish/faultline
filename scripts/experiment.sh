@@ -11,6 +11,10 @@ while [ "$#" -gt 0 ]; do
     *) break ;;
   esac
 done
+if [ "${1:-}" = bundle ]; then
+  echo 'Portable bundle commands run natively: make cli offline, then artifacts/bin/faultline bundle ...' >&2
+  exit 2
+fi
 if [ "$view" = 1 ] && [ "$tracing" != 1 ]; then echo "--view requires --tracing" >&2; exit 2; fi
 # Refuse remote Docker endpoints; experiments are local-only in this milestone.
 if [ -n "${DOCKER_CONTEXT:-}" ]; then

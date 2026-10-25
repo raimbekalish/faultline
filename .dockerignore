@@ -10,3 +10,6 @@ coverage.out
 *.db
 *.db-*
 web
+
+**/*.flb
+**/.faultline-evidence-*.tmp
