@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/raimbekalish/faultline/internal/localhttp"
+	"github.com/raimbekalish/faultline/internal/provenance"
 	"github.com/raimbekalish/faultline/internal/telemetry"
 	"github.com/raimbekalish/faultline/internal/toxiproxy"
 )
@@ -48,23 +49,24 @@ type Comparison struct {
 }
 
 type Report struct {
-	SchemaVersion    int              `json:"schema_version"`
-	RunID            string           `json:"run_id"`
-	Status           string           `json:"status"`
-	StartedAt        time.Time        `json:"started_at"`
-	FinishedAt       time.Time        `json:"finished_at"`
-	Config           Config           `json:"config"`
-	Target           string           `json:"target"`
-	GoVersion        string           `json:"go_version"`
-	Revision         string           `json:"revision"`
-	ToxiproxyVersion string           `json:"toxiproxy_version"`
-	Baseline         Phase            `json:"baseline"`
-	Fault            Phase            `json:"fault"`
-	Recovery         Phase            `json:"recovery"`
-	Comparison       Comparison       `json:"fault_vs_baseline"`
-	CleanupComplete  bool             `json:"cleanup_complete"`
-	Error            string           `json:"error,omitempty"`
-	Telemetry        *telemetry.Stats `json:"telemetry,omitempty"`
+	Environment      *provenance.Record `json:"environment,omitempty"`
+	SchemaVersion    int                `json:"schema_version"`
+	RunID            string             `json:"run_id"`
+	Status           string             `json:"status"`
+	StartedAt        time.Time          `json:"started_at"`
+	FinishedAt       time.Time          `json:"finished_at"`
+	Config           Config             `json:"config"`
+	Target           string             `json:"target"`
+	GoVersion        string             `json:"go_version"`
+	Revision         string             `json:"revision"`
+	ToxiproxyVersion string             `json:"toxiproxy_version"`
+	Baseline         Phase              `json:"baseline"`
+	Fault            Phase              `json:"fault"`
+	Recovery         Phase              `json:"recovery"`
+	Comparison       Comparison         `json:"fault_vs_baseline"`
+	CleanupComplete  bool               `json:"cleanup_complete"`
+	Error            string             `json:"error,omitempty"`
+	Telemetry        *telemetry.Stats   `json:"telemetry,omitempty"`
 }
 
 type control interface {

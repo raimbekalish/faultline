@@ -1,10 +1,12 @@
 package dashboard
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/raimbekalish/faultline/internal/bundle"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -116,7 +118,7 @@ func TestAPIRejectsCorruptHistory(t *testing.T) {
 	if _, err = db.Exec("UPDATE runs SET report_json=json_set(report_json,'$.fault.summary.mean_ms',2) WHERE id=?", id); err != nil {
 		t.Fatal(err)
 	}
-	for _, route := range []string{"/api/v1/runs", "/api/v1/runs/" + id, "/api/v1/compare?left=" + id + "&right=" + id} {
+	for _, route := range []string{"/api/v1/runs", "/api/v1/runs/" + id, "/api/v1/runs/" + id + "/bundle", "/api/v1/compare?left=" + id + "&right=" + id} {
 		w := request(h, route)
 		if w.Code != 500 || !strings.Contains(w.Body.String(), `"code":"corrupt_history"`) || len(w.Body.Bytes()) > 512 {
 			t.Fatalf("%d %s", w.Code, w.Body)
@@ -153,5 +155,31 @@ func TestUnavailableQueryReturnsBoundedError(t *testing.T) {
 	w := request(h, "/api/v1/runs")
 	if w.Code != 503 || len(w.Body.Bytes()) > 512 || !strings.Contains(w.Body.String(), `"code":"history_unavailable"`) {
 		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+}
+
+func TestBundleDownloadUsesValidatedHistoryAndOriginGuards(t *testing.T) {
+	s, h, _ := setup(t)
+	id := put(t, s, "complete", 1)
+	running := put(t, s, "running", 2)
+	w := request(h, "/api/v1/runs/"+id+"/bundle")
+	if w.Code != 200 || w.Header().Get("Content-Type") != "application/zip" || !strings.Contains(w.Header().Get("Content-Disposition"), id+".flb") {
+		t.Fatal(w.Code, w.Header())
+	}
+	data, err := bundle.Read(context.Background(), bytes.NewReader(w.Body.Bytes()))
+	if err != nil || data.History.ID != id {
+		t.Fatal(data, err)
+	}
+	for route, want := range map[string]int{"/api/v1/runs/" + running + "/bundle": 409, "/api/v1/runs/bad/bundle": 400, "/api/v1/runs/" + id + "/bundle?path=/tmp/private": 400, "/api/v1/runs/history-00000000000000000000000000000000/bundle": 404} {
+		if got := request(h, route); got.Code != want {
+			t.Fatal(route, got.Code)
+		}
+	}
+	r := httptest.NewRequest("GET", "http://127.0.0.1:4000/api/v1/runs/"+id+"/bundle", nil)
+	r.Header.Set("Origin", "http://evil.invalid")
+	blocked := httptest.NewRecorder()
+	h.ServeHTTP(blocked, r)
+	if blocked.Code != 403 {
+		t.Fatal(blocked.Code)
 	}
 }

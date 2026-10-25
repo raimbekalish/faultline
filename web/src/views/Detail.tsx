@@ -74,7 +74,20 @@ export default function Detail({ id }: { id: string }) {
         eyebrow="Experiment evidence"
         title={e ? `Run ${shortID(e.run_id ?? e.id)}` : "Experiment detail"}
       >
-        {e && <Badge status={e.status} />}
+        {e && (
+          <div className="detail-actions">
+            <Badge status={e.status} />
+            {e.report && (
+              <a
+                className="button secondary"
+                href={`/api/v1/runs/${e.id}/bundle`}
+                download
+              >
+                Download evidence
+              </a>
+            )}
+          </div>
+        )}
       </PageTitle>
       <State {...result}>
         {e && (
@@ -288,6 +301,32 @@ export default function Detail({ id }: { id: string }) {
                 <dd className="mono">{e.run_id || "Not assigned"}</dd>
                 <dt>Specification hash</dt>
                 <dd className="mono">{e.spec_hash}</dd>
+                <dt>Recorded environment</dt>
+                <dd>
+                  {r?.environment
+                    ? `${r.environment.runner_os}/${r.environment.runner_arch} · ${r.environment.measurement_methodology} · tracing ${r.environment.tracing_enabled ? "enabled" : "disabled"}`
+                    : "Environment provenance was not recorded for this run."}
+                </dd>
+                {r?.environment && (
+                  <>
+                    <dt>Container runtime</dt>
+                    <dd>
+                      {r.environment.container_runtime
+                        ? `Docker server ${r.environment.container_runtime.docker_server_version}`
+                        : "Docker/image metadata unavailable at execution."}
+                    </dd>
+                    {r.environment.container_runtime?.images.map((image) => (
+                      <div key={image.component}>
+                        <dt>{image.component} image</dt>
+                        <dd className="mono">
+                          {image.reference || "Local build"}
+                          <br />
+                          {image.image_id}
+                        </dd>
+                      </div>
+                    ))}
+                  </>
+                )}
                 <dt>Revision / Go / Toxiproxy</dt>
                 <dd>
                   {r

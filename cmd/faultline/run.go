@@ -12,6 +12,7 @@ import (
 	"github.com/raimbekalish/faultline/internal/execution"
 	"github.com/raimbekalish/faultline/internal/experiment"
 	"github.com/raimbekalish/faultline/internal/history"
+	"github.com/raimbekalish/faultline/internal/provenance"
 	"github.com/raimbekalish/faultline/internal/spec"
 	"github.com/raimbekalish/faultline/internal/telemetry"
 )
@@ -26,6 +27,7 @@ func executeRun(ctx context.Context, args []string, out, stderr io.Writer) (code
 	latency := fs.Duration("latency", time.Duration(cfg.LatencyMS)*time.Millisecond, "downstream latency (1ms–5s, whole milliseconds)")
 	timeout := fs.Duration("request-timeout", time.Duration(cfg.RequestTimeoutMS)*time.Millisecond, "HTTP timeout (10ms–5s, whole milliseconds)")
 	path := fs.String("spec", "", "versioned experiment JSON specification")
+	launchPath := fs.String("provenance", "", "allowlisted local wrapper metadata file")
 	dbPath := fs.String("db", "", "local history file (default with -spec: "+defaultDB+")")
 	if err := fs.Parse(args); err != nil {
 		return 2
@@ -66,6 +68,20 @@ func executeRun(ctx context.Context, args []string, out, stderr io.Writer) (code
 		fmt.Fprintln(stderr, err)
 		return 2
 	}
+	var launch *provenance.Launch
+	if *launchPath != "" {
+		file, err := os.Open(*launchPath)
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return 2
+		}
+		launch, err = provenance.DecodeLaunch(file)
+		_ = file.Close()
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return 2
+		}
+	}
 	var store *history.Store
 	if *dbPath != "" {
 		setup, cancel := context.WithTimeout(ctx, history.OperationTimeout)
@@ -88,7 +104,7 @@ func executeRun(ctx context.Context, args []string, out, stderr io.Writer) (code
 		fmt.Fprintln(stderr, err)
 		return 2
 	}
-	result, err := execution.Run(ctx, sp, revision, store, tracing)
+	result, err := execution.RunWithProvenance(ctx, sp, revision, store, tracing, launch)
 	if result.HistoryID != "" {
 		fmt.Fprintln(stderr, "history ID:", result.HistoryID)
 	}

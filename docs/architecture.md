@@ -194,3 +194,20 @@ third-party fonts/requests, collector calls or experiment execution routes. The
 one-hour default lifetime is explicitly bounded to eight hours. Shutdown waits for
 requests before closing SQLite. See [dashboard](dashboard.md) and
 [ADR 0004](decisions/0004-local-read-only-dashboard.md).
+
+## Portable evidence and provenance
+
+`internal/record` is the shared semantic validator for history and offline data;
+it calls the unchanged engine summarizer. `internal/bundle` owns the bounded ZIP
+profile, hashes and atomic no-replace file publication; `internal/bundlecli` owns
+SQLite-free verify/inspect commands. History adapts validated entries into the
+portable structure without becoming an offline dependency. The original CLI
+exports from existing history; `cmd/faultline-bundle` builds with CGO disabled.
+
+Execution records optional `internal/provenance` metadata after fault cleanup and
+telemetry shutdown, before finalization. The wrapper can provide observed Docker/
+image facts read-only before execution. Process/build facts never come from the
+export machine. Optional report metadata requires no SQLite migration and legacy
+records remain unchanged. Bundle/JSON/provenance versions fail closed when unknown.
+The dashboard adds an ID-scoped GET download using the same builder and guards.
+See [evidence](evidence.md) and [ADR 0005](decisions/0005-portable-evidence-and-provenance.md).

@@ -157,3 +157,8 @@ repeated execution, cancellation, tracing on/off, queries/comparison and output
 failure, plus existing fault/trace regressions. Unit race tests cover strict
 specs, migrations, rollback, contention, malformed data and process-exit recovery.
 See [validation](validation.md) and [ADR 0003](decisions/0003-specifications-and-sqlite-history.md).
+
+Finalized complete/failed/canceled records can now be exported as portable evidence
+without changing the database. Optional environment metadata is captured during
+new execution, not reconstructed on export; legacy reports remain unchanged.
+See [portable evidence](evidence.md) for offline verification and file safety.

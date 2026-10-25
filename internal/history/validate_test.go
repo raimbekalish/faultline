@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/raimbekalish/faultline/internal/experiment"
+	"github.com/raimbekalish/faultline/internal/record"
 	"github.com/raimbekalish/faultline/internal/spec"
 )
 
@@ -223,7 +224,7 @@ func TestArithmeticRoundoffAndSerialization(t *testing.T) {
 		t.Fatal("nonfinite recomputed sum accepted")
 	}
 	for _, bad := range []float64{math.NaN(), math.Inf(1), math.Inf(-1)} {
-		if sameArithmetic(bad, bad) {
+		if record.SameArithmetic(bad, bad) {
 			t.Fatal("nonfinite arithmetic accepted")
 		}
 	}

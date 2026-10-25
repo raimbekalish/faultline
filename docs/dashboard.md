@@ -65,7 +65,7 @@ polling or report storage in browser local storage.
 
 ## API version 1
 
-GET-only routes return `application/json`, `Cache-Control: no-store` and
+JSON GET routes return `application/json`, `Cache-Control: no-store` and
 `{"api_version":1,"data":…}`. Errors instead return
 `{"api_version":1,"error":{"code":"…","message":"…"}}`.
 
@@ -75,6 +75,7 @@ GET-only routes return `application/json`, `Cache-Control: no-store` and
 | `/api/v1/runs` | `items`, global `counts`, filtered `total`, nullable `next_cursor` |
 | `/api/v1/runs/{id}` | Existing entry and original report, including raw samples |
 | `/api/v1/compare?left=ID&right=ID` | Existing comparison, specifications and phase deltas |
+| `/api/v1/runs/{id}/bundle` | Validated ZIP attachment; errors remain versioned JSON |
 
 List options: `limit` (1–50, default 20), `cursor` (history ID from the previous
 page), `status` (complete/failed/canceled/running), `q` (ID/configuration substring,
@@ -146,3 +147,8 @@ fixtures cover loading, empty, corrupt, partial/canceled, unfinished and missing
 telemetry states. Go API tests use actual temporary SQLite files. See
 [validation](validation.md) for actual outcomes and [ADR 0004](decisions/0004-local-read-only-dashboard.md)
 for API/dependency decisions.
+
+Run detail also downloads portable evidence and displays recorded environment
+provenance where available. The ZIP route inherits the same origin/Host/method/
+deadline guards and accepts no path. It returns 409 for unfinished intents.
+See [evidence](evidence.md) for offline verification, format and missing-data rules.

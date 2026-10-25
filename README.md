@@ -32,6 +32,7 @@ No hosted service or paid infrastructure is required.
 - [Distributed tracing and failure correlation](docs/tracing.md)
 - [Specifications, persistent history and recovery](docs/history.md)
 - [Local dashboard, API and browser verification](docs/dashboard.md)
+- [Portable evidence and environment provenance](docs/evidence.md)
 
 ## Run an experiment
 
@@ -136,6 +137,24 @@ With Node 22.12+, Go 1.26+ and a C compiler installed:
 Open the printed `http://127.0.0.1:…` URL. Ctrl-C stops the server; it also expires
 after one hour by default. The dashboard has no fault execution or Docker access.
 See [dashboard commands, API and limitations](docs/dashboard.md).
+
+## Portable evidence
+
+Export a finalized run and inspect it offline without Docker, SQLite, Jaeger or
+network access. Build the native tools once, then use a listed run ID:
+
+```sh
+make cli offline
+./artifacts/bin/faultline bundle export -db artifacts/faultline.sqlite -out artifacts/run.flb RUN_ID
+./artifacts/bin/faultline-bundle verify artifacts/run.flb
+./artifacts/bin/faultline-bundle inspect artifacts/run.flb
+```
+
+Copy the platform-appropriate verifier with the bundle for offline use. The
+archive preserves actual reports/specifications and includes checksum metadata;
+checksums do not establish authenticity. New runs record allowlisted environment
+facts; missing historical provenance stays unavailable. Run details also offer a
+same-origin download. See [format, safety and portability limits](docs/evidence.md).
 
 ## Optional distributed tracing
 

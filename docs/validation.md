@@ -517,3 +517,128 @@ Safari, Windows or Linux/AMD64 build/browser matrix was run. Native macOS/ARM64
 and Docker Linux/ARM64 race checks passed. Existing power-loss/disk-full durability
 limits remain. Traces remain transient. The dashboard is read-only; portable
 reports and recorded environment provenance are recommended next.
+
+# Milestone 5A validation — portable evidence and provenance
+
+Date: 2026-10-25 (America/Los_Angeles). Native macOS/ARM64, Docker Linux/ARM64,
+Go 1.26.8, Node 24.11.0 and Chrome/Playwright from the dashboard toolchain.
+
+## Approved PR #3 merge
+
+PR #3 was OPEN/MERGEABLE at exactly
+`27cf15b7bbfc1954317c515d83f9e9a86f105757`; its base and remote main still matched
+`ed0552ca15d64a565142d670c9eea78960bbc8db`. The SHA-gated regular merge produced
+`bd3cc64d0224c0a7e4a70054c9484a5023f7d47e`. GitHub reported MERGED; its two
+parents are that prior main and the approved head. All four feature commits and
+verified GitHub noreply authors remain reachable. Local main fast-forwarded
+cleanly before branching to `codex/portable-evidence`.
+
+## Actual checks and corrected failures
+
+- `make check cli offline` passed: shell/format checks, vet, full unit race tests,
+  native SQLite exporter build and CGO-disabled offline verifier build.
+  `go mod verify` passed; no Go/npm dependency was added.
+- Actual temporary SQLite and filesystem tests passed for complete/failed/
+  canceled exports, partial fault phases, failures before a run ID, unfinished
+  refusal, immutable destinations/symlinks, context cancellation, failed writes,
+  cleanup and stdout failure after publication. Exported records were inspected
+  while their database path was temporarily absent.
+- Archive tests passed for deterministic roundtrips, CRC/hash damage, altered
+  statistics even after recalculating hashes, inconsistent identities, unsupported
+  versions, duplicate/missing/unsafe entries, symlinks, compression, oversize
+  payloads, excessive JSON depth, duplicate/case-colliding fields, prefixes,
+  truncation and trailing data. The parser never extracts files.
+- Provenance tests passed for field allowlists, bounded launch metadata, version
+  checks, snapshot copying, unavailable launch data, missing/null tracing facts,
+  unsupported fields and persisted process/spec correlation. Existing history
+  integrity and real SQLite rollback/hot-journal recovery regressions passed.
+- Final `./scripts/experiment.sh test` and `./scripts/experiment.sh --tracing test`
+  both passed with real faults and race tests. Existing latency/recovery, timeout,
+  active cancellation/cleanup, persisted CLI execution and real trace export/query
+  tests passed in their applicable mode. Only mode-specific tests and the parent
+  crash-helper fixture skipped.
+- `make frontend-check` passed: clean lockfile install, formatting, nine tests,
+  TypeScript and production build. Final Chrome regression passed against clean
+  real history, including keyboard/mobile views and the evidence download.
+  Downloaded bytes matched the API response, then independently verified with
+  the standalone binary. Browser errors/external requests remained zero.
+- Final parser fuzz smoke passed with two workers for 10 seconds: 185 executions
+  and one additional interesting input, no panic. This is a smoke test, not a
+  comprehensive security audit.
+
+Resolved failures were test/harness issues: a privacy assertion matched “serial”
+in the methodology name instead of checking field names; a canceled-export test
+reused an existing successful export path; an initial scratch fixture was 0600
+but owned by root instead of the unprivileged verifier user. These were corrected
+and rerun. A dependency check also matched `database/sql/driver` as a substring;
+exact package checks confirmed no `database/sql`, history or SQLite dependency.
+The standard driver value interfaces are transitive only, not a database engine.
+A review found omitted tracing metadata could otherwise look like `false`; the
+field is now required inside a present environment record, with regressions.
+No failing final check remains.
+
+## Actual portable files
+
+Initial validation exported two new runs, two prior Milestone 3 complete runs,
+and the prior real SIGTERM-canceled run. All verified and inspected from copied
+files in temporary directories with `PATH=/nonexistent`, without database or Docker
+commands available. Legacy/canceled runs retained absent provenance and explicit
+warnings; no current-machine facts were added.
+
+The final measured runs were generated from clean implementation commit `27b3775`
+into `artifacts/m5-clean/history.sqlite`, after all source changes were committed.
+Each run completed and confirmed cleanup. Each was exported twice with identical
+bytes, then independently inspected by the latest offline verifier.
+
+| Latency / tracing | Samples | Baseline mean | Fault mean | Recovery mean | Fault failures | Bundle bytes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 80 ms / disabled | 10 | 2.17 ms | 83.16 ms | 0.25 ms | 0/10 | 4,170 |
+| 400 ms / enabled | 5 | 0.58 ms | 253.20 ms | 0.36 ms | 5/5 (504) | 5,162 |
+
+These are separate individual experiments, not significance or overhead benchmarks.
+Whole-file SHA-256 values recorded for these local validation artifacts:
+
+- `clean-80.flb`: `bb6c3d4ca25d3db32b83f5cdd189027085fb61cab86d796e5dc0dde435ea8572`
+- `clean-400.flb`: `e265b73a29f2deaa079045996aafc9cf064b05949193389c10319ceff07caea5`
+
+Recorded facts include runner Linux/ARM64, Go 1.26.8, revision `27b3775`, canonical
+spec hashes, `serial-http-nearest-rank-v1`, explicit tracing mode, Docker server
+29.8.0, observed sample/Toxiproxy/Jaeger image identifiers and configured pinned
+Toxiproxy 2.12.0 / Jaeger 2.22.0 references. No laptop OS, username, home path, IP,
+ambient environment dump, serial number or token was collected as provenance.
+
+The final Linux/ARM64 verifier was cross-built with CGO disabled and ran inside a
+64 MiB, read-only scratch image with network disabled, no SQLite/database, shell,
+Docker client/socket or collector. It inspected the clean 400 ms bundle successfully.
+The temporary image was removed. Native macOS inspection also succeeded without
+Docker invocation; dependency inspection excludes SQLite/history/database access,
+and the binary links only standard OS libraries/frameworks, not SQLite.
+
+## Evidence locations, compatibility and limits
+
+Ignored outputs include `m5-checks-final.log`, `m5-frontend-final.log`,
+`m5-disabled-final.log`, `m5-tracing-final.log`, `m5-browser-final.log`,
+`m5-fuzz-final.log`, `m5-offline-final.json`, `m5-browser-final-verified.json`,
+`m5-clean-evidence-summary.json`, original clean reports and `m5-bundles/*.flb` /
+inspection JSON. These data, binaries, caches and scratch Docker context are not
+committed. The portable format and commands are in [evidence](evidence.md).
+
+SQLite remains schema 1 with no migration. Report schema 1 gains only documented
+optional environment metadata; legacy reports stay unchanged. Shared validation
+still uses the original summarizer and tolerance. Engine measurement, fault
+transport, ownership/cleanup and tracing implementation remain unchanged. Query
+recovery may still write SQLite journals; verification of an exported bundle has
+no database access at all.
+
+Checksums are not authenticity, execution attestation or protection from coordinated
+rewrites. Full traces, images and source trees are not included. The supported ZIP
+profile is intentionally narrow. No power-cut/disk-full or unusual-filesystem/
+Windows publication tests were added; hard links/directory sync are required for
+CLI publication. Archive fuzzing and browser/platform coverage are limited. All
+these limits remain explicit rather than being filled with inferred evidence.
+
+Final cleanup checked that no real export `.faultline-evidence-*.tmp` files,
+Faultline containers, networks, temporary image tags or volumes remained. The
+owned final dashboard server was stopped; prior review servers were replaced or
+expired. Shared base images/BuildKit caches and ignored local evidence were retained.
+No unrelated project cleanup, public deployment, CI or paid service was performed.

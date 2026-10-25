@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/raimbekalish/faultline/internal/bundle"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -145,6 +146,30 @@ func Handler(store *history.Store, assets fs.FS, authority string) http.Handler 
 				}
 				data = list{items, page.Counts, page.Total, page.NextCursor}
 			}
+		case strings.HasPrefix(r.URL.Path, "/api/v1/runs/") && strings.HasSuffix(r.URL.Path, "/bundle"):
+			id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/v1/runs/"), "/bundle")
+			if !validQuery(q) || !history.ValidID(id) {
+				badQuery(w)
+				return
+			}
+			var entry history.Entry
+			entry, err = store.Get(ctx, id)
+			if err == nil {
+				var evidence bundle.Evidence
+				evidence, err = history.Evidence(entry)
+				if err == nil {
+					var b []byte
+					b, err = bundle.Build(ctx, evidence)
+					if err == nil {
+						w.Header().Set("Content-Type", "application/zip")
+						w.Header().Set("Content-Disposition", `attachment; filename="`+entry.ID+`.flb"`)
+						w.Header().Set("Content-Length", strconv.Itoa(len(b)))
+						w.WriteHeader(http.StatusOK)
+						_, _ = w.Write(b)
+						return
+					}
+				}
+			}
 		case strings.HasPrefix(r.URL.Path, "/api/v1/runs/"):
 			id := strings.TrimPrefix(r.URL.Path, "/api/v1/runs/")
 			if !validQuery(q) || !history.ValidID(id) {
@@ -166,6 +191,8 @@ func Handler(store *history.Store, assets fs.FS, authority string) http.Handler 
 			switch {
 			case errors.Is(err, history.ErrNotFound):
 				fail(w, 404, "not_found", "History run not found.")
+			case errors.Is(err, history.ErrNoReport):
+				fail(w, 409, "no_final_report", "Unfinished intent has no finalized report to export.")
 			case errors.Is(err, history.ErrNotComparable):
 				fail(w, 409, "not_comparable", "Select two completed runs with successful cleanup.")
 			case errors.Is(err, history.ErrCorrupt):

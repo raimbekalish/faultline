@@ -209,3 +209,18 @@ test("missing trace references are not replaced by invented telemetry", async ()
   await userEvent.click(screen.getByRole("button", { name: "#01" }));
   expect(screen.getByText("No trace reference recorded")).toBeInTheDocument();
 });
+
+test("only finalized reports offer a same-origin evidence download", async () => {
+  mock({ ...entry, report });
+  const v = render(<Detail id={entry.id} />);
+  expect(
+    await screen.findByRole("link", { name: "Download evidence" }),
+  ).toHaveAttribute("href", `/api/v1/runs/${entry.id}/bundle`);
+  v.unmount();
+  mock({ ...entry, status: "running" });
+  render(<Detail id={entry.id} />);
+  await screen.findByText("Intent recorded. Outcome unknown.");
+  expect(
+    screen.queryByRole("link", { name: "Download evidence" }),
+  ).not.toBeInTheDocument();
+});

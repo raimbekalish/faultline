@@ -45,7 +45,8 @@ over speculative interfaces or mocked product features.
   and response-body reads inside client spans. Preserve existing HTTP deadlines.
 - Do not record headers, bodies, raw URLs/errors or arbitrary baggage in spans.
   Only validated run/phase/observation metadata may propagate. Toxiproxy has no spans.
-- Schema 1 permits documented optional fields; disabled reports omit tracing keys.
+- Schema 1 permits documented optional fields; disabled observations/telemetry omit
+  tracing keys. Optional environment metadata explicitly records tracing off.
 - No published collector/admin ports. Collector UI publication requires explicit `--view`
   and must bind loopback, use an ephemeral port, and have a bounded lifetime.
 - History uses CGO SQLite; native builds require a C compiler. Keep the CLI static
@@ -71,6 +72,20 @@ over speculative interfaces or mocked product features.
   never supply real application metrics or replace this browser integration test.
 - Query connections use deferred transactions without writer reservations;
   execution stores retain immediate writes. Preserve hot-journal recovery.
+
+## Portable evidence
+
+- `make cli offline` builds the exporter and CGO-disabled offline verifier.
+- Bundle parsing never extracts files or imports SQLite/history. Keep payload,
+  count, nesting and archive-profile bounds. Reuse `internal/record` validation
+  and the engine summarizer; never create a second statistics implementation.
+- Preserve original reports, including missing provenance. Environment capture
+  belongs to execution, never export. No ambient identity/environment collection.
+- SHA-256 is integrity metadata, not authenticity or execution attestation.
+- Publish exports atomically without replacing files/symlinks. Surface failed
+  writes/cleanup; test actual temporary files, cancellation and partial reports.
+- The dashboard downloads only by validated ID, never filesystem paths. It stays
+  read-only and never makes historical Jaeger references appear permanently live.
 
 ## Git workflow
 

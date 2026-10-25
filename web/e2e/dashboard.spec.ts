@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import { ms, deltaMS, deltaPP } from "../src/format";
 import type { Page, Entry, Comparison } from "../src/types";
@@ -89,6 +90,17 @@ test("actual persisted evidence: overview, filtering, raw traces, comparison and
     }),
   ).toBeVisible();
   await page.screenshot({ path: "../artifacts/m4-detail.png", fullPage: true });
+  const exported = await request.get(`/api/v1/runs/${right.id}/bundle`);
+  expect(exported.status()).toBe(200);
+  expect(exported.headers()["content-type"]).toBe("application/zip");
+  const pendingDownload = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download evidence" }).click();
+  const download = await pendingDownload;
+  await download.saveAs("../artifacts/m5-browser-download.flb");
+  expect(await readFile("../artifacts/m5-browser-download.flb")).toEqual(
+    await exported.body(),
+  );
+
   // Disabled tracing is real historical evidence too, not a fixture response.
   const disabled: Entry = (
     await (await request.get(`/api/v1/runs/${left.id}`)).json()
