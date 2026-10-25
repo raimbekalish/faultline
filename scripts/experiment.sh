@@ -129,18 +129,40 @@ if [ "$mode" != history ]; then
   if [ "$tracing" = 1 ]; then compose up -d --wait --wait-timeout 30 jaeger >&2; fi
   compose up -d --wait --wait-timeout 30 frontend >&2
 fi
+# Capture only version/image facts from this exact project, before experiment
+# execution. Containers never receive the Docker socket or host identity data.
+if [ "$mode" = run ]; then
+  docker_version_json=$(docker version --format '{{json .Server.Version}}')
+  sample_container=$(compose ps -q dependency)
+  proxy_container=$(compose ps -q toxiproxy)
+  sample_image=$(docker inspect --format '{{json .Image}}' "$sample_container")
+  proxy_image=$(docker inspect --format '{{json .Image}}' "$proxy_container")
+  proxy_reference=$(docker inspect --format '{{json .Config.Image}}' "$proxy_container")
+  printf '{"schema_version":1,"docker_server_version":%s,"images":[{"component":"sample","image_id":%s},{"component":"toxiproxy","image_id":%s,"reference":%s}' "$docker_version_json" "$sample_image" "$proxy_image" "$proxy_reference" > "$run_dir/provenance.json"
+  if [ "$tracing" = 1 ]; then
+    jaeger_container=$(compose ps -q jaeger)
+    jaeger_image=$(docker inspect --format '{{json .Image}}' "$jaeger_container")
+    jaeger_reference=$(docker inspect --format '{{json .Config.Image}}' "$jaeger_container")
+    printf ',{"component":"jaeger","image_id":%s,"reference":%s}' "$jaeger_image" "$jaeger_reference" >> "$run_dir/provenance.json"
+  fi
+  printf ']}\n' >> "$run_dir/provenance.json"
+  chmod 644 "$run_dir/provenance.json" # Allowlisted facts only; runner is non-root.
+  set -- -provenance /input/provenance.json "$@"
+else
+  : > "$run_dir/provenance.json"
+fi
 if [ "$mode" = test ]; then
   compose build test >&2
   compose run --rm -T --no-deps test
 else
   if [ "$persistent" = 1 ]; then
     if [ -n "$spec_path" ]; then
-      compose run --rm -T --no-deps --user "$(id -u):$(id -g)" -v "$db_dir:/state" -v "$spec_path:/input/spec.json:ro" runner "$mode" "$@"
+      compose run --rm -T --no-deps --user "$(id -u):$(id -g)" -v "$db_dir:/state" -v "$spec_path:/input/spec.json:ro" -v "$run_dir/provenance.json:/input/provenance.json:ro" runner "$mode" "$@"
     else
-      compose run --rm -T --no-deps --user "$(id -u):$(id -g)" -v "$db_dir:/state" runner "$mode" "$@"
+      compose run --rm -T --no-deps --user "$(id -u):$(id -g)" -v "$db_dir:/state" -v "$run_dir/provenance.json:/input/provenance.json:ro" runner "$mode" "$@"
     fi
   else
-    compose run --rm -T --no-deps runner "$mode" "$@"
+    compose run --rm -T --no-deps -v "$run_dir/provenance.json:/input/provenance.json:ro" runner "$mode" "$@"
   fi
 fi
 if [ "$view" = 1 ]; then

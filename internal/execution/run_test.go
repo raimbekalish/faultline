@@ -3,8 +3,10 @@ package execution
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -86,5 +88,36 @@ func TestFinalPersistenceFailurePreservesEngineErrorAndIntent(t *testing.T) {
 	e, err := s.Get(context.Background(), out.HistoryID)
 	if err != nil || e.Status != "running" || e.Report != nil {
 		t.Fatalf("persistence error hid durable intent: %+v %v", e, err)
+	}
+}
+
+func TestRecordedEnvironmentPersistsWithoutInventingDockerFacts(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "history.sqlite")
+	s, err := history.Open(context.Background(), path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	sp := spec.FromConfig(experiment.DefaultConfig())
+	out, err := run(context.Background(), sp, "development", s, nil, func(context.Context, experiment.Config, string, *telemetry.Runtime) (experiment.Report, error) {
+		r := fixture("canceled")
+		r.GoVersion = runtime.Version()
+		r.Revision = "development"
+		return r, context.Canceled
+	})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+	e, err := s.Get(context.Background(), out.HistoryID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var r experiment.Report
+	if err = json.Unmarshal(e.Report, &r); err != nil {
+		t.Fatal(err)
+	}
+	hash, _ := sp.Hash()
+	if r.Environment == nil || r.Environment.SpecHash != hash || r.Environment.Launch != nil || r.Environment.TracingEnabled || r.Environment.RunnerOS != runtime.GOOS {
+		t.Fatalf("incorrect recorded facts: %+v", r.Environment)
 	}
 }
