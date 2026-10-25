@@ -1,10 +1,10 @@
-.PHONY: test integration experiment check
+.PHONY: test integration experiment check frontend-check dashboard
 
 test:
 	go test -race -count=1 ./...
 
 check:
-	sh -n scripts/experiment.sh scripts/test-wrapper.sh
+	sh -n scripts/experiment.sh scripts/test-wrapper.sh scripts/dashboard.sh
 	sh scripts/test-wrapper.sh
 	test -z "$$(gofmt -l cmd internal)"
 	go vet ./...
@@ -15,3 +15,12 @@ integration:
 
 experiment:
 	./scripts/experiment.sh
+
+frontend-check:
+	npm --prefix web ci --ignore-scripts
+	npm --prefix web run format:check
+	npm --prefix web test
+	npm --prefix web run build
+
+dashboard:
+	./scripts/dashboard.sh

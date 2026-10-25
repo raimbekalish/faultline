@@ -146,3 +146,12 @@ func TestOriginMethodsAndSecurityHeaders(t *testing.T) {
 		t.Fatal(w.Code)
 	}
 }
+
+func TestUnavailableQueryReturnsBoundedError(t *testing.T) {
+	s, h, _ := setup(t)
+	_ = s.Close()
+	w := request(h, "/api/v1/runs")
+	if w.Code != 503 || len(w.Body.Bytes()) > 512 || !strings.Contains(w.Body.String(), `"code":"history_unavailable"`) {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+}
