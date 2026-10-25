@@ -12,7 +12,7 @@ data. Reuse the existing engine's limits. No target URLs, workflow language or
 implicit overrides are introduced. Canonical JSON and its SHA-256 identify the
 configuration, not timing results or environmental equivalence.
 
-Keep the engine unchanged. A small execution layer commits a `running` history
+Keep the engine lifecycle unchanged. A small execution layer commits a `running` history
 intent before calling it. It records the final report under a new bounded context
 after engine cleanup and telemetry shutdown. No database transaction spans an
 experiment or an active fault. SQL failures before the intent commit prevent
@@ -57,6 +57,13 @@ summaries, errors, cleanup state and optional trace references. Keeping one repo
 snapshot avoids duplicated phase tables and multiple sources of truth. History
 queries validate records, bound list sizes and never create a missing database.
 They permit SQLite recovery writes so hot rollback journals can be recovered.
+Validation recomputes summaries using the engine's existing pure calculation and
+checks stored comparison deltas. Counts, rates and order statistics match exactly;
+means and arithmetic deltas allow four ULPs of roundoff, with exact expected zero
+and no nonfinite values. This covers partial failed/canceled reports and rejects
+inconsistent data without repair or a schema change. It provides internal
+consistency checking, not cryptographic integrity against coordinated alteration
+of samples and their summaries.
 
 Final reports are immutable. Failed transactions preserve prior committed data.
 An abrupt process-exit test will exercise uncommitted journal recovery. This does

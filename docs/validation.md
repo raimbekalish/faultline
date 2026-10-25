@@ -320,3 +320,80 @@ Docker VM/storage failure, backups, retention and native/cross-platform build
 matrices were not tested or implemented. SQLite durability still depends on the
 filesystem and flush behavior. Jaeger remains transient. See [history](history.md)
 and [ADR 0003](decisions/0003-specifications-and-sqlite-history.md).
+
+# PR #2 focused review — raw-sample integrity
+
+Date: 2026-10-24 (America/Los_Angeles). Docker Linux/ARM64, pinned Go 1.26.8,
+mattn/go-sqlite3 1.14.52, real Toxiproxy and optional Jaeger. The starting local
+and remote PR head matched `bb8fb2c05b3b5d555acac13ea6b7f0dcaad34169`.
+Main remained `73e2430f7ebd356b641a9f8d97a96579c11b3b32`; PR #2 was open.
+
+## Reproduction and correction
+
+Before the fix, a real temporary SQLite store accepted finalization of a report
+whose fault samples were 1 ms and 5 ms but whose mean was changed from 3 ms to
+2 ms. `TestRejectsPlausibleMeanMismatch` failed with “accepted plausible but
+incorrect mean: <nil>”. This confirmed the reported range-validation gap.
+The same regression passes after the correction.
+
+Finalization and reads now recompute every summary through the engine's existing
+summarizer. Counts, failures, failure rates, min/max and nearest-rank p50/p95/p99
+are exact; means allow four ULPs. Go JSON float64 roundtrips are lossless. The
+tests cover tiny/large values, four/five-ULP boundaries, exact zero and nonfinite
+arithmetic. All failed-request durations remain in the distribution.
+
+The related stored fault-versus-baseline deltas were also unchecked. These now
+match recomputed summaries, with the same arithmetic tolerance. Tests preserve
+both valid cancellation boundaries before the first fault sample: uncomputed
+zero deltas, or the engine's computed empty-fault deltas. Mixed alternatives
+are rejected. Complete, failed, canceled, empty and partial reports pass JSON
+roundtrips; no missing observations are filled in.
+
+## Actual checks and results
+
+- Focused `go test -race -count=1 -v ./internal/history` passed. Regressions alter
+  each metric to a superficially plausible value, exercise mixed HTTP/transport/
+  response-read failures and verify write rejection preserves the running intent.
+  Raw SQL alteration of an already finalized report makes Get/List/Compare reject
+  it as corrupt. CLI list/show/compare also return failure without JSON output.
+- Formatting verification, `go mod verify`, `go vet ./...` and full
+  `go test -race -count=1 ./...` passed in the pinned development container.
+  Host Go was unavailable; these were actual Docker Go/race runs.
+- `sh -n scripts/experiment.sh scripts/test-wrapper.sh`,
+  `sh scripts/test-wrapper.sh`, and `git diff --check` passed.
+- `./scripts/experiment.sh test` and `./scripts/experiment.sh --tracing test`
+  both passed. Real CLI/history roundtrips, repeated specification execution,
+  persisted cancellation after observing an active toxic, latency/recovery,
+  HTTP timeout classification, owned-proxy cleanup and trace correlation passed.
+  Unavailable-exporter cleanup passed in the disabled suite; the tracing-enabled
+  suite exercised real export/query. Mode-specific skips were expected.
+- Existing SQLite migration/rollback, read-only writes, aborting triggers,
+  canceled operations, bounded writer contention and abrupt-process hot-journal
+  recovery tests passed. The subprocess fixture skips in its parent process.
+- The updated static scratch CLI successfully listed both pre-review stored
+  complete runs, showed an existing report and compared those runs after their
+  original stacks/collector had been removed. Original schema-1 report JSON and
+  optional tracing behavior remain compatible; no database migration was added.
+
+There were no unexpected test failures. The initial red reproduction was
+intentional, as were negative-test exporter and SQLite error diagnostics. Ignored
+logs are `artifacts/pr2-review-{reproduction,history,checks,disabled,tracing}.log`,
+`pr2-review-shell.log`, and `pr2-review-existing-{list,show,compare}.{json,log}`.
+
+## Cleanup and remaining limits
+
+Engine execution/measurement, fault transport, tracing, transaction boundaries
+and cleanup ordering were not changed. The only engine addition is a four-line
+wrapper exposing its existing pure summarizer. Both real suites verified owned
+fault removal and preservation of unrelated sentinel proxies. Wrapper teardown
+removed their containers, networks and disposable image tags. The review-only
+compiler image and build-cache volume were then removed. Docker inventories
+confirmed no Faultline containers, networks, image tags or volumes remained.
+Shared base images/build caches and existing local history artifacts were retained.
+
+Validation detects inconsistent summaries, not coordinated tampering with both
+samples and statistics. Existing process-failure/durability limitations still
+apply: no power-cut, disk-full, physical I/O or cross-platform testing was added;
+Jaeger remains transient. No cleanup guarantee after SIGKILL/daemon failure is
+introduced. No CI, new service, product feature, new PR or merge is part of this
+review.

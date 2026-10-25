@@ -106,7 +106,8 @@ custom path or to opt legacy flag-based runs into persistence. `history show`
 inspects a listed ID; `history compare` returns phase deltas for two completed
 runs. Queries start no sample/tracing services. Specs reject unknown fields,
 duplicates, unsupported versions and workload overrides. Existing ephemeral
-commands and schema-1 stdout reports retain their behavior.
+commands and schema-1 stdout reports retain their behavior. History rejects stored
+summaries or comparisons inconsistent with their underlying raw samples.
 
 History commits an intent before execution and the complete/failed/canceled
 report after fault cleanup. A failed final write leaves an unfinished intent and

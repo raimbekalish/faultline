@@ -31,6 +31,7 @@
 - [x] Failed/canceled persistence, rollback, lock and process-exit recovery tests
 - [x] Repeated real experiments and tracing-enabled/disabled regression suites
 - [x] Actual statically linked CLI, host history bind and SIGTERM verification
+- [x] Raw-sample validation of stored summaries/comparisons and corruption regressions
 
 Per-request checkpoints, backup/export/retention and automatic crash-state
 resolution remain future work. User-owned application targets require a separate

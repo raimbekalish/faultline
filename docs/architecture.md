@@ -130,7 +130,7 @@ specification / legacy flags → execution → existing experiment engine
                                 SQLite ← export shutdown → final report commit
 ```
 
-The engine and instrumentation are unchanged. A specification maps directly to
+The engine lifecycle and instrumentation are unchanged. A specification maps directly to
 the existing configuration; it cannot change topology. Legacy flag runs remain
 ephemeral unless `-db` is explicit. File-based runs opt into local history.
 
@@ -146,7 +146,9 @@ with transactional migration/version checks. Completed reports are immutable;
 failed and canceled reports may contain partial observations. An unfinished intent
 is not labeled with an inferred failure cause. There is no per-request checkpoint.
 Read/compare paths validate records, bound payloads/list sizes and use no fault
-control or collector access. Trace IDs persist as references only.
+control or collector access. Summary validation reuses the engine's existing
+pure calculation through a small exported wrapper, checking raw samples rather
+than only plausible metric ranges. Trace IDs persist as references only.
 
 The pinned mattn driver uses bundled C SQLite. The CLI is statically linked in
 the existing compiler image; samples retain their previous CGO-disabled build.

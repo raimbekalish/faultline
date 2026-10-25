@@ -95,6 +95,19 @@ errors. Queries never create a missing database. The entry finalization timestam
 is recorded during its transaction; report `finished_at` keeps its original
 engine-cleanup boundary.
 
+History validates every phase summary against its raw samples at both finalization
+and query time, including partial failed/canceled phases. It reuses the engine's
+calculation: all outcomes contribute durations, an error or non-2xx status counts
+as failure, and percentiles use nearest rank. Counts, failure rates, min/max and
+p50/p95/p99 must match exactly; means allow at most four adjacent float64 values
+(ULPs) of arithmetic roundoff. Normal Go JSON serialization roundtrips float64
+values losslessly. Expected zero remains exact, and nonfinite values are rejected.
+The stored fault-versus-baseline deltas are also checked. Before fault measurement
+they remain zero; cancellation before its first sample can instead leave the
+engine's computed empty-fault comparison. Neither case invents observations.
+Inconsistent records return a corruption error without rewriting them. These
+checks do not change the JSON or SQLite schema and are not tamper protection.
+
 Comparison requires two complete, successfully cleaned runs. It returns both
 specifications, phase summaries and **right minus left** mean/p95/failure-rate
 deltas. `same_spec` compares only configuration hashes, not revision, tracing or
