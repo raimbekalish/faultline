@@ -71,11 +71,7 @@ func Validate(r experiment.Report, sp spec.Spec) error {
 	if r.Status == "complete" && (r.Baseline.Summary.Failures != 0 || r.Recovery.Summary.Failures != 0) {
 		return bad()
 	}
-	computed := experiment.Comparison{
-		MeanDeltaMS:      calculated[1].MeanMS - calculated[0].MeanMS,
-		P95DeltaMS:       calculated[1].P95MS - calculated[0].P95MS,
-		FailureRateDelta: calculated[1].FailureRate - calculated[0].FailureRate,
-	}
+	computed := experiment.CompareSummaries(calculated[0], calculated[1])
 	if len(r.Fault.Samples) > 0 {
 		if !sameComparison(r.Comparison, computed) {
 			return bad()

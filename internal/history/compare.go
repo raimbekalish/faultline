@@ -53,7 +53,7 @@ func (s *Store) Compare(ctx context.Context, left, right string) (Comparison, er
 	}{{"baseline", ar.Baseline}, {"fault", ar.Fault}, {"recovery", ar.Recovery}} {
 		r := []experiment.Phase{br.Baseline, br.Fault, br.Recovery}[i].Summary
 		l := p.phase.Summary
-		c.Phases = append(c.Phases, PhaseComparison{Phase: p.name, Left: l, Right: r, Delta: experiment.Comparison{MeanDeltaMS: r.MeanMS - l.MeanMS, P95DeltaMS: r.P95MS - l.P95MS, FailureRateDelta: r.FailureRate - l.FailureRate}})
+		c.Phases = append(c.Phases, PhaseComparison{Phase: p.name, Left: l, Right: r, Delta: experiment.CompareSummaries(l, r)})
 	}
 	return c, nil
 }
