@@ -48,6 +48,17 @@ over speculative interfaces or mocked product features.
 - Schema 1 permits documented optional fields; disabled reports omit tracing keys.
 - No published collector/admin ports. UI publication requires explicit `--view`
   and must bind loopback, use an ephemeral port, and have a bounded lifetime.
+- History uses CGO SQLite; native builds require a C compiler. Keep the CLI static
+  in Docker and sample services CGO-disabled. Do not use a system SQLite override.
+- `run -spec examples/latency.json` persists by default; original flag-only runs
+  stay ephemeral. Test both modes. Never mount a database into source control.
+- Commit an intent before the engine; finalize only after fault cleanup/export.
+  Keep SQL transactions out of measurements. Cancellation must not cancel final
+  persistence. Never overwrite completed reports or guess why an intent is unfinished.
+- Preserve database journals. Use temporary files in tests and real rollback/
+  process-exit recovery, not SQL mocks. Keep integration packages serialized.
+- History stores trace references, not durable Jaeger data. Comparison is
+  descriptive; matching spec hashes do not establish identical environments.
 
 ## Git workflow
 

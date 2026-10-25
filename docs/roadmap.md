@@ -25,9 +25,16 @@
 
 ## 3 — Reproducible experiment definitions and history
 
-Versioned experiment specifications, SQLite migrations, report replay/export,
-and explicit allowlists for user-owned local Compose applications. Design crash
-recovery and exclusive ownership before supporting shared infrastructure.
+- [x] Strict schema-1 JSON specifications and deterministic snapshots/hashes
+- [x] SQLite migrations, durable intents and immutable final reports
+- [x] CLI run/list/show/compare with original report compatibility
+- [x] Failed/canceled persistence, rollback, lock and process-exit recovery tests
+- [x] Repeated real experiments and tracing-enabled/disabled regression suites
+- [x] Actual statically linked CLI, host history bind and SIGTERM verification
+
+Per-request checkpoints, backup/export/retention and automatic crash-state
+resolution remain future work. User-owned application targets require a separate
+reviewed allowlist/ownership design; this milestone keeps only the fixed sample.
 
 ## 4 — Dashboard and broader reliability scenarios
 

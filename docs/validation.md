@@ -223,3 +223,100 @@ a guarantee of future telemetry arrival. Missing/partial telemetry remains best
 effort. Overhead measurements, cross-platform testing and crash durability were
 not rerun; no instrumentation or workload measurement behavior changed. No merge,
 new PR, CI, deployment, or product-scope additions are part of this review.
+
+# Milestone 3 validation — reproducible experiments and history
+
+Date: 2026-10-24 (America/Los_Angeles). Docker Linux/ARM64, pinned Go 1.26.8,
+mattn/go-sqlite3 1.14.52, Toxiproxy 2.12.0 and optional Jaeger 2.22.0.
+
+## Approved merge verification
+
+PR #1 was open/mergeable with the exact approved head `0601b80d77ffd385b248f382b0856854bda2d339`.
+Main still pointed to `596d0bc1c5eedd0b401a2a94923502d8b3931707`.
+GitHub performed a regular merge, producing
+`73e2430f7ebd356b641a9f8d97a96579c11b3b32`, with those two commits as parents.
+GitHub reported `MERGED`. All seven original feature commits remained reachable
+from synchronized local main, with the owner's verified GitHub noreply attribution.
+The working tree was clean before creating `codex/experiment-history`.
+
+## Actual checks
+
+- Specification race tests: required/duplicate/unknown/case-sensitive fields,
+  incompatible versions, bounds, null/non-integer values, trailing/oversized data,
+  forbidden targets and deterministic canonical snapshots/hashes passed.
+- Actual SQLite race tests passed for migration initialization/rollback, future
+  version/foreign database refusal, connection pragmas, file permissions, unique
+  aliases, immutable finalization, comparisons, failed/canceled reports, query
+  bounds, missing/malformed/oversized data, filenames, and symlink refusal.
+- Real write-failure paths passed: aborting trigger rollback, canceled operations,
+  SQLite read-only mode, bounded writer contention, and subsequent successful
+  retry. These are actual SQLite operations, not SQL mocks.
+- The abrupt subprocess exited without SQLite close with an uncommitted large
+  update after dirty-page spill. A nonempty hot journal was confirmed. Reopening
+  recovered the original running intent and preserved another committed report.
+- Execution-order tests passed: a committed intent is visible before the engine;
+  failed intent persistence prevents execution; canceled runs finalize through an
+  independent context; combined engine/finalization errors preserve the engine
+  result and durable intent. Output errors do not hide execution errors.
+- `gofmt`, formatting verification, `go mod verify`, `go vet ./...`, and the final
+  full `go test -race -count=1 ./...` passed in the pinned dev container.
+- Shell syntax and all Docker endpoint-precedence regressions passed.
+- Final `./scripts/experiment.sh test` and `./scripts/experiment.sh --tracing test`
+  both passed with package serialization. New real tests repeatedly ran the same
+  specification against real sample services/Toxiproxy, reopened the temporary DB,
+  verified distinct IDs/config hashes/reports, compared runs, and persisted a run
+  canceled after observing its active toxic. Tracing on/off references survived
+  database reopen. The CLI tests also confirmed committed history survives an
+  output-write failure. Existing latency, recovery, trace graph/correlation,
+  unavailable-exporter, cancellation and cleanup tests passed.
+
+## Actual scratch runtime and host persistence
+
+The statically linked history-capable CLI executed inside the scratch image,
+using a writable host-owned database-directory bind and read-only root filesystem.
+Both specification runs survived stack teardown; history list/show/compare then
+ran without frontend/dependency/Toxiproxy/Jaeger startup. The host database was
+28,672 bytes with mode 0600 after two runs. No host Go installation or system
+SQLite library was used.
+
+| Specification | Baseline mean | Fault mean | Recovery mean | Fault failures |
+| --- | ---: | ---: | ---: | ---: |
+| 80 ms, 10 samples, tracing off | 1.80 ms | 81.90 ms | 0.42 ms | 0/10 |
+| 400 ms, 5 samples, tracing on | 0.75 ms | 254.21 ms | 7.68 ms | 5/5 (504) |
+
+These are separate configurations and tracing modes, not overhead benchmarks.
+The persisted comparison correctly returned `same_spec=false` and a fault
+failure-rate delta of +1. Trace IDs were retained in the second report after
+Jaeger was removed; no permanent trace storage is claimed.
+
+An actual production CLI cancellation check observed an active toxic through
+the project's internal control endpoint, then sent SIGTERM to that runner only.
+The wrapper returned the expected exit 1, the emitted report was `canceled` with
+cleanup confirmed, and 17 fault-phase observations were persisted under
+`history-75f1b8e0de28c9a219a3b7602b7f2b40`. The record was queried after teardown;
+no project containers remained. The runner/wrapper now allow 12 seconds to stop,
+covering cleanup (5 s), export (2 s), persistence (3 s), and a margin.
+
+Ignored local evidence includes `artifacts/m3-checks-final.log`,
+`m3-disabled-final.log`, `m3-tracing-final.log`, `m3-cli-*.json`, and
+`m3-signal-validation.log`. Databases and generated outputs are excluded from Git
+and the Docker build context.
+
+## Limits and regression scope
+
+No unexpected test failures occurred. Negative cases intentionally exercise
+export loss, read-only/aborted SQL writes, contention, cancellation, output failure,
+and abrupt subprocess exit. Topology-specific tests are skipped only in the
+inapplicable tracing mode; the subprocess fixture is skipped except in its child.
+
+The engine, sample services, fault client, tracing instrumentation and semantic
+trace validator were not modified. Legacy flag-based execution and schema-1 report
+fields remain supported; persistence is opt-in for those flags. No new network
+targets, services, hosted CI or paid infrastructure were introduced.
+
+Unfinished intents have unknown outcomes and no per-request checkpoint. Final
+writes may fail, leaving only the intent. Disk-full/physical I/O errors, power cuts,
+Docker VM/storage failure, backups, retention and native/cross-platform build
+matrices were not tested or implemented. SQLite durability still depends on the
+filesystem and flush behavior. Jaeger remains transient. See [history](history.md)
+and [ADR 0003](decisions/0003-specifications-and-sqlite-history.md).

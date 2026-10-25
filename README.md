@@ -16,7 +16,8 @@ scope.
 - Machine-readable reports and automated tests against real network faults
 
 Optional OpenTelemetry tracing and local Jaeger correlate observations across
-the real sample services. The dashboard and SQLite history remain planned.
+the real sample services. Versioned JSON specifications and local SQLite history
+support repeatable runs, inspection and comparisons. The dashboard remains planned.
 No hosted service or paid infrastructure is required.
 
 ## Engineering documentation
@@ -28,6 +29,7 @@ No hosted service or paid infrastructure is required.
 - [Report format and measurement limits](docs/reports.md)
 - [Validation record](docs/validation.md)
 - [Distributed tracing and failure correlation](docs/tracing.md)
+- [Specifications, persistent history and recovery](docs/history.md)
 
 ## Run an experiment
 
@@ -78,7 +80,7 @@ cancellation:
 ./scripts/experiment.sh test
 ```
 
-With Go 1.26 installed, `make check` runs formatting verification, vet and unit
+With Go 1.26 and a C compiler (CGO enabled), `make check` runs formatting verification, vet and unit
 race tests, plus shell endpoint-selection regressions. The shell checks can run
 alone with `sh scripts/test-wrapper.sh`. Without host Go:
 
@@ -90,6 +92,27 @@ docker run --rm --network=none --cpus=2 --memory=1g faultline-dev \
 
 The integration build tag is intentionally opt-in: `go test ./...` alone does
 not prove network injection. No GitHub Actions or hosted CI is configured.
+
+## Reproducible runs and history
+
+```sh
+./scripts/experiment.sh run -spec examples/latency.json
+./scripts/experiment.sh run -spec examples/latency.json
+./scripts/experiment.sh history list
+```
+
+Specification runs default to local `artifacts/faultline.sqlite`. Use `-db` for a
+custom path or to opt legacy flag-based runs into persistence. `history show`
+inspects a listed ID; `history compare` returns phase deltas for two completed
+runs. Queries start no sample/tracing services. Specs reject unknown fields,
+duplicates, unsupported versions and workload overrides. Existing ephemeral
+commands and schema-1 stdout reports retain their behavior.
+
+History commits an intent before execution and the complete/failed/canceled
+report after fault cleanup. A failed final write leaves an unfinished intent and
+returns an error. Unfinished entries do not imply a known failure cause. Trace
+IDs survive as references, while transient Jaeger data does not. See
+[history commands and durability limits](docs/history.md) before relying on storage.
 
 ## Optional distributed tracing
 
@@ -128,7 +151,7 @@ the exact `faultline-…` project, then run:
 ```sh
 FAULTLINE_PROJECT=<exact-project-name> docker compose -p <exact-project-name> \
   -f deploy/compose.yaml -f deploy/compose.tracing.yaml -f deploy/compose.ui.yaml \
-  down --volumes --remove-orphans --timeout 8
+  down --volumes --remove-orphans --timeout 12
 ```
 
 Use all three files even if tracing was disabled: this also selects any optional
