@@ -5,12 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/raimbekalish/faultline/internal/buildinfo"
 	"github.com/raimbekalish/faultline/internal/bundle"
 	"github.com/raimbekalish/faultline/internal/bundlecompare"
 	"io"
 )
 
 func Execute(ctx context.Context, args []string, out, stderr io.Writer) int {
+	if len(args) == 1 && args[0] == "--version" {
+		if err := buildinfo.Write(out); err != nil {
+			fmt.Fprintln(stderr, "write version:", err)
+			return 1
+		}
+		return 0
+	}
 	if len(args) > 0 && args[0] == "compare" {
 		if len(args) != 3 {
 			usage(stderr)

@@ -159,3 +159,10 @@ func canceledContext() context.Context {
 	cancel()
 	return ctx
 }
+
+func TestVersionNeedsNoInputs(t *testing.T) {
+	var out, stderr bytes.Buffer
+	if code := Execute(context.Background(), []string{"--version"}, &out, &stderr); code != 0 || !bytes.Contains(out.Bytes(), []byte(`"revision"`)) {
+		t.Fatal(code, out.String(), stderr.String())
+	}
+}

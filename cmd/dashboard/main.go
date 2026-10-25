@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/raimbekalish/faultline/internal/buildinfo"
 	"io"
 	"log"
 	"net"
@@ -19,6 +20,9 @@ import (
 )
 
 func serve(ctx context.Context, args []string, out io.Writer) error {
+	if len(args) == 1 && args[0] == "--version" {
+		return buildinfo.Write(out)
+	}
 	flags := flag.NewFlagSet("dashboard", flag.ContinueOnError)
 	flags.SetOutput(out)
 	db := flags.String("db", "artifacts/faultline.sqlite", "existing local history database")

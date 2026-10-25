@@ -22,3 +22,5 @@ dist/
 
 *.flb
 .faultline-evidence-*.tmp
+
+__pycache__/

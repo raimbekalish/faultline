@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/raimbekalish/faultline/internal/buildinfo"
 	"io"
 	"os"
 	"os/signal"
@@ -12,6 +13,13 @@ import (
 var revision = "development"
 
 func execute(ctx context.Context, args []string, out, stderr io.Writer) int {
+	if len(args) == 1 && args[0] == "--version" {
+		if err := buildinfo.Write(out); err != nil {
+			fmt.Fprintln(stderr, err)
+			return 1
+		}
+		return 0
+	}
 	if len(args) > 0 {
 		switch args[0] {
 		case "run":
