@@ -28,7 +28,7 @@ flowchart LR
   Bundle --> Offline[Offline verify / inspect / compare]
 ```
 
-Faultline is an early open-source release candidate, not production chaos tooling.
+Faultline is early open-source developer tooling, not production chaos infrastructure.
 It targets only its isolated sample services. It has no arbitrary targets, browser
 fault control, hosted service, AI analysis or statistical-significance claims.
 Toxiproxy emits no spans. Temporary Jaeger traces are not included in bundles.
@@ -40,9 +40,11 @@ validation; this is recorded evidence, not frontend fixture data.
 
 ## Installation and first use
 
-No tagged release or downloadable assets have been published by this milestone.
-Local candidate packages and tested platform details are described in
-[release preparation](docs/release.md). Do not download binaries from an assumed
+Check the repository's [Releases page](https://github.com/raimbekalish/faultline/releases)
+for actual download availability; this documentation does not announce publication.
+The v0.1.0 [installation/demo](docs/install.md) supports reviewed source and published
+packages; [release notes](docs/releases/v0.1.0.md) label historical qualification.
+Local package qualification is recorded in [release preparation](docs/release.md). Do not download binaries from an assumed
 release URL. A package already built from reviewed source can be extracted into a
 new directory, then used without installing build tools:
 
@@ -67,7 +69,10 @@ but use no system SQLite at runtime. A prebuilt dashboard needs no Node at runti
 
 **Runtime-tested candidate targets:** offline macOS ARM64 natively, macOS AMD64 via
 Rosetta 2, Linux ARM64 in Docker's Linux VM, Linux AMD64 via Docker emulation.
-Only macOS ARM64 has a tested native CLI/dashboard package. Emulation is not an
+The native macOS ARM64 CLI/dashboard candidate is separately qualified on macOS
+26.6.2 and embeds a 26.0 minimum; it is not recommended as a primary first-release
+asset. All macOS executables lack Developer ID signing/notarization and can be
+blocked by Gatekeeper, including the offline tool. Emulation is not an
 Intel hardware or broad OS-version qualification. Windows cross-compilation was
 evaluated but runtime behavior is unverified and unsupported. See the
 [full matrix and limitations](docs/release.md#platform-evidence).

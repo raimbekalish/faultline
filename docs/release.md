@@ -1,8 +1,23 @@
-# Release preparation — Milestone 6A
+# Release preparation
 
-No tag, GitHub Release, asset upload, CI or hosted service is created. Version
-`0.1.0-rc.1` is a **local candidate label**, not a published version. Approval of
-this PR and explicit owner approval are required before tagging/publishing.
+This guide describes the publication process, not current release availability.
+Check the repository's [Releases page](https://github.com/raimbekalish/faultline/releases).
+See [release notes](releases/v0.1.0.md), [installation/demo](install.md), and
+[dated validation records](validation.md).
+
+## Historical pre-publication gate — 2026-10-25 PDT
+
+PR #6 had been merged. At this gate no tag, GitHub Release or asset upload existed.
+Local `0.1.0` candidates were built from clean main
+`4a2cc225746115403205058d996f5392c30d3b51`, without a tag; earlier `0.1.0-rc.1`
+artifacts were separate. These are historical review artifacts, not final assets.
+
+The gate found missing third-party notices and release-copy problems. Those archives
+have only Faultline's own MIT license and must not be distributed. The USAGE.md
+appendix supplies SDK/module/runtime license texts through the existing packager.
+Before any publication, review the intended source, build/reverify from its approved
+merge revision and record the actual source/asset inventory. Do not relabel older
+packages or infer a final release SHA from this historical checkpoint.
 
 ## Distribution boundaries
 
@@ -29,7 +44,7 @@ needed. Do not replace someone else's candidate output directory.
 
 ```sh
 # From reviewed, clean source; no publication side effects:
-python3 scripts/package-release.py --version 0.1.0-rc.1 \
+python3 scripts/package-release.py --version 0.1.0 \
   --out artifacts/release-candidates/my-candidate --local
 ```
 
@@ -55,18 +70,25 @@ and compiler executable's Go version are recorded in package metadata. Temporary
 build trees are cleaned; output directories are exclusively created and files are
 published with no-replace hard links. Existing directories are refused.
 
-Two builds of each actual candidate were byte-identical on this machine/toolchain.
+In the 2026-10-25 qualification, repeated candidate builds were byte-identical on
+the recorded machine/toolchain.
 This is **not** a claim of reproducibility across C compilers, SDKs, OS versions,
-Node toolchains or independent builders. Native toolchain/SDK minimum-OS behavior
-needs further qualification. Packages are unsigned/unnotarized; local extraction
-was tested, not Gatekeeper handling of externally downloaded archives. Checksums
+Node toolchains or independent builders. Native toolchain/SDK OS compatibility needs further qualification. Inspection of
+the final candidate shows native CGO minimum macOS 26.0 / SDK 26.5, while offline
+macOS binaries embed 12.0; that is build metadata, not old-OS runtime coverage.
+ARM64 has linker ad-hoc signatures; AMD64 offline is unsigned. No executable has
+Developer ID signing/notarization. Gatekeeper assessment rejected the candidates;
+no downloaded/quarantined execution journey was qualified. Checksums
 are consistency checks, not publisher authentication. No security-policy bypasses.
 
 ## Platform evidence
 
+The runtime and binary-inspection evidence below is historical: 2026-10-25 PDT.
+See dated validation records for any later qualification.
+
 | Target | Offline candidate | Native CLI/dashboard candidate | Evidence/limits |
 | --- | --- | --- | --- |
-| macOS ARM64 | Runtime-tested | Runtime-tested | Apple Silicon host; clean extraction, real history and Chrome |
+| macOS ARM64 | Runtime-tested locally | Runtime-tested, withhold by default | macOS 26.6.2; native minimum 26.0; Gatekeeper assessment rejected |
 | macOS AMD64 | Runtime-tested with Rosetta 2 | Not packaged/tested | No Intel hardware or broad macOS version claim |
 | Linux ARM64 | Runtime-tested | Not packaged/tested | ARM64 Linux VM, read-only scratch, network disabled, 64 MiB |
 | Linux AMD64 | Runtime-tested with Docker emulation | Not packaged/tested | Same isolation; no native x86 hardware claim |
@@ -152,11 +174,20 @@ FAULTLINE_BROWSER_OUTPUT="$PWD/artifacts/my-browser-results" \
   npm --prefix web run test:browser
 ```
 
+## Release scope recommendation
+
+Prefer the four offline packages as primary binaries once the documentation and
+unsigned macOS policy are approved. Keep the native macOS ARM64 package separate;
+its minimum OS and Gatekeeper restrictions limit a first-time installation. Other
+native targets and Windows are excluded. The historical candidate master SHA256SUMS
+listed five archives. A four-asset publication must use a separately checked manifest listing exactly those four,
+not a manifest requiring the withheld archive.
+
 ## Release gate
 
-Review this PR and approve the release scope/version first. Then rebuild from the
-approved merge revision, rerun package/checksum/clean-install checks, decide the
-unsigned distribution policy, and obtain explicit tag/Release publication approval.
+Before publication, review the intended source/documentation and approve the
+release scope/version. Build from that approved merge revision, rerun package,
+checksum and clean-install checks, decide the unsigned distribution policy, and obtain explicit tag/Release publication approval.
 No production-readiness, statistical confidence, exhaustive parser-audit or
 untested operating-system claim follows from the current checks. See [SECURITY.md](../SECURITY.md),
 [ADR 0007](decisions/0007-release-contracts-and-packaging.md), and validation.

@@ -40,12 +40,20 @@ surrogate ambiguity and contradictory ZIP disk/version/local metadata acceptance
 Regression tests, source review, short bounded fuzz runs and isolated no-network
 runtime checks passed. This is **not a comprehensive independent security audit**;
 no guarantee covers every archive parser, filesystem, SDK or dependency defect.
-Native local packages are unsigned/unnotarized; no Windows runtime is qualified.
+All macOS packages lack Developer ID signing/notarization. ARM64 linker ad-hoc
+signatures are not publisher authentication; AMD64 may be unsigned. Gatekeeper
+assessment rejected the qualified candidates; unquarantined local runtime success
+is not proof of downloaded execution. The native CGO candidate embeds a newer
+minimum macOS than the offline tool. No Windows runtime is qualified. No security
+policy/quarantine bypass is supplied.
 
 ## Reporting a concern
 
 Do not post tokens, personal reports, private databases or identifying environment
-data in public issues. A dedicated private disclosure channel is not configured.
-Coordinate sensitive disclosure with the repository owner through their GitHub
-profile before sharing details; public issues should use a minimal privacy-safe
-reproduction. No response-time or security-maintenance SLA is currently promised.
+data in public issues. GitHub private vulnerability reporting is currently disabled, and a dedicated
+private disclosure channel is not configured.
+A GitHub profile is not a private messaging channel. If you need private
+coordination, use a minimal non-sensitive public issue to request a contact method
+without exploit details or private evidence, and wait for the maintainer to arrange
+an appropriate channel before sending sensitive material. No response-time or
+security-maintenance SLA is currently promised.
