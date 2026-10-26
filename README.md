@@ -28,7 +28,7 @@ flowchart LR
   Bundle --> Offline[Offline verify / inspect / compare]
 ```
 
-Faultline is an early open-source release candidate, not production chaos tooling.
+Faultline is early open-source developer tooling, not production chaos infrastructure.
 It targets only its isolated sample services. It has no arbitrary targets, browser
 fault control, hosted service, AI analysis or statistical-significance claims.
 Toxiproxy emits no spans. Temporary Jaeger traces are not included in bundles.
@@ -41,9 +41,9 @@ validation; this is recorded evidence, not frontend fixture data.
 ## Installation and first use
 
 Check the repository's [Releases page](https://github.com/raimbekalish/faultline/releases)
-for actual download availability. This qualification work does not announce a release.
-The proposed v0.1.0 [installation/demo](docs/install.md) and
-[draft release notes](docs/releases/v0.1.0.md) distinguish candidates from publication.
+for actual download availability; this documentation does not announce publication.
+The v0.1.0 [installation/demo](docs/install.md) supports reviewed source and published
+packages; [release notes](docs/releases/v0.1.0.md) label historical qualification.
 Local package qualification is recorded in [release preparation](docs/release.md). Do not download binaries from an assumed
 release URL. A package already built from reviewed source can be extracted into a
 new directory, then used without installing build tools:

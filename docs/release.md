@@ -1,19 +1,23 @@
 # Release preparation
 
-No tag, GitHub Release, asset upload, CI or hosted service has been created.
-PR #6 is merged. Final gate candidates use intended version `0.1.0`, built from
-clean main `4a2cc225746115403205058d996f5392c30d3b51`, without a tag. Earlier
-`0.1.0-rc.1` artifacts remain separate. These are local review artifacts, not
-published releases. See [draft notes](releases/v0.1.0.md),
-[installation/demo](install.md), and the final gate in [validation](validation.md).
+This guide describes the publication process, not current release availability.
+Check the repository's [Releases page](https://github.com/raimbekalish/faultline/releases).
+See [release notes](releases/v0.1.0.md), [installation/demo](install.md), and
+[dated validation records](validation.md).
 
-The gate found release-facing wording to fix before publication: package usage
-must be publication-neutral, macOS signing warnings must cover offline
-executables too, and third-party redistribution notices must be included. The
-qualified archives have only Faultline's own MIT license, so they must not be
-published unchanged. The proposed USAGE.md appendix supplies the SDK/module/runtime
-license texts through the existing packager without code changes. This documentation PR requires owner review, followed by a fresh
-build/reverification from its approved merge SHA. Do not relabel existing packages.
+## Historical pre-publication gate — 2026-10-25 PDT
+
+PR #6 had been merged. At this gate no tag, GitHub Release or asset upload existed.
+Local `0.1.0` candidates were built from clean main
+`4a2cc225746115403205058d996f5392c30d3b51`, without a tag; earlier `0.1.0-rc.1`
+artifacts were separate. These are historical review artifacts, not final assets.
+
+The gate found missing third-party notices and release-copy problems. Those archives
+have only Faultline's own MIT license and must not be distributed. The USAGE.md
+appendix supplies SDK/module/runtime license texts through the existing packager.
+Before any publication, review the intended source, build/reverify from its approved
+merge revision and record the actual source/asset inventory. Do not relabel older
+packages or infer a final release SHA from this historical checkpoint.
 
 ## Distribution boundaries
 
@@ -66,7 +70,8 @@ and compiler executable's Go version are recorded in package metadata. Temporary
 build trees are cleaned; output directories are exclusively created and files are
 published with no-replace hard links. Existing directories are refused.
 
-Two builds of each actual candidate were byte-identical on this machine/toolchain.
+In the 2026-10-25 qualification, repeated candidate builds were byte-identical on
+the recorded machine/toolchain.
 This is **not** a claim of reproducibility across C compilers, SDKs, OS versions,
 Node toolchains or independent builders. Native toolchain/SDK OS compatibility needs further qualification. Inspection of
 the final candidate shows native CGO minimum macOS 26.0 / SDK 26.5, while offline
@@ -77,6 +82,9 @@ no downloaded/quarantined execution journey was qualified. Checksums
 are consistency checks, not publisher authentication. No security-policy bypasses.
 
 ## Platform evidence
+
+The runtime and binary-inspection evidence below is historical: 2026-10-25 PDT.
+See dated validation records for any later qualification.
 
 | Target | Offline candidate | Native CLI/dashboard candidate | Evidence/limits |
 | --- | --- | --- | --- |
@@ -171,15 +179,15 @@ FAULTLINE_BROWSER_OUTPUT="$PWD/artifacts/my-browser-results" \
 Prefer the four offline packages as primary binaries once the documentation and
 unsigned macOS policy are approved. Keep the native macOS ARM64 package separate;
 its minimum OS and Gatekeeper restrictions limit a first-time installation. Other
-native targets and Windows are excluded. The candidate master SHA256SUMS includes
-five archives, so a four-asset publication must use a separately checked manifest
-listing exactly those four, not a manifest requiring the withheld archive.
+native targets and Windows are excluded. The historical candidate master SHA256SUMS
+listed five archives. A four-asset publication must use a separately checked manifest listing exactly those four,
+not a manifest requiring the withheld archive.
 
 ## Release gate
 
-Review this documentation PR and approve the release scope/version first. Then rebuild from the
-approved merge revision, rerun package/checksum/clean-install checks, decide the
-unsigned distribution policy, and obtain explicit tag/Release publication approval.
+Before publication, review the intended source/documentation and approve the
+release scope/version. Build from that approved merge revision, rerun package,
+checksum and clean-install checks, decide the unsigned distribution policy, and obtain explicit tag/Release publication approval.
 No production-readiness, statistical confidence, exhaustive parser-audit or
 untested operating-system claim follows from the current checks. See [SECURITY.md](../SECURITY.md),
 [ADR 0007](decisions/0007-release-contracts-and-packaging.md), and validation.

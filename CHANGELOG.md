@@ -1,9 +1,10 @@
 # Changelog
 
-No tagged release has been published. This entry is proposed for owner review;
-it records implemented behavior, not a fabricated release date.
+Entries describe version contents, not publication status. Check the repository's
+[Releases page](https://github.com/raimbekalish/faultline/releases) for availability
+and published assets; no release date is inferred here.
 
-## 0.1.0 — pending release authorization
+## 0.1.0
 
 - Fixed-topology local latency experiments with baseline, fault and recovery
   measurements, bounded requests, owned cleanup and cancellation handling.
@@ -15,13 +16,13 @@ it records implemented behavior, not a fabricated release date.
   archive verification and deterministic offline descriptive comparison.
 - Four runtime-qualified offline candidate targets; execution through Rosetta or
   Docker emulation is explicitly distinguished from native hardware testing.
-- Proposed distribution includes separate third-party license/notice texts with
-  the packaged usage instructions; current qualification archives need rebuilding.
+- Distribution instructions include separate third-party license/notice texts.
+  The historical 2026-10-25 qualification archives lack them and must not be distributed.
 - Deterministic local packaging, version metadata, SHA-256 manifests and synthetic
   JSON compatibility contracts. Parser regressions cover ambiguous Unicode,
   contradictory ZIP metadata, corruption and resource limits.
 
-Primary proposed release assets are the four offline tools. The macOS ARM64 native
+The primary binary scope is the four offline tools. The macOS ARM64 native
 CLI/dashboard remains a separately qualified local candidate, not a recommended
 initial public asset. macOS downloads lack Developer ID signing/notarization and
 require an explicit owner policy decision. Windows is unsupported. Full fault
