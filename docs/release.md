@@ -1,8 +1,19 @@
-# Release preparation — Milestone 6A
+# Release preparation
 
-No tag, GitHub Release, asset upload, CI or hosted service is created. Version
-`0.1.0-rc.1` is a **local candidate label**, not a published version. Approval of
-this PR and explicit owner approval are required before tagging/publishing.
+No tag, GitHub Release, asset upload, CI or hosted service has been created.
+PR #6 is merged. Final gate candidates use intended version `0.1.0`, built from
+clean main `4a2cc225746115403205058d996f5392c30d3b51`, without a tag. Earlier
+`0.1.0-rc.1` artifacts remain separate. These are local review artifacts, not
+published releases. See [draft notes](releases/v0.1.0.md),
+[installation/demo](install.md), and the final gate in [validation](validation.md).
+
+The gate found release-facing wording to fix before publication: package usage
+must be publication-neutral, macOS signing warnings must cover offline
+executables too, and third-party redistribution notices must be included. The
+qualified archives have only Faultline's own MIT license, so they must not be
+published unchanged. The proposed USAGE.md appendix supplies the SDK/module/runtime
+license texts through the existing packager without code changes. This documentation PR requires owner review, followed by a fresh
+build/reverification from its approved merge SHA. Do not relabel existing packages.
 
 ## Distribution boundaries
 
@@ -29,7 +40,7 @@ needed. Do not replace someone else's candidate output directory.
 
 ```sh
 # From reviewed, clean source; no publication side effects:
-python3 scripts/package-release.py --version 0.1.0-rc.1 \
+python3 scripts/package-release.py --version 0.1.0 \
   --out artifacts/release-candidates/my-candidate --local
 ```
 
@@ -57,16 +68,19 @@ published with no-replace hard links. Existing directories are refused.
 
 Two builds of each actual candidate were byte-identical on this machine/toolchain.
 This is **not** a claim of reproducibility across C compilers, SDKs, OS versions,
-Node toolchains or independent builders. Native toolchain/SDK minimum-OS behavior
-needs further qualification. Packages are unsigned/unnotarized; local extraction
-was tested, not Gatekeeper handling of externally downloaded archives. Checksums
+Node toolchains or independent builders. Native toolchain/SDK OS compatibility needs further qualification. Inspection of
+the final candidate shows native CGO minimum macOS 26.0 / SDK 26.5, while offline
+macOS binaries embed 12.0; that is build metadata, not old-OS runtime coverage.
+ARM64 has linker ad-hoc signatures; AMD64 offline is unsigned. No executable has
+Developer ID signing/notarization. Gatekeeper assessment rejected the candidates;
+no downloaded/quarantined execution journey was qualified. Checksums
 are consistency checks, not publisher authentication. No security-policy bypasses.
 
 ## Platform evidence
 
 | Target | Offline candidate | Native CLI/dashboard candidate | Evidence/limits |
 | --- | --- | --- | --- |
-| macOS ARM64 | Runtime-tested | Runtime-tested | Apple Silicon host; clean extraction, real history and Chrome |
+| macOS ARM64 | Runtime-tested locally | Runtime-tested, withhold by default | macOS 26.6.2; native minimum 26.0; Gatekeeper assessment rejected |
 | macOS AMD64 | Runtime-tested with Rosetta 2 | Not packaged/tested | No Intel hardware or broad macOS version claim |
 | Linux ARM64 | Runtime-tested | Not packaged/tested | ARM64 Linux VM, read-only scratch, network disabled, 64 MiB |
 | Linux AMD64 | Runtime-tested with Docker emulation | Not packaged/tested | Same isolation; no native x86 hardware claim |
@@ -152,9 +166,18 @@ FAULTLINE_BROWSER_OUTPUT="$PWD/artifacts/my-browser-results" \
   npm --prefix web run test:browser
 ```
 
+## Release scope recommendation
+
+Prefer the four offline packages as primary binaries once the documentation and
+unsigned macOS policy are approved. Keep the native macOS ARM64 package separate;
+its minimum OS and Gatekeeper restrictions limit a first-time installation. Other
+native targets and Windows are excluded. The candidate master SHA256SUMS includes
+five archives, so a four-asset publication must use a separately checked manifest
+listing exactly those four, not a manifest requiring the withheld archive.
+
 ## Release gate
 
-Review this PR and approve the release scope/version first. Then rebuild from the
+Review this documentation PR and approve the release scope/version first. Then rebuild from the
 approved merge revision, rerun package/checksum/clean-install checks, decide the
 unsigned distribution policy, and obtain explicit tag/Release publication approval.
 No production-readiness, statistical confidence, exhaustive parser-audit or

@@ -85,8 +85,11 @@ packaging and a broader archive-compatibility matrix remain separate work.
 - [x] Stable synthetic evidence, offline, history and API compatibility fixtures
 - [x] Targeted ZIP/JSON adversarial review, confirmed fixes and bounded fuzzing
 - [x] External quick start, package usage, platform matrix and security limitations
-- [ ] Owner review and approval of this milestone
-- [ ] Rebuild/reverify exact approved merge revision before an approved first tag
+- [x] Owner review/merge of PR #6; fresh 0.1.0 candidates from the approved merge
+- [x] Requalification with real evidence, cross-target runtimes and macOS policy checks
+- [ ] Review publication-neutral usage, third-party notices, signing warnings and release docs
+- [ ] Rebuild/reverify that approved documentation merge and decide unsigned asset policy
+- [ ] Explicit owner authorization before any first tag, Release or asset upload
 
 No tag, Release, CI or asset publication yet. Further release work should qualify
 independent builders/OS versions and native Linux/Intel local packages, decide

@@ -987,3 +987,216 @@ the narrowly documented platform scope. Native non-ARM64-mac local packages,
 Windows, minimum OS versions, physical Intel qualification, signing/notarization
 and independent-builder reproduction are not claimed. They need qualification
 before expanding release support, not invented passing results.
+
+## Final v0.1.0 gate — 2026-10-25 PDT / 2026-10-26 UTC
+
+### Approved merge and immutable candidate source
+
+PR #6 was OPEN/MERGEABLE/CLEAN at approved head
+`19ebabd5697c92b4ffab071449fd83b5d176b796`, with exact approved base
+`53d3d498203f420c7055c217857e26746a5043b0`. GitHub regular merge produced
+`4a2cc225746115403205058d996f5392c30d3b51` at 2026-10-26T01:02:55Z; parent SHAs
+match the approved base and head. All five individual feature commits and owner
+attribution remain intact. Local main fast-forwarded cleanly and matches origin.
+
+**All candidates and functional qualification in this gate use exactly
+`4a2cc225746115403205058d996f5392c30d3b51`**, intended metadata version `0.1.0`,
+not the earlier feature-branch candidate. No tag was needed or created. Authenticated
+account and repository-local noreply identity were verified. All 30 feature commits
+across PRs #1–#6 remain reachable, with owner attribution (7/6/4/5/3/5 respectively).
+No existing local/remote `v0.1.0` tag or GitHub Release was found.
+
+Application source was not changed. Release-facing documentation changes are on
+`codex/v0.1.0-release-docs` for separate owner review; those unreviewed files were
+not substituted into the qualified archives. No asset upload, Release, tag, CI,
+paid service, deployment or unrelated-repository action was performed.
+
+### Exact local candidate inventory
+
+New output: `artifacts/release-candidates/v0.1.0-4a2cc225/`. Earlier candidates were
+preserved. A repeat into `v0.1.0-4a2cc225-repeat/` produced byte-identical hashes for
+all five complete archives on this toolchain. Every executable's metadata checked
+where run: version 0.1.0, exact merge revision, target, Go 1.26.8 and CGO mode.
+
+| Candidate asset | SHA-256 |
+| --- | --- |
+| `faultline-bundle_0.1.0_4a2cc2257461_darwin_amd64.tar.gz` | `2d74aba5bd26bb0a0975641fa48de209786550f621d361e0f839b530df79329d` |
+| `faultline-bundle_0.1.0_4a2cc2257461_darwin_arm64.tar.gz` | `b5680ebc481ef3f745201a6227c32ea6b3574b279f307c401f2d26fdcb214949` |
+| `faultline-bundle_0.1.0_4a2cc2257461_linux_amd64.tar.gz` | `ac2ba6c3f5bd869a6b1f0ce584b4ba1ab2a1c9bfee5f74e3faf79d0436e39760` |
+| `faultline-bundle_0.1.0_4a2cc2257461_linux_arm64.tar.gz` | `c0989f5ad1a7c02c374f53f67efe68aec4199eae02800d0c1ec6eb048d5f0765` |
+| `faultline-local_0.1.0_4a2cc2257461_darwin_arm64.tar.gz` | `cdec2a14bcbc9ab0b6e5b644d110db1d253a0f9410e62e4451a48e238b140145` |
+
+The master SHA256SUMS lists all five. A **separate local-only** selection at
+`artifacts/release-gate-v0.1.0-4a2cc225/primary-offline-assets/` hard-links just the
+four offline archives and has a manifest listing exactly those four. The native
+candidate remains withheld. This stages a proposed asset scope, not publication.
+No archive bytes or prior manifests were changed. A later approved rebuild needs
+new filenames/checksums/selection; these are not relabelable final release assets.
+
+Audit checked outer and every member checksum; ordered regular-file whitelist,
+modes and zero numeric ownership; exact source MIT license and package instructions;
+matching locked production assets/spec examples; version/revision/target/CGO/lock
+metadata. No database, `.flb`, report, environment file, cache or test output is in
+an archive. Known credential patterns and private workspace/home path prefixes
+were absent. These are targeted checks, not a comprehensive secret/binary audit.
+`package-inventory.json` records archive and individual executable hashes.
+
+### Platform and installation qualification
+
+| Target | Actual runtime evidence | Native local package |
+| --- | --- | --- |
+| macOS ARM64 | Native macOS 26.6.2; clean extraction, real verify/inspect/compare | CLI/history/dashboard/Chrome passed locally; withhold by default |
+| macOS AMD64 | Installed Rosetta 2 on ARM64 macOS; same offline workflow | Not offered/tested |
+| Linux ARM64 | ARM64 Docker Linux VM, scratch, network disabled | Not offered/tested |
+| Linux AMD64 | Docker Desktop AMD64 emulation; same isolation | Not offered/tested |
+| Windows | No new candidate/runtime qualification | Unsupported, excluded |
+
+Cross-compilation alone is not treated as runtime success. AMD64 tests are
+explicitly emulated, not native Intel hardware. Full platform host orchestration
+was run on macOS with Docker's ARM64 Linux VM; this does not qualify every Linux
+host/distribution. No minimum-OS runtime sweep was performed.
+
+All four offline packages ran actual newly exported 80/400 ms evidence. The
+comparison JSON was **byte-identical across all four target environments**: 10,629
+bytes, SHA-256 `55ba088a53b6a7a359c6e48f4a1568513e44652f17b9a8fae76d58c28f4b65e3`.
+Rosetta checks additionally covered identity/reversed pairs, actual legacy/canceled
+bundles, truncated archives and oversized inputs; invalid cases exit 1 with no
+success JSON. Valid canceled evidence remains inspectable/non-comparable.
+
+Native packages were extracted in clean private directories; outer/member hashes,
+license and usage were read. PATH lacked Docker, SQLite CLI and build tools. Native
+history read a copy of the new real database. Dashboard health/assets and **one
+real-data Chrome test** passed: overview, pagination/filtering, exact measurements,
+raw outcomes/traces, comparison, evidence download, keyboard and mobile layouts;
+no browser errors/external requests. Original real database and bundles were not
+modified. Screenshots are under the gate's `browser/`, without replacing older ones.
+
+Linux scratch ran as user 65532, no network, read-only root, 0.5 CPU, 64 MiB, 32 PIDs,
+no capabilities and no-new-privileges. It had no SQLite, Docker client/socket,
+shell or collector. A separate **synthetic resource-only** many-key report of
+1,048,547 bytes passed two-input comparison under 64 MiB; output was 9,858 bytes.
+It is not a new measured experiment or a universal peak-memory guarantee.
+
+A trusted-source fallback was also tested from a fresh tracked-source export of
+the exact merge: CGO=0 build, explicit version/revision, correct --version and real
+bundle verification, using cached modules with the module proxy disabled. No
+security policy was changed. This does not claim first-time builds need no network.
+The offline dependency graph still excludes database/sql, history and the SQLite
+driver. Full injection continues to need source/Docker/Compose/the isolated wrapper.
+
+### macOS policy findings and release-copy blockers
+
+`codesign` shows ARM64 binaries use linker **ad-hoc** signatures, with no Team ID;
+AMD64 offline is unsigned. Ad-hoc verification succeeded on ARM64; AMD64 signature
+verification reports no signature. None is Developer ID signed or notarized.
+`spctl --assess --type execute` **rejected every assessed executable**, exit 3.
+These are recorded distribution limitations, not passing Gatekeeper checks. No
+policy or quarantine settings were changed, and no external-download/quarantined
+execution was attempted. Local unquarantined success is not a download UX guarantee.
+
+Mach-O load inspection: offline macOS executables embed minimum/SDK 12.0; native
+CGO CLI/dashboard embed **minimum 26.0 / SDK 26.5**. These are binary build facts,
+not evidence that old macOS versions were tested or supported. The narrow native
+OS qualification and unsigned UX justify withholding the native archive initially.
+
+The source's package USAGE.md says "not a published/signed release" and places its
+macOS warning only under the local-package section. That would be misleading when
+published and hides the offline macOS restriction. This documentation PR makes
+usage publication-neutral and warnings universal. It also clarifies that a GitHub
+profile is not a private contact channel. Read-only GitHub API verification found
+private vulnerability reporting disabled (`enabled:false`); nothing was enabled.
+No dedicated private channel/SLA is advertised. README has no fabricated live
+release/download link. Draft notes, changelog and installation/demo are explicitly
+pre-publication. Corrected instructions must be reviewed and rebuilt into packages,
+not patched into/re-labeled over the qualified archive bytes.
+
+### Confirmed third-party notice omission
+
+The qualified archives contain Faultline's MIT LICENSE but no third-party license
+packet. The Go SDK LICENSE explicitly requires reproducing its copyright/conditions/
+disclaimer in binary-distribution materials. Native SQLite and production React
+have their own MIT notices, and the runtime Go module graph includes other
+licenses/notices. A correct project MIT license does not replace those texts.
+This is an additional **publication blocker**, not a functional-test failure.
+
+The documentation PR appends unmodified notices to USAGE.md, which the existing
+approved packager already copies into every archive. No application or packaging
+code changes are needed. Sources: Go 1.26.8 root/vendor license files, all **23**
+modules in the actual CLI/dashboard/offline runtime package graph (including gRPC
+NOTICE.txt), and React/react-dom/scheduler production licenses. **32 source files,
+13 distinct complete texts**, deduplicated by exact SHA-256, are represented in
+65,610 bytes of package instructions including the appendix. All source texts and
+identifiers were checked against the copied bytes; no private paths were included.
+This is scoped license-source coverage, not a comprehensive legal/compliance audit;
+review again on dependency, toolchain or release-scope changes.
+
+An initial over-broad `go list -m all` discovery tried unused/test-module metadata
+lookups and failed under sandbox DNS restrictions. The successful inventory used
+`GOPROXY=off go list -deps -json` for the actual runtime commands, entirely from
+already available checked modules, without changing dependencies. This discovery
+failure did not affect the functional/module verification results. No download or
+external legal/compliance service was added. Logs/index: `notices.log`,
+`runtime-packages.jsonstream`, `notice-sources.json`. Current candidate archives are
+unchanged and still lack this appendix: review, rebuild and inspect the new
+approved packages before **any** distribution.
+
+### Fresh actual experiment evidence
+
+Both real wrapper-isolated runs recorded clean revision `4a2cc22`, status complete,
+confirmed cleanup, and zero baseline/recovery failures:
+
+| Configuration | Baseline mean | Fault mean / p95 | Fault outcomes | Recovery mean |
+| --- | --- | --- | --- | --- |
+| 80 ms, 10 samples/phase, tracing off | 0.290204 ms | 82.613667 / 84.598459 ms | 0/10 failures | 0.203417 ms |
+| 400 ms, 5 samples/phase, tracing on | 1.321592 ms | 252.369658 / 255.431250 ms | 5/5 HTTP504 | 0.371183 ms |
+
+The candidate native CLI exported both, then offline tools verified and compared
+without database/collector access. New actual evidence is intentionally retained
+under `artifacts/release-gate-v0.1.0-4a2cc225/real/`, separate from synthetic fixtures.
+Bundle SHA-256:
+
+- 80 ms `run-80.flb`: `2c185567a0505fe6ba82e0ea004f0af121051fd1f2201c92199088c4d4c8e4c0`
+- 400 ms `run-400.flb`: `9e267c2879e165416b68b5f4f03c19cb4710d8ed7d0031cece2b7b84fc3333c5`
+
+Fault right-minus-left: mean +169.755992 ms, p95 +170.832791 ms, failures +100
+percentage points; relative failure change null/zero_reference. Correct assessment:
+`descriptive_only`, with differing configuration/sample counts/tracing. These are
+observations, not isolation of causality or statistical significance. Trace IDs
+are retained references, not permanent Jaeger traces.
+
+### Commands, results and remaining gates
+
+Logs are under `artifacts/release-gate-v0.1.0-4a2cc225/`:
+
+- `make check`: PASS Go formatting, shell checks, 2 packager tests, vet and full
+  uncached unit race suite. SQLite migration/rollback/lock/cancellation/failed-write/
+  process-exit/hot-journal recovery and API contracts passed. `go mod verify`: PASS.
+- CGO-disabled `go test -count=1 ./internal/bundle ./internal/bundlecli
+  ./internal/bundlecompare ./internal/jsonstrict ./internal/contracts`: PASS.
+  Format-1 synthetic compatibility snapshots/bytes remain unchanged.
+- `./scripts/experiment.sh test` and `--tracing test`: both PASS real integration
+  race suites with automatic owned teardown; timeout/propagation/export/cancellation/
+  cleanup behavior remains unchanged. No engine/fault/tracing source modification.
+- Bounded fuzz, 20 seconds requested / two workers each: ZIP **298,963** executions;
+  JSON **364,957** executions; both PASS, elapsed about 21 seconds each. No failures;
+  new coverage inputs are not vulnerabilities. Not a comprehensive security audit.
+- `make frontend-check`: PASS locked install (audit reports 0 vulnerabilities),
+  formatting, **9 component/format tests**, TypeScript and Vite production build.
+  Chrome **1 test passed** against the packaged server and new real history.
+- Five exact candidate builds, repeated hashes, content/version/license audits,
+  four runtime targets, no-network/resource tests and source fallback: PASS.
+  macOS trust assessment is **rejected**, explicitly not a functional-test pass.
+
+Cleanup inventory found no Faultline test containers, networks, tagged images or
+volumes, no native dashboard processes/listener and no owned extraction/build/export
+temporary paths. No global prune or deletion of previous evidence/databases.
+Candidates, primary-selection hard links, actual new evidence, logs/screenshots and
+normal build caches remain intentionally. No application source change was needed.
+
+**NO-GO to publish the current candidate set.** Required gates: owner review/merge
+of the release-copy and third-party-notice documentation; fresh build/reverification from that approved
+SHA with updated manifests; explicit acceptance of unsigned offline macOS UX (or
+a separately qualified signing/asset-scope decision); final version-uniqueness
+check and explicit owner authorization to tag/publish. Prefer four offline tools;
+withhold the native package by default. No other confirmed application-code
+blocker was found within the narrow documented runtime scope.
