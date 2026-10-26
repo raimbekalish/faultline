@@ -259,3 +259,17 @@ comparison now calls the same pure absolute-delta helper, preserving its schema,
 fraction-valued failure-rate deltas and behavior. See
 [ADR 0006](decisions/0006-offline-evidence-comparison.md) and the validation record
 for actual native/network-disabled comparisons and remaining test limits.
+
+## Release compatibility and parser profile
+
+`faultline-bundle --version` identifies the executable; it does not replace or
+amend provenance inside the input report. Local candidate installation, platform
+evidence, manifest verification and runtime dependencies are described in
+[release preparation](release.md). Existing verify/inspect/compare JSON and format 1
+are frozen by explicitly synthetic compatibility fixtures; actual experiments
+remain separate validation evidence.
+
+The version-1 boundary rejects Unicode simple-fold-equivalent duplicate fields,
+unpaired JSON UTF-16 escapes and contradictory ZIP disk/version/local descriptor
+metadata. Earlier legitimate exports remain valid; previously tolerated malformed
+archives are intentionally rejected. See [security limits](../SECURITY.md).

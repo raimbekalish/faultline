@@ -6,6 +6,7 @@ test:
 check:
 	sh -n scripts/experiment.sh scripts/test-wrapper.sh scripts/dashboard.sh
 	sh scripts/test-wrapper.sh
+	PYTHONDONTWRITEBYTECODE=1 python3 scripts/test-package-release.py
 	test -z "$$(gofmt -l cmd internal)"
 	go vet ./...
 	go test -race -count=1 ./...

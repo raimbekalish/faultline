@@ -1,0 +1,395 @@
+{
+  "schema_version": 1,
+  "kind": "offline_bundle_comparison",
+  "left": {
+    "bundle_format_version": 1,
+    "history": {
+      "id": "history-00000000000000000000000000000001",
+      "run_id": "faultline-00000000000000000000000000000001",
+      "spec_hash": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+      "created_at": "2026-01-01T00:00:00Z",
+      "finished_at": "2026-01-01T00:00:02Z",
+      "status": "complete"
+    },
+    "spec": {
+      "schema_version": 1,
+      "samples_per_phase": 2,
+      "latency_ms": 80,
+      "request_timeout_ms": 1000
+    },
+    "report_sha256": "3e3394cb31134f6a5a49460215d9098075b0937f2af6fdd27c4a0318075f83b0",
+    "cleanup_complete": true
+  },
+  "right": {
+    "bundle_format_version": 1,
+    "history": {
+      "id": "history-00000000000000000000000000000002",
+      "run_id": "faultline-00000000000000000000000000000002",
+      "spec_hash": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+      "created_at": "2026-01-01T00:00:00Z",
+      "finished_at": "2026-01-01T00:00:02Z",
+      "status": "complete"
+    },
+    "spec": {
+      "schema_version": 1,
+      "samples_per_phase": 2,
+      "latency_ms": 80,
+      "request_timeout_ms": 1000
+    },
+    "report_sha256": "d8edeb0fab81efb3920b2833e9d268e581227cd0f61c65262bf54baa98e8ca74",
+    "cleanup_complete": true
+  },
+  "same_spec": true,
+  "configuration": [
+    {
+      "field": "schema_version",
+      "state": "equal",
+      "left": 1,
+      "right": 1
+    },
+    {
+      "field": "samples_per_phase",
+      "state": "equal",
+      "left": 2,
+      "right": 2
+    },
+    {
+      "field": "latency_ms",
+      "state": "equal",
+      "left": 80,
+      "right": 80
+    },
+    {
+      "field": "request_timeout_ms",
+      "state": "equal",
+      "left": 1000,
+      "right": 1000
+    },
+    {
+      "field": "spec_hash",
+      "state": "equal",
+      "left": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+      "right": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff"
+    }
+  ],
+  "provenance": [
+    {
+      "field": "environment_schema_version",
+      "state": "unknown",
+      "left": 1,
+      "right": null
+    },
+    {
+      "field": "faultline_revision",
+      "state": "equal",
+      "left": "abcdef0",
+      "right": "abcdef0"
+    },
+    {
+      "field": "runner_os",
+      "state": "unknown",
+      "left": "linux",
+      "right": null
+    },
+    {
+      "field": "runner_arch",
+      "state": "unknown",
+      "left": "arm64",
+      "right": null
+    },
+    {
+      "field": "go_version",
+      "state": "equal",
+      "left": "go1.26.8",
+      "right": "go1.26.8"
+    },
+    {
+      "field": "measurement_methodology",
+      "state": "unknown",
+      "left": "serial-http-nearest-rank-v1",
+      "right": null
+    },
+    {
+      "field": "tracing_enabled",
+      "state": "unknown",
+      "left": false,
+      "right": null
+    },
+    {
+      "field": "docker_server_version",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "toxiproxy_reported_version",
+      "state": "equal",
+      "left": "2.12.0",
+      "right": "2.12.0"
+    },
+    {
+      "field": "images.sample.image_id",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "images.sample.reference",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "images.toxiproxy.image_id",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "images.toxiproxy.reference",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "images.jaeger.image_id",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    },
+    {
+      "field": "images.jaeger.reference",
+      "state": "unknown",
+      "left": null,
+      "right": null
+    }
+  ],
+  "assessment": {
+    "classification": "descriptive_only",
+    "descriptive_deltas_available": true,
+    "controlled_experiment_established": false,
+    "statistical_significance_assessed": false,
+    "identity_relation": "distinct_recorded_identities",
+    "reasons": [
+      {
+        "code": "condition_unknown",
+        "field": "environment_schema_version",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "runner_os",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "runner_arch",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "measurement_methodology",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "tracing_enabled",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "docker_server_version",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "images.sample.image_id",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "images.toxiproxy.image_id",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      },
+      {
+        "code": "condition_unknown",
+        "field": "images.toxiproxy.reference",
+        "message": "A required condition was not recorded on one or both sides; absence is not equality."
+      }
+    ]
+  },
+  "phases": [
+    {
+      "phase": "baseline",
+      "left": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right_minus_left": {
+        "mean_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "p95_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "failure_rate": {
+          "absolute": 0,
+          "unit": "percentage_points",
+          "relative_percent": null,
+          "relative_status": "zero_reference"
+        }
+      }
+    },
+    {
+      "phase": "fault",
+      "left": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right_minus_left": {
+        "mean_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "p95_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "failure_rate": {
+          "absolute": 0,
+          "unit": "percentage_points",
+          "relative_percent": null,
+          "relative_status": "zero_reference"
+        }
+      }
+    },
+    {
+      "phase": "recovery",
+      "left": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right": {
+        "availability": "complete",
+        "samples_recorded": 2,
+        "samples_configured": 2,
+        "summary": {
+          "requests": 2,
+          "failures": 0,
+          "failure_rate": 0,
+          "min_ms": 1,
+          "mean_ms": 3,
+          "p50_ms": 1,
+          "p95_ms": 5,
+          "p99_ms": 5,
+          "max_ms": 5
+        }
+      },
+      "right_minus_left": {
+        "mean_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "p95_latency": {
+          "absolute": 0,
+          "unit": "ms",
+          "relative_percent": 0,
+          "relative_status": "available"
+        },
+        "failure_rate": {
+          "absolute": 0,
+          "unit": "percentage_points",
+          "relative_percent": null,
+          "relative_status": "zero_reference"
+        }
+      }
+    }
+  ],
+  "notes": [
+    "Differences are descriptive; no statistical significance, performance improvement or causal conclusion is established.",
+    "Matching specification hashes and recorded conditions do not establish an identical or controlled execution environment.",
+    "Checksums identify consistent content, not authenticity or independently executed experiments.",
+    "Summary durations are end-to-end HTTP milliseconds; summary failure_rate is a fraction. Absolute failure-rate changes use percentage points; relative changes use percent.",
+    "Trace/span references do not establish availability of temporary Jaeger traces; no collector is contacted."
+  ]
+}

@@ -165,7 +165,19 @@ func Read(ctx context.Context, reader io.Reader) (Inspection, error) {
 	}
 	files := map[string][]byte{}
 	cursor := uint64(0)
+	centralCursor := directory
 	for index, f := range z.File {
+		// The standard library deliberately tolerates some contradictory ZIP metadata.
+		// Format 1 has a smaller profile: one contiguous directory on disk zero.
+		centralLength := uint64(46 + len(f.Name))
+		if centralCursor+centralLength > directory+directorySize {
+			return result, fmt.Errorf("truncated central header")
+		}
+		central := b[centralCursor : centralCursor+centralLength]
+		if !bytes.Equal(central[:4], []byte{'P', 'K', 1, 2}) || binary.LittleEndian.Uint16(central[34:36]) != 0 || uint64(binary.LittleEndian.Uint32(central[42:46])) != cursor || (f.ReaderVersion != 10 && f.ReaderVersion != 20) {
+			return result, fmt.Errorf("unsupported central header")
+		}
+		centralCursor += centralLength
 		limit, ok := limits[f.Name]
 		if !ok || f.Name != names[index] || files[f.Name] != nil || !f.Mode().IsRegular() || f.Method != zip.Store || f.Flags & ^uint16(8) != 0 || len(f.Extra) != 0 || f.Comment != "" || f.UncompressedSize64 > uint64(limit) || f.CompressedSize64 != f.UncompressedSize64 {
 			return result, fmt.Errorf("unsafe or unsupported archive entry")
@@ -179,11 +191,26 @@ func Read(ctx context.Context, reader io.Reader) (Inspection, error) {
 			return result, fmt.Errorf("invalid local entry offset")
 		}
 		header := b[cursor : cursor+30]
-		if !bytes.Equal(header[:4], []byte{'P', 'K', 3, 4}) || binary.LittleEndian.Uint16(header[6:8]) != f.Flags || binary.LittleEndian.Uint16(header[8:10]) != zip.Store || binary.LittleEndian.Uint16(header[26:28]) != uint16(len(f.Name)) || binary.LittleEndian.Uint16(header[28:30]) != 0 || string(b[cursor+30:uint64(offset)]) != f.Name {
+		if !bytes.Equal(header[:4], []byte{'P', 'K', 3, 4}) || binary.LittleEndian.Uint16(header[4:6]) != f.ReaderVersion || binary.LittleEndian.Uint16(header[6:8]) != f.Flags || binary.LittleEndian.Uint16(header[8:10]) != zip.Store || binary.LittleEndian.Uint16(header[26:28]) != uint16(len(f.Name)) || binary.LittleEndian.Uint16(header[28:30]) != 0 || string(b[cursor+30:uint64(offset)]) != f.Name {
 			return result, fmt.Errorf("local/central header mismatch")
 		}
 		cursor = uint64(offset) + f.CompressedSize64
 		if f.Flags&8 != 0 {
+			// With a descriptor, local CRC/sizes can be zero or the final values, but
+			// cannot contradict the central directory and descriptor.
+			for _, field := range []struct {
+				got  uint32
+				want uint64
+			}{
+				{binary.LittleEndian.Uint32(header[14:18]), uint64(f.CRC32)},
+				{binary.LittleEndian.Uint32(header[18:22]), f.CompressedSize64},
+				{binary.LittleEndian.Uint32(header[22:26]), f.UncompressedSize64},
+			} {
+				if field.got != 0 && uint64(field.got) != field.want {
+					return result, fmt.Errorf("contradictory local entry metadata")
+				}
+			}
+
 			if cursor+16 > uint64(len(b)) {
 				return result, fmt.Errorf("truncated descriptor")
 			}
@@ -215,7 +242,7 @@ func Read(ctx context.Context, reader io.Reader) (Inspection, error) {
 		}
 		files[f.Name] = data
 	}
-	if cursor != directory {
+	if cursor != directory || centralCursor != directory+directorySize {
 		return result, fmt.Errorf("hidden archive data")
 	}
 	var m Manifest

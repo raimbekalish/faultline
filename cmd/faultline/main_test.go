@@ -14,3 +14,10 @@ func TestInvalidArguments(t *testing.T) {
 		}
 	}
 }
+
+func TestVersionNeedsNoHistory(t *testing.T) {
+	var out, err bytes.Buffer
+	if code := execute(context.Background(), []string{"--version"}, &out, &err); code != 0 || !bytes.Contains(out.Bytes(), []byte(`"revision"`)) {
+		t.Fatal(code, out.String(), err.String())
+	}
+}

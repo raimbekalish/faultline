@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "integrity": "checksums_verified_not_authenticity",
+  "history": {
+    "id": "history-00000000000000000000000000000001",
+    "run_id": "faultline-00000000000000000000000000000001",
+    "spec_hash": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+    "created_at": "2026-01-01T00:00:00Z",
+    "finished_at": "2026-01-01T00:00:02Z",
+    "status": "complete"
+  },
+  "warnings": [
+    "Checksums detect inconsistency; they do not establish authenticity.",
+    "Trace/span IDs are references only; temporary Jaeger traces are not included.",
+    "Docker server/image provenance was unavailable at execution."
+  ]
+}

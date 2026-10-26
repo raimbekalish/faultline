@@ -1,0 +1,6 @@
+[
+  {"name":"duplicate","json":"{\"status\":1,\"status\":2}"},
+  {"name":"Unicode folding","json":"{\"status\":1,\"ſtatus\":2}"},
+  {"name":"unpaired surrogate","json":"{\"error\":\"\\ud800\"}"},
+  {"name":"trailing value","json":"{} {}"}
+]

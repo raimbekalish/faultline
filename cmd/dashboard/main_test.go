@@ -77,3 +77,10 @@ func TestNativeServerCancellationClosesListener(t *testing.T) {
 		t.Fatal("listener survived expiry")
 	}
 }
+
+func TestVersionNeedsNoAssetsOrDatabase(t *testing.T) {
+	var b bytes.Buffer
+	if err := serve(context.Background(), []string{"--version"}, &b); err != nil || !bytes.Contains(b.Bytes(), []byte(`"revision"`)) {
+		t.Fatal(err, b.String())
+	}
+}

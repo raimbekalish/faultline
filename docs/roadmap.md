@@ -77,6 +77,18 @@ packaging and a broader archive-compatibility matrix remain separate work.
 - [x] Real exported records, reverse/identity/legacy/canceled and bounded-memory tests
 - [x] Existing fault/tracing, history, archive and frontend regressions
 
-Recommended release-readiness work: platform-specific verifier packaging and
-verification, versioned JSON contract fixtures, broader filesystem/architecture
-testing and focused archive/parser security review before a tagged release.
+## 6A — Release readiness
+
+- [x] Local candidate archives with explicit component/dependency boundaries
+- [x] Four offline cross-builds and native/VM/emulated runtime qualification
+- [x] Native macOS ARM64 CLI/dashboard/assets clean-install validation
+- [x] Stable synthetic evidence, offline, history and API compatibility fixtures
+- [x] Targeted ZIP/JSON adversarial review, confirmed fixes and bounded fuzzing
+- [x] External quick start, package usage, platform matrix and security limitations
+- [ ] Owner review and approval of this milestone
+- [ ] Rebuild/reverify exact approved merge revision before an approved first tag
+
+No tag, Release, CI or asset publication yet. Further release work should qualify
+independent builders/OS versions and native Linux/Intel local packages, decide
+artifact authenticity/distribution policy, and collect external clean-install
+feedback. Windows remains unsupported until filesystem/signal/runtime checks exist.

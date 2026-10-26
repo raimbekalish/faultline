@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/raimbekalish/faultline/internal/buildinfo"
 	"io"
 	"log"
 	"net"
@@ -19,6 +20,9 @@ import (
 )
 
 func serve(ctx context.Context, args []string, out io.Writer) error {
+	if len(args) == 1 && args[0] == "--version" {
+		return buildinfo.Write(out)
+	}
 	flags := flag.NewFlagSet("dashboard", flag.ContinueOnError)
 	flags.SetOutput(out)
 	db := flags.String("db", "artifacts/faultline.sqlite", "existing local history database")
@@ -78,7 +82,11 @@ func serve(ctx context.Context, args []string, out io.Writer) error {
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if err := serve(ctx, os.Args[1:], os.Stderr); err != nil {
+	output := io.Writer(os.Stderr)
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		output = os.Stdout
+	}
+	if err := serve(ctx, os.Args[1:], output); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
