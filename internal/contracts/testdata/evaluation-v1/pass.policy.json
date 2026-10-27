@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "require_complete": true,
+  "require_cleanup": true,
+  "phases": {
+    "baseline": { "max_p95_ms": 50 },
+    "fault": { "max_mean_ms": 50, "max_failure_rate": 1 },
+    "recovery": { "max_failure_rate": 0 }
+  }
+}

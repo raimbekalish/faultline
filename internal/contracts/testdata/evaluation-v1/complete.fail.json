@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "kind": "offline_reliability_evaluation",
+  "policy_schema_version": 1,
+  "policy_sha256": "701604ae3ff403c9d8d6a53d72fa41b2055dabb991393bd529d9a5a87e993e68",
+  "evidence": {
+    "bundle_format_version": 1,
+    "history_id": "history-00000000000000000000000000000001",
+    "run_id": "faultline-00000000000000000000000000000001",
+    "run_status": "complete",
+    "spec_hash": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+    "report_sha256": "3e3394cb31134f6a5a49460215d9098075b0937f2af6fdd27c4a0318075f83b0"
+  },
+  "status": "FAIL",
+  "requirements": [
+    {
+      "condition": "run_complete",
+      "actual": true,
+      "required": true,
+      "status": "PASS",
+      "reason": "requirement_satisfied"
+    },
+    {
+      "condition": "cleanup_complete",
+      "actual": true,
+      "required": true,
+      "status": "PASS",
+      "reason": "requirement_satisfied"
+    }
+  ],
+  "phases": [
+    {
+      "phase": "fault",
+      "samples_recorded": 2,
+      "samples_configured": 2,
+      "availability": "complete",
+      "status": "FAIL",
+      "checks": [
+        {
+          "condition": "max_mean_ms",
+          "actual": 3,
+          "threshold": 0,
+          "unit": "ms",
+          "operator": "\u003c=",
+          "status": "FAIL",
+          "reason": "bound_violated"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Decisions describe recorded samples under an explicit policy, not statistical guarantees, causal inference, production readiness or SLO compliance.",
+    "Metrics include all HTTP outcomes and use the existing engine summarizer; failure rates are fractions and latency is end-to-end milliseconds.",
+    "Missing, partial, undersampled or unsuitable evidence is indeterminate and takes precedence over threshold failures; unavailable metrics are null, not zero.",
+    "Hashes identify consistent content, not authenticity or independently executed experiments; trace availability is not inferred."
+  ]
+}
