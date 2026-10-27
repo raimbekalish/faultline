@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "kind": "offline_reliability_evaluation",
+  "policy_schema_version": 1,
+  "policy_sha256": "2afc9f3c686a92419dae37ef61394eed1218a8d94474573ce429b75d585e097c",
+  "evidence": {
+    "bundle_format_version": 1,
+    "history_id": "history-00000000000000000000000000000001",
+    "run_id": "faultline-00000000000000000000000000000001",
+    "run_status": "complete",
+    "spec_hash": "b8863c71c47e66821535aab473f9b302e262909eddf9eee100d7eb2a973635ff",
+    "report_sha256": "3e3394cb31134f6a5a49460215d9098075b0937f2af6fdd27c4a0318075f83b0"
+  },
+  "status": "PASS",
+  "requirements": [
+    {
+      "condition": "run_complete",
+      "actual": true,
+      "required": true,
+      "status": "PASS",
+      "reason": "requirement_satisfied"
+    },
+    {
+      "condition": "cleanup_complete",
+      "actual": true,
+      "required": true,
+      "status": "PASS",
+      "reason": "requirement_satisfied"
+    }
+  ],
+  "phases": [
+    {
+      "phase": "baseline",
+      "samples_recorded": 2,
+      "samples_configured": 2,
+      "availability": "complete",
+      "status": "PASS",
+      "checks": [
+        {
+          "condition": "max_p95_ms",
+          "actual": 5,
+          "threshold": 50,
+          "unit": "ms",
+          "operator": "\u003c=",
+          "status": "PASS",
+          "reason": "bound_satisfied"
+        }
+      ]
+    },
+    {
+      "phase": "fault",
+      "samples_recorded": 2,
+      "samples_configured": 2,
+      "availability": "complete",
+      "status": "PASS",
+      "checks": [
+        {
+          "condition": "max_failure_rate",
+          "actual": 0,
+          "threshold": 1,
+          "unit": "fraction",
+          "operator": "\u003c=",
+          "status": "PASS",
+          "reason": "bound_satisfied"
+        },
+        {
+          "condition": "max_mean_ms",
+          "actual": 3,
+          "threshold": 50,
+          "unit": "ms",
+          "operator": "\u003c=",
+          "status": "PASS",
+          "reason": "bound_satisfied"
+        }
+      ]
+    },
+    {
+      "phase": "recovery",
+      "samples_recorded": 2,
+      "samples_configured": 2,
+      "availability": "complete",
+      "status": "PASS",
+      "checks": [
+        {
+          "condition": "max_failure_rate",
+          "actual": 0,
+          "threshold": 0,
+          "unit": "fraction",
+          "operator": "\u003c=",
+          "status": "PASS",
+          "reason": "bound_satisfied"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Decisions describe recorded samples under an explicit policy, not statistical guarantees, causal inference, production readiness or SLO compliance.",
+    "Metrics include all HTTP outcomes and use the existing engine summarizer; failure rates are fractions and latency is end-to-end milliseconds.",
+    "Missing, partial, undersampled or unsuitable evidence is indeterminate and takes precedence over threshold failures; unavailable metrics are null, not zero.",
+    "Hashes identify consistent content, not authenticity or independently executed experiments; trace availability is not inferred."
+  ]
+}

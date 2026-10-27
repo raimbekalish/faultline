@@ -19,6 +19,9 @@ func Execute(ctx context.Context, args []string, out, stderr io.Writer) int {
 		}
 		return 0
 	}
+	if len(args) > 0 && args[0] == "evaluate" {
+		return evaluate(ctx, args[1:], out, stderr)
+	}
 	if len(args) > 0 && args[0] == "compare" {
 		if len(args) != 3 {
 			usage(stderr)
@@ -63,6 +66,7 @@ func Execute(ctx context.Context, args []string, out, stderr io.Writer) int {
 }
 func usage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: faultline-bundle {verify|inspect} FILE.flb | compare LEFT.flb RIGHT.flb")
+	fmt.Fprintln(stderr, "       faultline-bundle evaluate FILE.flb --policy POLICY.json")
 }
 func encode(out, stderr io.Writer, value any) int {
 	enc := json.NewEncoder(out)
