@@ -260,6 +260,156 @@ fraction-valued failure-rate deltas and behavior. See
 [ADR 0006](decisions/0006-offline-evidence-comparison.md) and the validation record
 for actual native/network-disabled comparisons and remaining test limits.
 
+## Offline reliability gates — Unreleased
+
+Milestone 7 adds `evaluate` in source. **v0.1.0 does not contain this command**;
+its tag, binaries, assets and format-1 encoding remain unchanged. Build the current
+source (`make offline`), then use this exact positional syntax:
+
+```sh
+./artifacts/bin/faultline-bundle evaluate RUN.flb --policy reliability.json
+```
+
+`RUN.flb` independently passes the existing archive, checksum, schema and
+raw-sample/summary validators. Only then is the local policy decoded and validated.
+The pure evaluator revalidates both logical inputs. It never changes the bundle,
+repairs measurements, reads history, contacts Jaeger, or captures machine facts.
+No Docker, SQLite, network, account, API key or environment configuration is needed.
+
+### Policy version 1
+
+```json
+{
+  "schema_version": 1,
+  "require_complete": true,
+  "require_cleanup": true,
+  "phases": {
+    "baseline": { "min_samples": 5, "max_failure_rate": 0, "max_p95_ms": 50 },
+    "fault": { "min_samples": 5, "min_failure_rate": 0.9 },
+    "recovery": { "min_samples": 5, "max_failure_rate": 0, "max_p95_ms": 50 }
+  }
+}
+```
+
+This illustrative policy asks whether an intentional fault produced failures and
+baseline/recovery succeeded within selected latency limits. It is not a universal
+default. [Example policies](../examples/policies/) ask two different questions;
+select thresholds appropriate to the experiment rather than a desired verdict.
+
+All four top-level fields are required. Both lifecycle flags must be literally
+true: version 1 has no unsafe opt-out. At least one of `baseline`, `fault` and
+`recovery` must contain a condition; configured phases cannot be empty. Unrequested
+phases have no threshold verdicts, but a conclusive run still requires completed
+execution and cleanup. Up to 15 phase conditions plus two lifecycle requirements
+bound the result to 17 checks.
+
+| Phase field | Bound and unit | Validation |
+| --- | --- | --- |
+| `max_failure_rate` | actual ≤ threshold, **fraction** | finite number, 0–1 |
+| `min_failure_rate` | actual ≥ threshold, **fraction** | finite number, 0–1; cannot exceed maximum if both exist |
+| `max_mean_ms` | actual ≤ threshold, end-to-end **ms** | finite, nonnegative number |
+| `max_p95_ms` | actual ≤ threshold, end-to-end **ms** | finite, nonnegative number |
+| `min_samples` | actual ≥ threshold, **samples** | integer literal, 1–100; a sufficiency requirement |
+
+Every bound is inclusive. There is no epsilon or display rounding in decisions.
+Numbers use float64 semantics; a nonzero decimal that would underflow to zero is
+rejected. After semantic validation, metrics come from the **existing engine
+summarizer over raw samples**, including failed requests and nearest-rank p95.
+This avoids decisions on a stored mean's permitted four-ULP serialization
+allowance, without modifying that stored report or existing comparison semantics.
+No new statistics algorithm or statistical-significance test is introduced.
+
+Policies are at most **8 KiB**, including whitespace, and contain no includes,
+expressions, endpoints or paths. Unknown fields, case aliases, escaped/simple-fold
+duplicates, null fields, invalid UTF-8/surrogates, malformed numbers, infinity,
+NaN, overflow, negative limits, conflicting rates and structural emptiness are
+errors. Explicit permissive boundary rates 0/1 remain legitimate user choices.
+
+### Verdicts, availability and precedence
+
+| Overall status | Exact meaning | Exit |
+| --- | --- | --- |
+| `PASS` | Completed, cleaned run; every requested phase is fully measured, satisfies any minimum count and passes every selected threshold. | 0 |
+| `FAIL` | Evidence meets those prerequisites, but at least one selected numeric bound is violated. | 3 |
+| `INDETERMINATE` | Valid evidence lacks a required prerequisite: failed/canceled execution, unconfirmed cleanup, missing/partial requested phase, or fewer samples than policy demands. | 4 |
+
+INDETERMINATE takes precedence over FAIL. The result still shows a conclusive
+failure in another sufficiently measured phase, but cannot conceal the missing
+prerequisite. Failed/canceled reports never produce conclusive numeric check
+verdicts, even when some phases are complete. Their actual recorded values remain
+inspectable. Confirmed cleanup alone cannot turn a canceled run into PASS.
+
+A phase is `complete` only when observed count equals the specification's configured
+count; it is `partial` for a nonzero smaller count, and `missing` for zero samples.
+Partial samples cannot satisfy a metric check merely by meeting `min_samples`.
+For a missing phase, count zero is a real count; rate/latency values are **null**.
+An observed zero rate or duration remains zero. A completed ten-sample run evaluated
+under `min_samples: 20` is indeterminate rather than a performance failure.
+
+Invalid evidence is different: a report falsely claiming completion with missing
+samples or unsuccessful cleanup fails the existing semantic validator and is an
+**error**, not INDETERMINATE. Unfinished history intents have no final report to
+export; evaluation does not infer their outcome.
+
+### Result schema 1
+
+Output is a single JSON object with a newline, in fixed order:
+
+- `schema_version: 1`, `kind: "offline_reliability_evaluation"`,
+  `policy_schema_version: 1`, and `policy_sha256` of the validated typed policy's
+  fixed-order Go JSON encoding (not RFC 8785 or authentication).
+- `evidence`: format version, history/run IDs, recorded run status, spec hash and
+  original report SHA-256. No file paths, timestamps, raw errors, trace payloads
+  or ambient environment details are copied into the result.
+- `status`, two boolean `requirements`, and requested `phases` in
+  baseline/fault/recovery order. Each phase carries observed/configured counts,
+  availability, status and checks. Check order is minimum samples, maximum rate,
+  minimum rate, maximum mean and maximum p95, skipping unrequested conditions.
+- Each check has `condition`, nullable `actual`, `threshold`, `unit`, `operator`,
+  `status` and `reason`. Units are `samples`, `fraction` or `ms`.
+- Fixed notes explain scope, all-outcome measurements and missing data. Hashes
+  identify consistent content, not authenticity or execution attestation.
+
+Stable reason codes are `requirement_satisfied`, `run_not_complete`,
+`cleanup_unconfirmed`, `bound_satisfied`, `bound_violated`, `no_observations`,
+`phase_incomplete` and `insufficient_samples`. A reason plus the condition,
+actual value, operator and threshold identifies exactly what was not met.
+
+Valid verdicts write JSON to stdout and nothing to stderr. Malformed/unsupported
+bundles or policies, I/O failures, cancellation and output errors exit **1** with
+stderr; usage exits **2**. No result is written for errors before output begins.
+A failed stdout write can already contain partial bytes and overrides a verdict
+code. Existing verify/inspect/compare outputs and exit meanings are unchanged;
+in particular, a valid non-comparable `compare` result still exits 0.
+
+### Examples
+
+```sh
+# Both user-selected policies require completed execution and confirmed cleanup.
+faultline-bundle evaluate latency-80.flb --policy examples/policies/dependency-budget.json
+faultline-bundle evaluate latency-400.flb --policy examples/policies/dependency-budget.json
+faultline-bundle evaluate latency-400.flb --policy examples/policies/expected-timeouts.json
+faultline-bundle evaluate canceled.flb --policy examples/policies/dependency-budget.json
+```
+
+For the retained real demonstration runs, the dependency budget yields PASS for
+80 ms and FAIL for 400 ms; the expected-timeout policy yields PASS for 400 ms and
+FAIL for 80 ms. A retained genuine canceled run yields INDETERMINATE, with recovery
+metrics null. These are observations for those recordings, not promised outcomes
+for future runs. Exact measurements and exit codes are in the validation record.
+Evaluation makes no causal, significance, production-readiness or SLO claim beyond
+whether the explicit conditions held for recorded samples.
+
+Only explicitly selected bounded regular local files are opened; final symlinks
+are refused. Darwin/Linux additionally use no-follow/nonblocking open and verify
+file identity, covering substitution between stat/open. Parent directories resolve
+normally and must be trusted. There is no path traversal driven by policy contents.
+Cancellation is cooperative; kernel filesystem stalls and arbitrary output writers
+retain OS limitations. Concurrent in-place mutation is not an attested snapshot;
+evaluate stable inputs. No output files or network connections are created;
+input handles are opened and closed by the CLI. See
+[ADR 0008](decisions/0008-offline-reliability-gates.md).
+
 ## Release compatibility and parser profile
 
 `faultline-bundle --version` identifies the executable; it does not replace or

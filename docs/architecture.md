@@ -228,6 +228,37 @@ points and nullable relative percentages. No bundle, report or database migratio
 No dashboard/API expansion. See [ADR 0006](decisions/0006-offline-evidence-comparison.md)
 and [offline comparison](evidence.md#offline-comparison--result-schema-1).
 
+## Offline reliability gates (Unreleased)
+
+```text
+local policy JSON → bounded strict decoder → validated Policy
+                                                   │
+format-1 .flb → existing bundle/record validators → pure evaluator → result JSON
+                                                                  + exit code
+```
+
+`internal/bundleevaluate` separates pure decisions from its local policy-file
+adapter. It reuses `jsonstrict` for Unicode/duplicate checks and the existing
+record/bundle validators for evidence integrity. Only explicit version-1 fields
+exist. A fixed grammar bounds input to 8 KiB and output to 17 conditions; there
+are no expressions, external targets, includes, database or network operations.
+
+The engine summarizer supplies canonical metrics after validation. Policies never
+recalculate statistics using a separate algorithm or repair original report bytes.
+Completed execution and cleanup are mandatory; partial/missing/undersampled phases
+stay indeterminate. Inclusive thresholds use actual float64 values and fraction
+failure rates, with no display rounding/epsilon. Fixed output order and identities
+without paths/clocks make identical inputs deterministic across qualified targets.
+
+`bundlecli` owns the existing strict archive read, policy read, JSON presentation
+and additive 0/3/4 verdict exits; old 1/2 error/usage meanings remain. No existing
+result, report, specification, bundle or database version changes. The native
+CLI's existing delegation reaches the same command without new persistence logic.
+Policy files on Darwin/Linux are opened without following a final symlink or
+blocking on a substituted FIFO, then checked against their original regular inode.
+See [ADR 0008](decisions/0008-offline-reliability-gates.md) for semantics and limits.
+This command is not in v0.1.0; no published binary is changed.
+
 ## Release and compatibility boundary
 
 The offline executable remains CGO-disabled/database-free; native CLI/dashboard

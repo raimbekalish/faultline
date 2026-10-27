@@ -94,6 +94,13 @@ over speculative interfaces or mocked product features.
   and existing history/API fraction units. No current-machine capture in compare.
 - The dashboard downloads only by validated ID, never filesystem paths. It stays
   read-only and never makes historical Jaeger references appear permanently live.
+- Reliability gates must revalidate policies and evidence before evaluation and
+  reuse the engine summarizer. Schema 1 requires complete execution and cleanup;
+  missing/partial/undersampled evidence cannot pass. Preserve inclusive bounds,
+  fraction units, null missing metrics and INDETERMINATE precedence over FAIL.
+- Evaluate alone uses 0/3/4 for PASS/FAIL/INDETERMINATE; keep existing error 1,
+  usage 2 and all old command contracts. Keep policy input/output bounded and
+  decisions independent of filesystem paths, clocks, environment and services.
 
 ## Git workflow
 

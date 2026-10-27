@@ -242,6 +242,28 @@ non-comparable partial/failed evidence. Missing provenance stays unknown; relati
 changes with zero references remain unavailable. It makes no significance or
 causality claim. See [comparison rules and examples](docs/evidence.md#offline-comparison--result-schema-1).
 
+## Offline reliability gates — Unreleased
+
+Milestone 7 source adds explicit policy decisions for validated bundles. **This
+command is not in the v0.1.0 release binaries.** Build it from the current source:
+
+```sh
+make offline
+./artifacts/bin/faultline-bundle evaluate artifacts/run.flb --policy examples/policies/dependency-budget.json
+```
+
+The example uses user-selected sample, failure-rate, mean and p95 limits; it is
+not a universal reliability policy. `expected-timeouts.json` instead asks whether
+an intentional fault produced failures while baseline/recovery succeeded. Choose
+thresholds for the question being tested. Failure rates are fractions (0–1).
+
+JSON statuses and exit codes are **PASS / 0**, **FAIL / 3**, and
+**INDETERMINATE / 4**. Invalid input, I/O or cancellation is error / 1; usage is 2.
+Incomplete runs, unconfirmed cleanup and missing/insufficient observations cannot
+pass. Decisions describe these samples, not causality, significance or SLO
+compliance. Evaluation needs no Docker, SQLite, Jaeger, network or account.
+See [policy schema, reasons and examples](docs/evidence.md#offline-reliability-gates--unreleased).
+
 ## Optional distributed tracing
 
 ```sh

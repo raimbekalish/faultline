@@ -4,6 +4,17 @@ Entries describe version contents, not publication status. Check the repository'
 [Releases page](https://github.com/raimbekalish/faultline/releases) for availability
 and published assets; no release date is inferred here.
 
+## Unreleased
+
+- Offline reliability gates: strict version-1 local policies and deterministic
+  per-condition PASS/FAIL/INDETERMINATE JSON with separate verdict exit codes.
+- Inclusive failure-rate, mean/p95 latency and sample-sufficiency bounds;
+  mandatory completed-run/cleanup evidence and conservative partial handling.
+- Bounded policy parsing, semantic/format-1 validator reuse and original command
+  compatibility. No database/bundle/report/specification migration or new dependency.
+
+These additions require a source build and are not part of v0.1.0 or its assets.
+
 ## 0.1.0
 
 - Fixed-topology local latency experiments with baseline, fault and recovery

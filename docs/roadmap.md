@@ -87,11 +87,27 @@ packaging and a broader archive-compatibility matrix remain separate work.
 - [x] External quick start, package usage, platform matrix and security limitations
 - [x] Owner review/merge of PR #6; fresh 0.1.0 candidates from the approved merge
 - [x] Requalification with real evidence, cross-target runtimes and macOS policy checks
-- [ ] Review publication-neutral usage, third-party notices, signing warnings and release docs
-- [ ] Rebuild/reverify that approved documentation merge and decide unsigned asset policy
-- [ ] Explicit owner authorization before any first tag, Release or asset upload
+- [x] Review publication-neutral usage, third-party notices, signing warnings and release docs
+- [x] Rebuild/reverify that approved documentation merge and decide unsigned asset policy
+- [x] Explicit owner authorization before the first tag, Release and asset upload
 
-No tag, Release, CI or asset publication yet. Further release work should qualify
-independent builders/OS versions and native Linux/Intel local packages, decide
-artifact authenticity/distribution policy, and collect external clean-install
+v0.1.0 is published with four offline packages and SHA256SUMS after owner approval;
+the native package remains withheld. No GitHub Actions were enabled. Further
+release work should qualify independent builders/OS versions and native
+Linux/Intel local packages, decide artifact authenticity/distribution policy, and collect external clean-install
 feedback. Windows remains unsupported until filesystem/signal/runtime checks exist.
+
+## 7 — Offline reliability gates (Unreleased)
+
+- [x] Strict bounded schema-1 policies with explicit lifecycle requirements
+- [x] Pure deterministic evaluation using shared evidence/statistics validators
+- [x] Inclusive rate/mean/p95 thresholds, sample sufficiency and null missing data
+- [x] Versioned per-condition results and distinct PASS/FAIL/INDETERMINATE exits
+- [x] Real retained 80 ms, 400 ms and SIGTERM-canceled evidence replay
+- [x] Full regression, isolated offline runtime and cross-target determinism checks
+- [ ] Owner code review and merge
+
+This source feature is not included in v0.1.0 binaries or assets. It changes no
+existing format-1 bundle, report, experiment spec, SQLite schema or comparison
+semantics. Broader policy languages, dashboard execution and statistical/SLO
+claims remain outside this milestone.

@@ -1200,3 +1200,150 @@ a separately qualified signing/asset-scope decision); final version-uniqueness
 check and explicit owner authorization to tag/publish. Prefer four offline tools;
 withhold the native package by default. No other confirmed application-code
 blocker was found within the narrow documented runtime scope.
+
+## Milestone 7 — offline reliability gates (Unreleased)
+
+Date: 2026-10-27. Branch: `codex/offline-reliability-gates`, based on reviewed
+main `da65e5a14e88ffc181a115dd30e77483685c3772`. This is source-only work;
+`v0.1.0` does not gain `evaluate`. No release/tag/assets, dependency, engine,
+format-1 encoding, original compatibility fixture, database schema or experiment
+specification changed. Task outputs/logs are retained separately under ignored
+`artifacts/m7-gates-023cb538/`; original experiments were not rerun for nicer data.
+
+### Genuine evidence replay
+
+Reused byte-identical, previously exported format-1 bundles, independently
+validated by the new CGO-disabled CLI before each evaluation:
+
+| Recorded experiment | Real run ID | Observations and cleanup |
+| --- | --- | --- |
+| 80 ms, tracing off | `faultline-ba5331968a02ffc39a5719035c06565e` | Complete; 10 per phase; confirmed cleanup |
+| 400 ms, tracing on | `faultline-2f70fc38cdcc1a42744ba40f71a5c5ee` | Complete; 5 per phase; confirmed cleanup |
+| SIGTERM during a fault | `faultline-f2a0c543e9bf04dc3aec78223ae19aec` | Canceled; baseline 100, fault 17, recovery 0 of 100 configured; confirmed cleanup |
+
+The completed originals are `artifacts/demo-video/data/latency-{80,400}.flb`.
+The canceled original is `artifacts/m5-bundles/canceled-0.flb`, whose actual
+SIGTERM/persistence provenance is recorded earlier in this document under
+Milestone 5A (history `history-75f1b8e0de28c9a219a3b7602b7f2b40`). It is not a
+synthetically truncated completed run. Input hashes and exact commands/results
+are retained in `real-e2e.json` under the task directory. Original SHA-256 values:
+
+- 80 ms: `8e28262efcef42e1dc6524b0a91b6a958bdffc0c7de9a052b715c5b34a7399d1`
+- 400 ms: `9e1589b8805c2bfdfef3c577c66ba33ad19dbd8ff4f0075e7346c4a8c918178e`
+- Canceled: `0b624807e76194bbd35e8f263b90e75d95a140b5a3ebc79786fffbbda0859df4`
+
+| Evidence / explicit example policy | Actual status | Exit | Recorded fault evidence |
+| --- | --- | ---: | --- |
+| 80 ms / dependency budget | PASS | 0 | Mean 86.57662090000001 ms; p95 97.238375 ms; failure fraction 0 |
+| 400 ms / dependency budget | FAIL | 3 | Mean 256.6229166 ms >150; p95 260.273583 ms >200; fraction 1 >0 (5 HTTP 504) |
+| 400 ms / expected timeouts | PASS | 0 | Fault fraction 1 ≥0.9; baseline/recovery successful within the selected limits |
+| 80 ms / expected timeouts | FAIL | 3 | Fault fraction 0 <0.9 |
+| Canceled / dependency budget | INDETERMINATE | 4 | Run incomplete; fault partial; recovery metrics null, count 0; cleanup true |
+
+All five valid verdicts wrote one JSON object to stdout and empty stderr.
+Actual values in the result come from the existing engine summarizer after
+validation. Baseline and recovery failure fractions were 0 in both completed
+recordings. These distinct policies ask different questions, not statistical
+significance, isolated causality or SLO compliance. No old Jaeger trace storage is
+implied. No measurements, statuses or original evidence bytes were edited.
+
+### Executed checks
+
+- Host Go 1.26.8 on native macOS ARM64: `make check` and `go mod verify` PASS.
+  Includes shell syntax/endpoint precedence, two packaging tests, gofmt, vet and
+  full uncached unit race tests. SQLite migrations, rollback, bounded contention,
+  failed/canceled writes, abrupt-process/hot-journal recovery and API/history
+  contracts passed. The first sandboxed run could not bind httptest loopback
+  listeners; the authorized rerun passed. This was an environment restriction,
+  not a hidden passing result.
+- New tests cover all three verdicts; failed/canceled/partial and pre-engine
+  reports; unconfirmed cleanup; null versus zero; minimum-count sufficiency;
+  inclusive exact thresholds/adjacent floats; canonical summarizer versus allowed
+  stored-mean roundoff; revalidation and deterministic encoding. CLI tests cover
+  0/3/4 versus 1/2, stderr/stdout, real ZIP corruption, invalid inputs, canceled
+  contexts, broken/short output and unchanged input files/no created state.
+- Policy boundary tests cover unknown/case-aliased/escaped and simple-fold
+  duplicate fields, malformed UTF-8/surrogates, nulls, unsupported versions,
+  contradictory rates, range/type/overflow/underflow errors, exact 8 KiB versus
+  excess input, bounded readers, read failures and cancellation. Actual temporary
+  regular files, final symlinks and FIFOs exercise local filesystem behavior.
+- CGO-disabled tests PASS for bundleevaluate, bundlecli, bundlecompare, bundle,
+  jsonstrict, contracts and buildinfo; offline builds PASS for Darwin and Linux,
+  ARM64 and AMD64. Offline dependency listing contains no history, database/sql
+  or SQLite driver. Focused race coverage: evaluator 93.8%, CLI 83.6% of statements;
+  coverage is not a correctness/security guarantee.
+- Existing format-1 compatibility contracts PASS unchanged. Four new explicitly
+  **synthetic** reviewed evaluation contracts freeze PASS, FAIL, canceled/null
+  and legacy/no-provenance output plus 0/3/4 codes. Tests never regenerate them.
+- Bounded fuzz smoke checks PASS, two workers and 15 seconds requested per target:
+  policy 134,396 executions; ZIP 2,891; strict JSON 34,256 (about 16 seconds each).
+  No confirmed parser bug/crash found; this is not a comprehensive security audit.
+- Frontend formatting, all 9 component/format tests, TypeScript and Vite production
+  build PASS. No frontend/API behavior changed; browser tests were not rerun.
+- `./scripts/experiment.sh test` and `./scripts/experiment.sh --tracing test`:
+  both PASS full serialized unit/integration race suites against real Toxiproxy,
+  sample services and, in the latter, Jaeger. The no-collector export-failure
+  test passed with tracing off; the real Jaeger export/correlation test passed
+  with tracing on (each skips its inapplicable opposite topology). Real active
+  cancellation, cleanup/other-owner preservation and persisted canceled/repeated
+  runs passed. Fresh regression fault means were 83.55/251.48 ms without tracing
+  and 84.59/254.81 ms with tracing for 80/400 ms injection; 400 ms produced 5/5
+  failures, with successful recovery. These are separate test runs, not an
+  overhead benchmark or replacements for the retained evidence above. Docker
+  Desktop was initially stopped; it was started before the successful suites.
+
+### Independent offline execution and compatibility
+
+`runtime-check.py` in the task directory executed **14 cases on each of four
+runtime targets**: five evaluation verdict cases, verify/inspect on each of the
+three real bundles, and three comparison pairs (different, identical, canceled).
+All 56 results had expected exits, empty stderr, valid JSON and **byte-identical
+stdout across targets**:
+
+| Target | Actual runtime qualification |
+| --- | --- |
+| macOS ARM64 | Native on this Mac |
+| macOS AMD64 | Rosetta 2 on this Mac; no physical Intel qualification |
+| Linux ARM64 | Docker Desktop Linux ARM64 virtual machine |
+| Linux AMD64 | Docker emulation in that VM; no physical Intel qualification |
+
+Each Linux binary ran in a scratch image with only the binary, copied bundles and
+example policies: no database, shell/toolchain, Docker client or collector.
+Containers were non-root, read-only, network `none`, all capabilities dropped,
+no-new-privileges, 64 MiB memory, 0.5 CPU and 32 PIDs. They had no published ports,
+mounts or external access. This proves these offline workflows ran without network,
+not absence of networking code in Go dependencies. Runtime contexts, named images
+and containers were removed in `finally` cleanup. Detailed bytes/hashes are in
+`runtime/RESULTS.json` and per-target JSON files.
+
+The nine original-command results also matched the actual released v0.1.0 macOS
+ARM64 executable byte for byte. Its trusted existing archive was opened read-only,
+only the verifier extracted into the task directory, and that temporary executable
+removed after comparison. No old command output/exit semantics changed. Windows
+remains unsupported; these tests add no macOS signing/notarization qualification.
+
+### Review limits
+
+The fixed schema has at most 17 checks and an 8 KiB policy cap. No expressions,
+remote configuration, includes, environment capture, dependencies, API expansion
+or new persistence were added. Evaluation is pure; existing archive/record/JSON
+validators and the engine summarizer remain the only evidence/statistics path.
+Policy input on Darwin/Linux uses no-follow/nonblocking open and regular inode
+identity checks. Parent directories must be trusted; concurrent in-place writes
+are not an attested snapshot. Cancellation is cooperative and cannot forcibly
+interrupt kernel filesystem stalls or arbitrary output writers. Use stable local
+inputs. Checksums/policy identities are consistency references, not authentication.
+
+Final inventory: container and network IDs match the pre-suite inventory; no
+owned wrapper/runtime image tags, Faultline volumes, native Faultline listeners
+or task temporary paths remain. Shared base images/build caches and all previous
+evidence/databases remain. No global cleanup was used. The 44 protected original
+fixture/dependency/release-package/demo files and three replay source bundles
+remain byte-identical; the README's public video URL is unchanged. Remote main,
+the v0.1.0 annotated tag, release body/metadata and its five asset identities,
+sizes and digests are unchanged. No release mutation was performed.
+
+No confirmed merge blocker was found in this scoped review. Owner review/merge
+is still required; the feature remains Unreleased. Policy design/thresholds are
+the user's responsibility, and evaluation provides no confidence intervals,
+cross-run aggregation or guarantee about future traffic.
