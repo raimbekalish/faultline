@@ -38,9 +38,18 @@ Toxiproxy emits no spans. Temporary Jaeger traces are not included in bundles.
 See Faultline inject dependency latency, capture HTTP 504 failures, verify recovery,
 and compare portable evidence — all in 80 seconds.
 
-[![Watch the 80-second Faultline demo showing real HTTP 504 failures](docs/images/demo-preview.jpg)](https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc)
+<a href="https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc">
+  <img src="docs/images/demo-preview.jpg" alt="Watch the 80-second Faultline demo showing real HTTP 504 failures" width="1280">
+</a>
 
 **[Watch the 80-second demo](https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc)** · Caption-driven; no audio required.
+
+<details>
+<summary>Play inline on GitHub</summary>
+
+https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc
+
+</details>
 
 The bundle comparison is `descriptive_only`: recorded configurations differ, and
 no causality or statistical significance is claimed.
