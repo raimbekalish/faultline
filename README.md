@@ -33,10 +33,26 @@ It targets only its isolated sample services. It has no arbitrary targets, brows
 fault control, hosted service, AI analysis or statistical-significance claims.
 Toxiproxy emits no spans. Temporary Jaeger traces are not included in bundles.
 
-![Faultline dashboard showing actual persisted 80 ms and 400 ms experiments](docs/images/dashboard.png)
+## Watch the Demo
 
-Actual persisted experiments, viewed through the packaged dashboard during Chrome
-validation; this is recorded evidence, not frontend fixture data.
+See Faultline inject dependency latency, capture HTTP 504 failures, verify recovery,
+and compare portable evidence — all in 80 seconds.
+
+<a href="https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc">
+  <img src="docs/images/demo-preview.jpg" alt="Watch the 80-second Faultline demo showing real HTTP 504 failures" width="1280">
+</a>
+
+**[Watch the 80-second demo](https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc)** · Caption-driven; no audio required.
+
+<details>
+<summary>Play inline on GitHub</summary>
+
+https://github.com/user-attachments/assets/4fcc2604-4000-4d26-87f4-30af3e5577cc
+
+</details>
+
+The bundle comparison is `descriptive_only`: recorded configurations differ, and
+no causality or statistical significance is claimed.
 
 ## Installation and first use
 
@@ -181,6 +197,11 @@ IDs survive as references, while transient Jaeger data does not. See
 Inspect actual SQLite history: recorded-status counts, searchable runs,
 baseline/fault/recovery charts, raw observations, historical trace references and
 comparisons of completed runs. Experiment services and Jaeger can be stopped.
+
+![Faultline dashboard showing actual persisted 80 ms and 400 ms experiments](docs/images/dashboard.png)
+
+Actual persisted experiments, viewed through the packaged dashboard during Chrome
+validation; this is recorded evidence, not frontend fixture data.
 
 With Node 22.12+, Go 1.26+ and a C compiler installed:
 
