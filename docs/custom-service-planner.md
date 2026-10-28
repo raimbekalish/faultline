@@ -204,3 +204,11 @@ command plans, attempt recording and conservative certification logic. Productio
 continues to expose only this read-only planner. Dedicated bootstrap sources are
 preflight-only and were not built. No runtime continuity provider, mutation driver
 or custom RUN/CLEANUP command exists. Existing plans are not rewritten or upgraded.
+
+
+## M8B3A measurement foundation (Unreleased)
+
+The [measurement engine](design/custom-worker-measurements.md) runs only through
+scoped dependency-injected tests. The planner, descriptor and existing preflight
+protocol/entrypoint are unchanged. Actual local HTTP observations are not evidence
+of Docker DNS/isolation, which remain [unverified qualification gates](security/custom-lab-dns-qualification.md).

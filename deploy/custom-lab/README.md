@@ -1,11 +1,14 @@
 # Custom lab bootstrap source — preparation only, Unreleased
 
-No image in this directory was built, pulled or run for M8B2C. These are reviewable
-source definitions, **not qualified catalog artifacts**. The production CLI still
+No image in this directory was built, pulled or run for M8B2C or M8B3A. These are
+reviewable source definitions, **not qualified catalog artifacts**. The production CLI still
 has only `lab plan`. Building/running requires separate owner authorization.
 
 `Dockerfile` pins the existing Go 1.26.8 builder digest, selects dedicated
-standard-library sources and targets CGO-disabled Linux ARM64. The final scratch
+entrypoint sources and targets CGO-disabled Linux ARM64. The existing spec imports
+engine validation and its compile-time dependencies. M8B3A corrects the selective
+COPY closure and adds locked module download for a later authorized build; this
+step was not executed in Docker. No dependency versions changed. The final scratch
 image has fixed UID/GID 65532, `/` working directory, SIGTERM, no volumes/environment,
 absolute entrypoint and the two contract/revision labels expected by the current
 catalog. A full 40-lowercase-hex `SOURCE_REVISION` is mandatory; there is no mutable
@@ -14,8 +17,9 @@ establish independently reproducible binary/image bytes: actual builds/digests,
 builder availability and reproducibility were not tested here.
 
 The dedicated `/app/faultline lab-worker` source accepts **preflight only**. It has
-no Docker, sample engine, fault injection or SQLite imports. One strict JSON request
-on stdin is capped at 8192 bytes and must contain exactly:
+no Docker, fault injection or SQLite invocation. Spec validation transitively
+imports engine types/modules; only shared validation is called, never sample Run.
+One strict JSON request on stdin is capped at 8192 bytes and must contain exactly:
 
 - `schema_version: 1`, `kind: "faultline-worker-preflight"`;
 - `launch_id` in existing `faultline-lab-<32 hex>` form;
@@ -53,3 +57,10 @@ exact entrypoint/user/labels/volumes/environment and real worker capability befo
 any later catalog enrollment. A successful image inspection or contract label is
 not isolation or execution attestation. Neither recipe is wired into packaging,
 the existing Compose topology, releases or an automatic build/pull path.
+
+M8B3A adds `internal/labworker` separately, exercised only with injected loopback
+HTTP tests and recording fault control. It is not imported/copied into this worker
+entrypoint recipe and does not change the preflight response. A host-side
+`go list -deps` inspection confirms all ten first-party preflight/fixture packages
+are represented by selective COPY entries; this is source-closure evidence, not a
+successful Docker build or qualification of the image profile.

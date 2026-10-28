@@ -17,6 +17,10 @@ M8B2C adds [closed command/result certification](design/docker-transport-certifi
 source-only catalog preflight/fixture definitions. No mutation invocation or
 qualified runtime-continuity provider exists; positive certification is tested
 only with explicit fakes. Plan/journal wire formats remain unchanged.
+M8B3A adds a [private dependency-injected HTTP worker](design/custom-worker-measurements.md)
+([ADR 0012](decisions/0012-custom-worker-measurements.md)). It reuses spec validation
+and statistics but emits a separately versioned ephemeral result, never a sample
+report/history/bundle. No production caller or real fault driver is connected.
 Current execution remains sample-only; no custom runtime,
 tracing, SQLite or portable-evidence support is enabled.
 

@@ -1,6 +1,6 @@
 # ADR 0011: Closed transport preparation and conservative result certification
 
-Status: proposed for M8B2C independent review (Unreleased).
+Status: accepted/merged for non-mutating M8B2C in PR #14 (Unreleased).
 
 ## Context
 

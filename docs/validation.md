@@ -1810,3 +1810,131 @@ GO for independent review of non-mutating M8B2C. NO-GO for real provisioning or
 runtime qualification until the prerequisites in the
 [transport contract](design/docker-transport-certification.md#before-any-real-qualification)
 are reviewed and explicitly authorized. v0.1.0 does not include these changes.
+
+## M8B3A — measurement-capable worker foundation (2026-10-28)
+
+Approved PR #14 was verified OPEN/mergeable at exact head
+`7a40b72dcd00fb5c118e72325b7aea58e88d4195`, base
+`120cd00948a821be74a122f65ae9e63337f33a48`, five original commits and the reviewed
+36 files. Regular merge `8fb5977887ed3d24c280ce5235485e9133ca8c29` has exactly those
+base/head parents. All original commits remain reachable with original authorship;
+GitHub MERGED and clean synchronized main were verified before branching.
+The integration returned 403 without mutation; the authorized owner CLI performed
+the merge without squash/rebase/force/protection bypass.
+
+Private logs and newly generated test evidence are under ignored
+`artifacts/m8b3a-worker-c7591a62/`. Host: macOS ARM64, Go 1.26.8 with existing CGO/C
+toolchain. Test harness IDs identify scoped tests, not Docker resources. Existing
+experiment evidence was neither modified nor rerun.
+
+### Actual new local HTTP measurements
+
+Captured from committed worker source
+`6d6531a7d2edd468f2fc016ca3e3cfefe0424f88` with race instrumentation:
+
+| Dependency handler delay | Baseline mean (ms) | Fault mean (ms) | Recovery mean (ms) | Fault HTTP outcomes |
+| --- | --- | --- | --- | --- |
+| 80 ms | 0.945861 | 83.34394433333333 | 1.3579446666666666 | 200, 200, 200; 0/3 failures |
+| 400 ms | 0.9049166666666667 | 252.5765693333333 | 0.5609996666666667 | 504, 504, 504; 3/3 failures |
+
+Each run made one readiness + three baseline + three fault + three recovery
+requests. Exact frontend/dependency request counts and ten distinct frontend TCP
+connections were verified. Both worker reports are complete with fault removal
+acknowledged and absence verified by the **recording fake**, runtime unqualified
+and whole-lab cleanup unavailable. The dependency/app requests and durations are
+real httptest HTTP activity; **the delay is in a dependency handler, not a Toxiproxy
+network toxic or Docker experiment**. Timing variance from scheduler/connections/
+race instrumentation is expected; these are functional tests, not benchmarks or
+statistical/causal comparisons with released experiments.
+
+Full JSON files: `measurements-final/latency-80.json` and `measurements-final/latency-400.json`.
+SHA-256 respectively:
+`927664ed8a73d17d715e1ec4122c10fe8f43da96ba83fbdc42bb5a1647a1ba39` and
+`5f39aab45cb163bae047820ece5564779efc634df0d222e4cb115e7a05fa1cdf`.
+These hashes check retained test-file consistency, not authenticity/attestation.
+No measured values were fabricated or edited. Identical report JSON roundtrips
+byte for byte; repeated runs naturally produce different durations.
+
+### Executed checks and honest failures
+
+- Final `make check` PASS: shell syntax; four fake-CLI Docker endpoint precedence/
+  remote-refusal cases; two standard-library packaging tests; formatting;
+  `go vet ./...`; full `go test -race -count=1 ./...`. Includes new worker HTTP/
+  strict-result tests, existing process/concurrency/private-filesystem supervisor
+  tests, SQLite migration/rollback/process-exit/hot-journal recovery, API and
+  format-1 compatibility contracts. No real Docker wrapper was invoked.
+- `go mod verify`: all modules verified; go.mod/go.sum unchanged.
+- CGO-disabled offline bundle/CLI/comparison/evaluation/contracts/parser tests PASS;
+  separate CGO-disabled worker/protocol/entrypoint regressions PASS. Native CGO
+  CLI, CGO-disabled offline verifier and preflight worker builds PASS.
+- Local HTTP integration verifies healthy baseline, real 80/400 ms handler-delay
+  behavior, actual 504 classification and recovery. Tests assert exact requests,
+  no redirects/environment proxies/reused-connection retries, response limits,
+  slow headers/body, connection failures, cancellation and whole-run deadlines.
+  Per-request timeout is incomplete baseline evidence, not whole-run cancellation.
+- Typed fake control tests verify apply ambiguity/failure, failed/uncertain removal,
+  still-present faults, independent cleanup after cancellation/partial failure,
+  no recovery after unconfirmed cleanup and failed recovery remaining incomplete.
+- Result validation tests cover raw-sample/statistic mismatches, insufficient/missing
+  data, complete/partial/canceled consistency, nonfinite numbers, forged cleanup,
+  unknown/duplicate/Unicode/null/size/schema errors and deterministic serialization.
+- Production-boundary source tests PASS: no production command imports the new
+  engine; no new real control/subprocess driver. Native `lab`, `lab run` and
+  `lab cleanup` remain usage 2 with empty stdout. Actual preflight stdout matches
+  its original typed contract, including execution unavailable and measurements
+  null. Execution flags remain rejected.
+- Fourteen retained real 80 ms/400 ms/canceled bundle cases match old
+  verify/inspect/compare/evaluate stdout byte for byte and exits (including 0/3/4).
+  Existing evidence hashes unchanged. A new custom worker JSON is rejected by the
+  offline verifier and evaluator with error 1; evaluator check used an existing
+  valid policy (`examples/policies/dependency-budget.json`).
+- Source-only catalog closure check verifies all ten first-party preflight/fixture
+  packages have selective COPY entries. This found a genuine prior recipe omission:
+  spec imports the existing engine and dependencies. The recipe now copies that
+  closure and declares locked module download; no Docker build/download ran. The
+  new measurement package is deliberately not copied into the preflight recipe.
+- DNS analysis inspected Docker documentation and pinned upstream Moby source at
+  `9f07d9222f4277b9a46bda82b3db99186ee595ef`. No demonstrated profile incompatibility
+  was found; command/profile/observer behavior remains unchanged. Every proposed
+  runtime DNS/control/backend/host/restart probe is UNVERIFIED.
+
+An initial compile error (unused test import) was corrected. The first full check
+stopped because downloaded Moby reference files under ignored artifacts had `.go`
+extensions and were discovered by Go. Their bytes were retained as `.go.txt`;
+no dependency was added. The corrected full suite passed. A later real HTTP 700
+regression reproduced an unencodable worker report: the new validator had inherited
+sample status restrictions too narrowly. Fixed only the new custom schema/client
+classification to retain bounded nonstandard numeric codes as `invalid_http_status`;
+legacy validation remains unchanged. Final worker race and complete check reruns
+passed. Failed intermediate logs are retained, not counted as successful checks.
+
+### Compatibility, cleanup and work not run
+
+The v0.1.0 GitHub Release/five assets and annotated tag/peeled source commit remain
+unchanged (release metadata comparison excludes mutable download counters).
+All 44 protected local artifact/evidence/fixture hashes and README demo URL match
+prior records. No existing sample code, schema/specification, SQLite, bundle,
+reliability gate, tracing, dashboard, preflight encoding, journal or plan format
+was changed. No new dependency, release, tag, hosted CI or deployment was created.
+
+No trusted Docker CLI command ran in M8B3A. No build/pull/start/stop/create/delete,
+network mutation, custom container, real fault controller or runtime provisioning
+was used. Only test-owned httptest listeners and temporary filesystem/process
+fixtures were created and closed through test cleanup. No unrelated resources
+were inspected, modified or pruned. No fresh global Docker inventory equality or
+bridge attribution is claimed; the preserved historical discrepancy remains
+UNKNOWN, with runtime continuity unqualified.
+
+Real fault/tracing integration wrappers were NOT RUN because they create Docker
+resources outside authorization. Frontend/browser reruns, actual catalog build,
+independent-container conformance, real Toxiproxy faults/cleanup certification,
+DNS/isolation/host probes, Linux/platform/power-loss qualification and a new fuzz
+campaign were NOT RUN. Local HTTP timing/functional tests prove none of those.
+Context bounds assume cooperative injected control/IO and the tested OS; no
+unconditional teardown or statistical/causal/SLO guarantee is asserted.
+
+GO for independent review/merge of the disconnected M8B3A worker foundation.
+NO-GO for real Docker qualification until reviewed production invocation/result
+binding, actual fault controller, qualified continuity/mutation transport,
+restart/reconciliation, authorized image builds and adversarial isolation/lifecycle
+probes, plus explicit owner authorization. Production preflight remains unchanged.
