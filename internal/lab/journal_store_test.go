@@ -374,15 +374,19 @@ func TestJournalWriteFailureStopsSyntheticTransport(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	j, e = s.Append(ctx, j, a, Event{Operation: Prepare})
-	if e != nil {
-		t.Fatal(e)
+	for _, event := range []Event{{Operation: Prepare}, {Operation: CreateIntent, Key: Edge}, {Operation: Created, Key: Edge, Proof: syntheticProof(t, j, Edge)}} {
+		j, e = s.Append(ctx, j, a, event)
+		if e != nil {
+			t.Fatal(e)
+		}
 	}
+	// A proven-owned network already exists in the synthetic model. Failure to
+	// persist the next intent must stop provisioning without erasing that proof.
 	f := syntheticTransport{}
 	s.save = func(context.Context, *os.Root, string, []byte) error { return errors.New("synthetic disk full") }
-	next, e := s.Append(ctx, j, a, Event{Operation: CreateIntent, Key: Edge})
+	next, e := s.Append(ctx, j, a, Event{Operation: CreateIntent, Key: Data})
 	if e == nil {
-		_, _ = f.create(Edge)
+		_, _ = f.create(Data)
 		j = next
 	}
 	if len(f.calls) != 0 {
@@ -391,5 +395,17 @@ func TestJournalWriteFailureStopsSyntheticTransport(t *testing.T) {
 	recovered, e := s.Load(ctx, j.Plan.Identity.LaunchID)
 	if e != nil || !journalsEqual(j, recovered) {
 		t.Fatal("last committed record changed", e)
+	}
+	cleanup := advance(t, j, a, Event{Operation: CleanupBegin})
+	proof := syntheticProof(t, cleanup, Edge)
+	proof.NetworkEmpty = true
+	if !cleanup.CleanupEligible(a, Edge, proof) {
+		t.Fatal("disk failure erased known cleanup authority")
+	}
+	if _, e = s.Append(ctx, j, a, Event{Operation: CleanupBegin}); !errors.Is(e, ErrStateIO) {
+		t.Fatal("disk failure hidden", e)
+	}
+	if e = s.WriteReceipt(ctx, cleanup, a); e == nil {
+		t.Fatal("uncommitted cleanup presented as final")
 	}
 }
