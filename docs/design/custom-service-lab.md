@@ -132,6 +132,30 @@ Changed bytes, consumed nonce, lost binding, missing image or unqualified runtim
 means refusal; there is no `--force`, generic `--target` or unattended fallback.
 A flag is explicit operator authorization, not authentication of human identity.
 
+### Authorization lifecycle resolved for M8B1
+
+RUN consumption and CLEANUP identity are different operations. A future RUN must
+atomically create/sync a no-replace consumption record binding the entire plan
+hash, launch/proxy IDs, nonce and private runtime binding **before provisioning**.
+Concurrent/repeated RUN attempts fail once that record exists, including after
+cancellation, failed creation, successful cleanup or a crash. A failed attempt
+does not make the plan reusable. Generate a new plan for a new run. Never infer
+unused authorization from resource absence or delete consumption records to retry.
+
+The same hash/identity may subsequently authorize cleanup-only recovery of that
+consumed run, including repeated idempotent cleanup attempts. CLEANUP requires
+the matching private consumption record/journal, runtime binding and verified
+owned resource IDs. The plan itself contains only intended roles/names, not
+observed resource ownership. It grants no permission to adopt resources, search
+by prefix or delete unrelated IDs. No journal, corrupt binding or unknown ID means
+refusal; cleanup must never re-enable RUN, launch traffic or modify old evidence.
+
+M8B1 only produces PLANNED, unqualified plans and their hashes. It creates no
+consumption records, leases or resource journals, and implements no RUN/CLEANUP
+command. Hashes bind content, not a human identity or resource ownership. Future
+execution must revalidate the plan/catalog/runtime and satisfy the implementation
+qualification gates; a successful plan is not an executable safety certificate.
+
 ## Files, image defaults and generated Compose policy
 
 Input descriptors/plans/journals are bounded regular local files. Reuse the policy
