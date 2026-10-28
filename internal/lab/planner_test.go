@@ -428,3 +428,18 @@ func TestInspectionTemplatesOmittedAndNullOptionalFields(t *testing.T) {
 		}
 	}
 }
+
+func TestInspectionTemplateRejectsDeclaredEmptyHealthcheck(t *testing.T) {
+	object := map[string]any{"Id": "sha256:" + strings.Repeat("a", 64), "Os": "linux", "Architecture": "arm64", "Config": map[string]any{"Healthcheck": map[string]any{}}}
+	tmpl, err := template.New("healthcheck-presence").Funcs(template.FuncMap{"json": func(v any) (string, error) { b, e := json.Marshal(v); return string(b), e }}).Parse(appFormat)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tmpl.Execute(&out, object); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := metadata(out.Bytes()); err == nil {
+		t.Fatal("declared empty healthcheck was confused with missing/null")
+	}
+}

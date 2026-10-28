@@ -48,7 +48,7 @@ type reader interface {
 
 // Docker inspect formats decoded maps; empty optional fields may be omitted.
 // Count/presence checks must handle both absent and explicit null values.
-const imageFormat = `{"id":{{json .Id}},"os":{{json .Os}},"arch":{{json .Architecture}},"env_count":{{with index .Config "Env"}}{{len .}}{{else}}0{{end}},"volume_count":{{with index .Config "Volumes"}}{{len .}}{{else}}0{{end}},"healthcheck":{{if index .Config "Healthcheck"}}true{{else}}false{{end}},"onbuild_count":{{with index .Config "OnBuild"}}{{len .}}{{else}}0{{end}}`
+const imageFormat = `{"id":{{json .Id}},"os":{{json .Os}},"arch":{{json .Architecture}},"env_count":{{with index .Config "Env"}}{{len .}}{{else}}0{{end}},"volume_count":{{with index .Config "Volumes"}}{{len .}}{{else}}0{{end}},"healthcheck":{{if ne (index .Config "Healthcheck") nil}}true{{else}}false{{end}},"onbuild_count":{{with index .Config "OnBuild"}}{{len .}}{{else}}0{{end}}`
 const appFormat = imageFormat + `}`
 const labFormat = imageFormat + `,"contract":{{with index .Config "Labels"}}{{json (index . "com.faultline.lab.contract")}}{{else}}null{{end}},"revision":{{with index .Config "Labels"}}{{json (index . "org.opencontainers.image.revision")}}{{else}}null{{end}}}`
 const proxyFormat = imageFormat + `,"pinned_digest":{{$matched := false}}{{range index . "RepoDigests"}}{{if eq . "` + proxyRepoDigest + `"}}{{$matched = true}}{{end}}{{end}}{{$matched}}}`
