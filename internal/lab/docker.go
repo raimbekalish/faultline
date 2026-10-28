@@ -115,6 +115,16 @@ func (c readCommand) args() ([]string, error) {
 		default:
 			format = strings.ReplaceAll(format, "ENV_CHECK", noEnvCheck)
 		}
+		if c.op != networkActual {
+			keys := ownLabelKeys
+			if c.op == runnerActual || c.op == fixtureActual {
+				keys = labLabelKeys
+			}
+			if c.op == proxyActual {
+				keys = proxyLabelKeys
+			}
+			format = strings.ReplaceAll(format, "LABEL_CHECK", labelKeyProjection(keys))
+		}
 		return append(a, kind, "inspect", "--format", format, c.value), nil
 	case proxyImage:
 		if c.value != ProxyReference {

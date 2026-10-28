@@ -116,13 +116,19 @@ func projectedContainerNoTest(j Journal, k ResourceKey) containerObservation {
 	s, _ := j.State()
 	c := g.Containers[resourceIndex(k)-4]
 	lim := c.Role.Limits
-	v := containerObservation{ID: s.Resources[resourceIndex(k)].Proof.ID, Name: "/" + c.Name, Image: c.ImageID, ConfiguredImage: c.ImageID, LabelCount: 3, Launch: g.LaunchID, Role: string(k), Nonce: g.OwnerNonce, Path: c.Role.Entrypoint[0], Args: c.Role.Command, Entrypoint: c.Role.Entrypoint, Command: c.Role.Command, User: "65532:65532", Workdir: "/", StopSignal: "SIGTERM", EnvironmentOK: true, Memory: int64(lim.MemoryMiB) << 20, Swap: int64(lim.MemoryMiB) << 20, NanoCPUs: 500000000, PIDs: 64, NoFileOK: true, SecurityOK: true, ExtrasOK: true, PortsClear: true, DNS: []string{"127.0.0.1"}, DNSSearch: []string{"."}, Tmpfs: map[string]string{}, Mounts: []mountObservation{}, Networks: []endpointObservation{}}
+	v := containerObservation{ID: s.Resources[resourceIndex(k)].Proof.ID, Name: "/" + c.Name, Image: c.ImageID, ConfiguredImage: c.ImageID, LabelCount: 3, LabelKeysOK: true, Launch: g.LaunchID, Role: string(k), Nonce: g.OwnerNonce, Path: c.Role.Entrypoint[0], Args: c.Role.Command, Entrypoint: c.Role.Entrypoint, Command: c.Role.Command, User: "65532:65532", Workdir: "/", StopSignal: "SIGTERM", EnvironmentOK: true, Memory: int64(lim.MemoryMiB) << 20, Swap: int64(lim.MemoryMiB) << 20, NanoCPUs: 500000000, PIDs: 64, NoFileOK: true, SecurityOK: true, ExtrasOK: true, PortsClear: true, DNS: []string{"127.0.0.1"}, DNSSearch: []string{"."}, Tmpfs: map[string]string{}, Mounts: []mountObservation{}, Networks: []endpointObservation{}}
 	if k == Application {
 		v.EnvCount = 2
 		v.Tmpfs["/tmp"] = "rw,nosuid,nodev,noexec,size=33554432,mode=700"
 	}
 	if k == Proxy {
 		v.EnvCount = 1
+		v.LabelCount = 11
+	}
+	if k == Runner || k == Fixture {
+		v.LabelCount = 5
+		v.LabContract = "http-work-v1"
+		v.LabRevision = j.Plan.Components[resourceIndex(k)-4].DeclaredRevision
 	}
 	for n, m := range c.Memberships {
 		name := g.LaunchID + "-" + strings.TrimPrefix(string(m.Network), "network.")
@@ -202,7 +208,7 @@ func TestContainerTemplateDerivesSecurityAndEnvironmentFlags(t *testing.T) {
 	root := map[string]any{"Id": strings.Repeat("a", 64), "Name": "/synthetic", "Path": "/app/service", "Args": []string{}, "Image": "sha256:" + strings.Repeat("a", 64), "Config": map[string]any{"Labels": labels, "Image": "sha256:" + strings.Repeat("a", 64), "Entrypoint": []string{"/app/service"}, "Cmd": []string{}, "User": "65532:65532", "WorkingDir": "/", "StopSignal": "SIGTERM", "Env": []string{"FAULTLINE_DEPENDENCY_URL=http://toxiproxy:8666/value", "FAULTLINE_DEPENDENCY_TIMEOUT_MS=250"}}, "HostConfig": map[string]any{"Memory": 134217728, "MemorySwap": 134217728, "NanoCpus": 500000000, "PidsLimit": 64, "Ulimits": []map[string]any{{"Name": "nofile", "Soft": 256, "Hard": 256}}, "Privileged": false, "ReadonlyRootfs": true, "CapAdd": []string{}, "CapDrop": []string{"ALL"}, "SecurityOpt": []string{"no-new-privileges"}, "PidMode": "", "IpcMode": "private", "UTSMode": "", "UsernsMode": "", "CgroupnsMode": "private", "PublishAllPorts": false, "PortBindings": map[string]any{}, "Binds": []string{}, "VolumesFrom": []string{}, "Devices": []string{}, "DeviceRequests": []string{}, "ExtraHosts": []string{}, "Links": []string{}, "Sysctls": map[string]string{}, "DnsOptions": []string{}, "RestartPolicy": map[string]any{"Name": "no", "MaximumRetryCount": 0}, "LogConfig": map[string]any{"Type": "none", "Config": map[string]string{}}, "Dns": []string{"127.0.0.1"}, "DnsSearch": []string{"."}, "NetworkMode": "synthetic", "Tmpfs": map[string]string{}}, "Mounts": []any{}, "NetworkSettings": map[string]any{"Ports": map[string]any{}, "Networks": map[string]any{}}}
 	root["Path"] = "/app/service"
 	root["Args"] = []string{}
-	tpl, e := template.New("projection").Funcs(template.FuncMap{"json": func(v any) string { b, _ := json.Marshal(v); return string(b) }}).Parse(strings.ReplaceAll(containerProjection, "ENV_CHECK", appEnvCheck))
+	tpl, e := template.New("projection").Funcs(template.FuncMap{"json": func(v any) string { b, _ := json.Marshal(v); return string(b) }}).Parse(strings.ReplaceAll(strings.ReplaceAll(containerProjection, "ENV_CHECK", appEnvCheck), "LABEL_CHECK", labelKeyProjection(ownLabelKeys)))
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -240,5 +246,20 @@ func TestContainerTemplateDerivesSecurityAndEnvironmentFlags(t *testing.T) {
 	encoded, _ := json.Marshal(v)
 	if bytes.Contains(encoded, []byte("PRIVATE_SECRET")) {
 		t.Fatal("environment leaked")
+	}
+}
+
+func TestInheritedLabelsDoNotConferOwnership(t *testing.T) {
+	j := fullJournal(t)
+	for _, k := range []ResourceKey{Runner, Fixture, Proxy} {
+		good := projectedContainerNoTest(j, k)
+		for _, change := range []func(*containerObservation){func(v *containerObservation) { v.LabelKeysOK = false }, func(v *containerObservation) { v.Nonce = "foreign" }, func(v *containerObservation) { v.LabelCount = 3 }, func(v *containerObservation) { v.LabContract = "foreign-contract" }} {
+			v := good
+			change(&v)
+			b, _ := json.Marshal(v)
+			if _, e := verifyResource(b, j, k); e == nil {
+				t.Fatal("foreign inherited labels", k)
+			}
+		}
 	}
 }
