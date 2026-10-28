@@ -236,13 +236,16 @@ func validatePhase(p Phase, n int, ready bool) error {
 		if oneOf(s.Error, "request_canceled", "context_deadline") && (p.Status != "partial" || index != len(p.Samples)-1) {
 			return ErrResult
 		}
-		if s.DurationMS < 0 || math.IsNaN(s.DurationMS) || math.IsInf(s.DurationMS, 0) || (s.Status != 0 && (s.Status < 100 || s.Status > 599)) || s.TraceID != "" || s.SpanID != "" || !oneOf(s.Error, "", "http_status", "request_timeout", "request_canceled", "context_deadline", "connection_error", "transport_error", "body_read_error", "body_too_large") {
+		if s.DurationMS < 0 || math.IsNaN(s.DurationMS) || math.IsInf(s.DurationMS, 0) || s.Status < 0 || s.Status > 999 || s.TraceID != "" || s.SpanID != "" || !oneOf(s.Error, "", "http_status", "invalid_http_status", "request_timeout", "request_canceled", "context_deadline", "connection_error", "transport_error", "body_read_error", "body_too_large") {
 			return ErrResult
 		}
 		if s.Error == "" && (s.Status < 200 || s.Status >= 300) {
 			return ErrResult
 		}
-		if s.Error == "http_status" && (s.Status == 0 || (s.Status >= 200 && s.Status < 300)) {
+		if s.Error == "http_status" && (s.Status < 100 || s.Status > 599 || (s.Status >= 200 && s.Status < 300)) {
+			return ErrResult
+		}
+		if s.Error == "invalid_http_status" && s.Status >= 100 && s.Status <= 599 {
 			return ErrResult
 		}
 	}

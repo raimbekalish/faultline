@@ -206,3 +206,14 @@ func TestPerRequestTimeoutDoesNotCancelWholeRun(t *testing.T) {
 	}
 	validReport(t, r)
 }
+
+func TestNonstandardHTTPStatusRemainsEncodable(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(700) }))
+	defer server.Close()
+	c := configuration(1, 1, 1000)
+	r, e := run(context.Background(), c, clientFor(t, server, 1000), fakeFor(c, &localLab{}))
+	if e == nil || r.Status != "incomplete" || r.Readiness.Samples[0].Status != 700 {
+		t.Fatal(e, r)
+	}
+	validReport(t, r)
+}

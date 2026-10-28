@@ -60,6 +60,8 @@ func (c *contractClient) observe(ctx context.Context) experiment.Sample {
 			}
 		case n > maxBody:
 			sample.Error = "body_too_large"
+		case sample.Status < 100 || sample.Status > 599:
+			sample.Error = "invalid_http_status"
 		case sample.Status < 200 || sample.Status >= 300:
 			sample.Error = "http_status"
 		}
