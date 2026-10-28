@@ -7,7 +7,9 @@ Milestone 8A proposes a future owner-selected service boundary in
 Unreleased M8B1 adds only a [strict read-only planner](custom-service-planner.md):
 `internal/lab` owns the closed contracts, private file publication and bounded
 inspection adapter; the native CLI exposes only `lab plan`. There is no generic
-Docker execution API. Current execution remains sample-only; no custom runtime,
+Docker execution API. Unreleased M8B2A adds the internal
+[closed graph and private journal foundation](design/custom-service-supervisor.md),
+without connecting it to an execution consumer or mutation transport. Current execution remains sample-only; no custom runtime,
 tracing, SQLite or portable-evidence support is enabled.
 
 ## First vertical slice

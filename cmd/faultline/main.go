@@ -36,7 +36,7 @@ func execute(ctx context.Context, args []string, out, stderr io.Writer) int {
 			}
 		}
 	}
-	fmt.Fprintln(stderr, "usage: faultline {run|history|bundle|evidence}; run accepts -spec and optional -db")
+	fmt.Fprintln(stderr, "usage: faultline {run|history|bundle|evidence|lab}; run accepts -spec and optional -db")
 	return 2
 }
 

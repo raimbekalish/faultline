@@ -6,6 +6,13 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B2A: deterministic closed lab resource graph, conservative ownership/cleanup
+  journal state machine and bounded private atomic journal snapshots. Production
+  CLI remains plan-only; no Docker mutation, worker or runtime qualification.
+- Correct top-level CLI usage to include the existing `lab` command. Document
+  read-only bridge diagnostics, supporting idle lifecycle evidence and unknown
+  exact causal/caller attribution.
+
 - M8B1: strict `http-work-v1` descriptors, closed catalog and read-only
   `faultline lab plan` with private no-replace plans/redacted summaries. No
   custom run, cleanup, worker execution or runtime qualification is enabled.

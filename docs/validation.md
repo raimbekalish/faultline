@@ -1461,3 +1461,116 @@ image review remain requirements. Unix sockets, labels and checksums do not
 provide authentication. Future RUN must perform new qualification and durable
 single-use consumption; a private plan is not deletion authority or a safety
 certificate. M8B2 is not started by this work.
+
+## M8B2A — Non-mutating supervisor foundation (2026-10-27 PDT)
+
+PR #11 was checked OPEN/MERGEABLE with exact head
+`691abd711c618d33b821622f5628214b26353942`, base
+`1374c8c55bcb83c2b6b80d34af88a3f663c9467a`, eight identical reviewed commits and
+27 identical reviewed files. Release/tag/protected evidence matched the prior
+baseline and the working tree was clean. Owner CLI regular merge produced
+`053fc73676cb2116be1ecb2ce85ab7d994770738` with those exact base/head parents.
+GitHub reports merged; all eight original commits/authors are preserved, and local
+main fast-forwarded to origin/main before the new feature branch was created.
+
+Implementation scope: pure closed resource graph and strict journal event replay,
+exact identity/runtime/ownership decisions, private bounded atomic snapshot store
+and recording-only failure tests. The only existing production CLI change is
+adding `lab` to top-level usage. No RUN/CLEANUP/worker, Docker mutation transport,
+provisioning, catalog image build, custom app execution or qualification is enabled.
+See the [foundation contract](design/custom-service-supervisor.md).
+
+### Actual checks
+
+- Host Go 1.26.8/macOS ARM64: `make check` PASS, including wrapper endpoint tests,
+  two Python packaging tests, formatting, vet and the full uncached unit race suite.
+  Existing SQLite migration/process-exit recovery, engine/tracing, dashboard API,
+  schema-1 bundle/comparison/gate compatibility tests passed.
+- `go mod verify` PASS. CGO-disabled tests for lab, bundle, bundlecli, bundlecompare,
+  bundleevaluate and contracts PASS. Native CLI and CGO-disabled offline executable
+  built in the new ignored task directory, without rebuilding release assets.
+- Focused race suites PASS for graph/authorization/journal/filesystem/CLI behavior.
+  They cover invalid topology/security/image policy, replay and altered binding,
+  unique/foreign/missing resource proofs, incomplete creation, worker interruption,
+  unknown proxy cleanup, exact-ID cleanup retry and conservative network ordering.
+- Real temporary-file tests PASS: owned/private canonical directories, no final
+  symlinks/FIFOs/hard links/public files, corruption/gaps, stale writers, bounded
+  revisions, cancellation/lock wait and post-publication error/replay. An actual
+  test child exited while holding the advisory guard after writing a torn temporary
+  file. Parent recovery reacquired the lock and retained unresolved creation;
+  it did not invent success, repair committed history or delete recovery evidence.
+- Recording-only transport tests exercise creation failure/lost response at every
+  resource stage, cancellation at every creation/worker intent, cleanup response
+  loss/retry and refusal of foreign IDs. Journal write failure prevents the next
+  synthetic create while retaining exact prior ownership for independent cleanup;
+  uncommitted cleanup cannot produce a final receipt. These are synthetic outcomes,
+  not actual Docker creation/removal or isolation evidence.
+- Fifty repeated concurrent consumption/stale-update race-test runs PASS after
+  the guard creation fix. Exactly one consumer wins; completed/failed/uncertain
+  consumption cannot be replayed. Final focused suite passed after the additional
+  retained-ownership regression.
+- Strict journal fuzz smoke PASS: 15 seconds requested, two workers, 772 executions
+  reported, approximately 16 seconds elapsed, including a valid generated seed.
+  This short run is not a comprehensive parser/security audit.
+- Fourteen retained genuine 80 ms, 400 ms and canceled-bundle CLI cases produced
+  byte-identical verify/inspect/compare/evaluate JSON with unchanged exits, including
+  PASS/FAIL/INDETERMINATE 0/3/4. Original bundles were not modified.
+
+Initial checks exposed environment and test issues accurately retained in logs:
+Go was not on the default PATH; the existing repository toolchain was selected.
+Sandboxed Unix socket fixtures were denied and the default symlinked temporary
+path broke an existing path assertion; host-qualified runs used canonical private
+`/private/tmp` test directories without relaxing product checks. A synthetic
+cleanup helper initially tried to remove networks with ambiguous container
+attachments; the state machine correctly refused, and the helper was corrected.
+
+Repeated concurrency testing found a real guard-open race: simultaneous opens with
+creation sometimes returned ENOENT on this macOS host. Exclusive create followed
+by validated existing-file open (without create/truncate), bounded absent-file
+retry and interrupted-flock retry passed 50 repeated runs. Guard symlinks cannot
+cause creation of their missing targets. No chmod/unlink/overwrite workaround or
+weaker ownership validation was added.
+
+### Read-only Docker diagnostics and unresolved observations
+
+The [sanitized follow-up](security/docker-bridge-observation.md) records bounded
+trusted-CLI version/identity/bridge/inventory/event reads and selected Docker
+Desktop backend log timestamps. No restart, setting/firewall change, image
+build/pull, container start/stop/exec or resource create/delete/prune was invoked.
+Raw endpoint/daemon identity and logs remain private under ignored artifacts.
+
+Engine 29.8.0/Linux ARM64 was reported. Retained Desktop idle stop/start windows
+coincide with bridge creation at 04:18:14 and 04:24:48 UTC, supporting an automatic
+lifecycle explanation. Exact create/delete causal chain and wake caller remain
+UNKNOWN. Both historical/recent bounded event queries timed out after eight seconds;
+no complete activity audit or uninterrupted daemon lifetime was established.
+
+End-of-task container, image and volume IDs matched the diagnostic baseline; all
+five known unrelated network IDs remained present. One network ID was added and
+one removed. A final bridge inspect's ID was absent from the preceding network
+list, demonstrating the reads were not an atomic consistent snapshot. Global
+inventory equality and final exact-default-bridge attribution checks therefore
+FAILED and are retained as failed. No retries, cleanup or host changes forced a
+pass. The new code has no Docker mutation implementation and recorded diagnostics
+were read-only; this does not audit every concurrent actor or qualify isolation.
+
+### Compatibility and unrun work
+
+Existing plan encoding, sample topology/engine, tracing, SQLite, format-1 bundles,
+policy semantics, dependencies and release scripts are unchanged. Protected v0.1.0
+package/evidence/demo hashes and the README video URL remain unchanged; no tag or
+release is modified. Private state is new and separate from experimental data.
+No source databases, existing journals or user evidence were edited or deleted.
+
+Real fault/tracing integration wrappers were **not run** because they create
+containers/networks outside this increment's authorization. No frontend/browser,
+Linux filesystem/runtime, native Intel, actual worker/application, custom network
+probe, image qualification or power-loss durability test was performed. Filesystem
+claims cover observed host file/directory sync, atomic publication and process exit,
+not hardware/full-fsync or unconditional crash cleanup guarantees.
+
+GO for independent review of this non-mutating foundation only. NO-GO for real
+runtime qualification/execution in this increment: fixed ledger/lease wiring,
+trusted actual observation/mutation adapters, catalog bootstrap and explicit
+qualification authorization remain separate reviewed gates. No synthetic proof,
+journal hash or structurally validated graph establishes effective Docker safety.
