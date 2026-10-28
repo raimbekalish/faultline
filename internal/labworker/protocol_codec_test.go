@@ -40,6 +40,17 @@ func TestMeasurementCodecIndependentOfExecutionAdapter(t *testing.T) {
 			t.Fatal("malformed request")
 		}
 	}
+	for _, bad := range [][]byte{
+		bytes.Replace(input, []byte("faultline-worker-measurement-request"), []byte("faultline-worker-preflight"), 1),
+		bytes.Replace(input, []byte(c.SpecificationSHA256), bytes.Repeat([]byte("f"), 64), 1),
+		bytes.Replace(input, []byte(`"schema_version":1`), []byte(`"schema_version":2`), 1),
+		bytes.Replace(input, []byte(`"schema_version":1`), []byte(`"schema_version":1.0`), 1),
+		bytes.Replace(input, []byte(`"tracing":"off"`), []byte(`"tracing":"off","command":"/bin/sh"`), 1),
+	} {
+		if _, e := DecodeMeasurementRequest(context.Background(), bytes.NewReader(bad)); e == nil {
+			t.Fatal("unsupported kind, corrupt hash or executable option accepted")
+		}
+	}
 	if _, e := DecodeMeasurementResponse(context.Background(), bytes.NewReader(output), request, "bad"); e == nil {
 		t.Fatal("bad trusted revision")
 	}

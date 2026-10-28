@@ -311,3 +311,26 @@ func TestControllerAbsenceRequiresFreshConsistentQueries(t *testing.T) {
 		})
 	}
 }
+
+func TestControllerConcurrencyAndBudgetFailClosed(t *testing.T) {
+	c := configuration(80, 1, 1000)
+	s := newControlLab(t, c, &localLab{}, "")
+	ctl := makeController(t, s)
+	ctx := context.Background()
+	ctl.mu.Lock()
+	_, applyErr := ctl.ApplyLatency(ctx, intent(c))
+	removeErr := ctl.RemoveLatency(ctx, intent(c))
+	_, verifyErr := ctl.VerifyRemoved(ctx, intent(c))
+	ctl.mu.Unlock()
+	if applyErr == nil || removeErr == nil || verifyErr == nil {
+		t.Fatal("concurrent method gained authority")
+	}
+	ctl.calls = maxControlRequests
+	if _, e := ctl.ApplyLatency(ctx, intent(c)); e == nil {
+		t.Fatal("request budget bypass")
+	}
+	calls, _ := s.snapshot()
+	if len(calls) != 0 {
+		t.Fatal("unexpected HTTP effects", calls)
+	}
+}
