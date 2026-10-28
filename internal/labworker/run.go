@@ -28,9 +28,10 @@ const (
 	Unknown Presence = "unknown"
 )
 
-// FaultController has no executable implementation. Each call is scoped to the
-// validated intent's exact launch/run identity. Implementations must honor ctx;
-// a future transport and its ownership/continuity proofs require separate review.
+// FaultController has no production runtime binding. Each call is scoped to the
+// validated intent's exact launch/run identity. The closed loopback HTTP adapter
+// is used only by the internal test harness. Implementations must honor ctx;
+// actual runtime ownership/continuity integration requires separate review.
 type FaultController interface {
 	ApplyLatency(context.Context, LatencyIntent) (ApplicationState, error)
 	RemoveLatency(context.Context, LatencyIntent) error
