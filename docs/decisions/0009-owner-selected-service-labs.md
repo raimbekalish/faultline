@@ -1,6 +1,6 @@
 # ADR 0009: Owner-selected services through a closed local adapter
 
-- Status: **proposed for independent design review; not implemented**
+- Status: design approved/merged in PR #10; execution remains unimplemented
 - Date: 2026-10-27
 - Source reviewed: `257eab735c16e9daa2a700d88e329f84c72622af`
 - Scope: Milestone 8A. Approval of this document is not runtime qualification.
@@ -108,3 +108,11 @@ local runtime rather than changing host security or weakening the contract.
 
 Current sample safety rules and `SECURITY.md` remain operative. M8A changes only
 documentation; v0.1.0, its assets and the README demo remain unchanged.
+
+M8B1 clarification: [authorization lifecycle](../design/custom-service-lab.md#authorization-lifecycle-resolved-for-m8b1)
+consumes a plan once for future RUN, while preserving its identity for journal-bound
+cleanup-only recovery. Cleanup cannot grant RUN replay or ownership from names.
+The planner implements neither consumption nor execution and cannot qualify a lab.
+M8B1's [implementation contract](../custom-service-planner.md) specifies the
+private plan/redacted summary, closed inspection operations and absent-catalog
+failure behavior. No existing experiment/evidence schema or runtime is changed.

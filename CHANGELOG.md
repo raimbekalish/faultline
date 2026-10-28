@@ -6,6 +6,9 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B1: strict `http-work-v1` descriptors, closed catalog and read-only
+  `faultline lab plan` with private no-replace plans/redacted summaries. No
+  custom run, cleanup, worker execution or runtime qualification is enabled.
 - Offline reliability gates: strict version-1 local policies and deterministic
   per-condition PASS/FAIL/INDETERMINATE JSON with separate verdict exit codes.
 - Inclusive failure-rate, mean/p95 latency and sample-sufficiency bounds;

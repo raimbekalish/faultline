@@ -1,7 +1,9 @@
 # Owner-selected HTTP service lab — M8A design
 
-**Proposed, not implemented.** This document defines a small M8B implementation
-candidate, not commands available on main or in v0.1.0. It accompanies
+**Approved architecture; execution unimplemented.** M8B1 source implements only
+the [strict descriptor/catalog and read-only planner](../custom-service-planner.md).
+RUN, CLEANUP and the execution/qualification design below remain future work;
+none of these features is in v0.1.0. This document accompanies
 [ADR 0009](../decisions/0009-owner-selected-service-labs.md) and the
 [threat model](../security/custom-service-threat-model.md). Independent review is
 required before implementation; runtime qualification is required before enabling
@@ -95,7 +97,7 @@ and Compose combinations need separate tests; emulation/build success is not
 runtime qualification. Windows/custom rootless/alternate network drivers are
 unsupported until qualified, without weakening existing offline portability.
 
-Proposed future syntax (not available commands):
+Interface (only `lab plan` is implemented in M8B1 source; run/cleanup are future):
 
 ```text
 faultline lab plan --application app.json --out PLAN.json
@@ -131,6 +133,30 @@ Run rechecks the descriptor, catalog, image IDs/platform and runtime binding.
 Changed bytes, consumed nonce, lost binding, missing image or unqualified runtime
 means refusal; there is no `--force`, generic `--target` or unattended fallback.
 A flag is explicit operator authorization, not authentication of human identity.
+
+### Authorization lifecycle resolved for M8B1
+
+RUN consumption and CLEANUP identity are different operations. A future RUN must
+atomically create/sync a no-replace consumption record binding the entire plan
+hash, launch/proxy IDs, nonce and private runtime binding **before provisioning**.
+Concurrent/repeated RUN attempts fail once that record exists, including after
+cancellation, failed creation, successful cleanup or a crash. A failed attempt
+does not make the plan reusable. Generate a new plan for a new run. Never infer
+unused authorization from resource absence or delete consumption records to retry.
+
+The same hash/identity may subsequently authorize cleanup-only recovery of that
+consumed run, including repeated idempotent cleanup attempts. CLEANUP requires
+the matching private consumption record/journal, runtime binding and verified
+owned resource IDs. The plan itself contains only intended roles/names, not
+observed resource ownership. It grants no permission to adopt resources, search
+by prefix or delete unrelated IDs. No journal, corrupt binding or unknown ID means
+refusal; cleanup must never re-enable RUN, launch traffic or modify old evidence.
+
+M8B1 only produces PLANNED, unqualified plans and their hashes. It creates no
+consumption records, leases or resource journals, and implements no RUN/CLEANUP
+command. Hashes bind content, not a human identity or resource ownership. Future
+execution must revalidate the plan/catalog/runtime and satisfy the implementation
+qualification gates; a successful plan is not an executable safety certificate.
 
 ## Files, image defaults and generated Compose policy
 
@@ -358,7 +384,11 @@ evidence/hashes together; none of this provides cryptographic authenticity.
 Custom SQLite history, portable evidence/gates, tracing and additional adapters
 are a separate later decision, not automatic M8B scope or release authorization.
 
-## Required test matrix — all future/unexecuted for this design
+## Required M8B acceptance matrix
+
+This matrix originated in M8A. M8B1 contract/read-only results are recorded in
+[validation](../validation.md#milestone-8b1--strict-contracts-and-read-only-planning-unreleased).
+All execution, network qualification and custom recovery rows remain future work.
 
 | Area | Positive, negative and adversarial cases | Required observable result |
 | --- | --- | --- |
