@@ -24,6 +24,8 @@ func execute(ctx context.Context, args []string, out, stderr io.Writer) int {
 		switch args[0] {
 		case "run":
 			return executeRun(ctx, args[1:], out, stderr)
+		case "lab":
+			return executeLab(ctx, args[1:], out, stderr)
 		case "bundle":
 			return executeBundle(ctx, args[1:], out, stderr)
 		case "history":
