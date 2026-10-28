@@ -1,6 +1,11 @@
 # Trusted supervisor boundaries — Unreleased M8B2B
 
-This implements local authority, cooperative leases, selected read-only observation
+This records the M8B2B boundary. M8B2C adds
+[closed command/certification contracts](docker-transport-certification.md);
+historical missing-certification statements below describe M8B2B. No production
+mutation driver or qualified runtime continuity is available.
+
+M8B2B implements local authority, cooperative leases, selected read-only observation
 and opaque mutation **planning**. Production remains `lab plan` only. There is no
 executable mutation driver, worker, runtime qualification, `lab run` or `lab cleanup`.
 Nothing authorizes actual provisioning. See [ADR 0010](../decisions/0010-authoritative-supervisor-state.md),

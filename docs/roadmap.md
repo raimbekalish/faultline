@@ -139,8 +139,12 @@ change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 - [x] M8B2B fixed authority, durable reservations and cooperative runtime leases
 - [x] M8B2B recorded-ID observation, cleanup reserves and opaque mutation planning
 - [x] M8B2B synthetic/filesystem/process-exit and actual read-only diagnostics
-- [ ] M8B2B independent review/merge
-- [ ] Actual mutation-response/absence certification, executable transport and catalog bootstrap review
+- [x] M8B2B independent review/merge (PR #13)
+- [x] M8B2C closed command preparation, private attempts and synthetic result/absence certification
+- [x] M8B2C dedicated source-only preflight worker/fixture and independent contract app
+- [ ] M8B2C independent code/security review and merge
+- [ ] Qualified continuity provider, actual mutation driver and restart reconciliation review
+- [ ] Executing worker/result protocol and authorized catalog builds/qualification
 - [ ] Qualified local runtime isolation and actual scoped teardown/failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
 - [ ] Separate ephemeral custom result and legacy regressions/security review
@@ -160,3 +164,10 @@ M8B2B remains non-mutating and unqualified. Its fixed state initialization is
 explicit and not connected to the plan-only CLI. Legacy imports retain tombstones
 without adopting resources. Real runtime qualification/provisioning requires a
 separate owner authorization and reviewed implementation; it is not automatic.
+
+M8B2C remains disconnected from production execution. No image was built/pulled or
+Docker resource mutated. The missing continuity provider deliberately blocks real
+activation/certification; daemon metadata equality is insufficient. The worker
+source validates preflight only, with measurements null. See the
+[transport contract](design/docker-transport-certification.md) for prerequisites
+and residual TOCTOU/recovery limitations. This work is Unreleased.

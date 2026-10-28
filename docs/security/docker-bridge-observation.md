@@ -79,3 +79,21 @@ No event-history retry or attempt to force equality/restart the VM was made.
 Historical exact cause/wake caller remains UNKNOWN. Fresh binding/configuration
 checks fail closed on visible mismatch, but stable metadata alone cannot attest
 uninterrupted VM life, cache freshness or effective network isolation.
+
+## M8B2C follow-up (2026-10-28 UTC)
+
+Bounded trusted local CLI reads reported Engine 29.8.0/Linux ARM64 and 9 containers,
+6 networks, 67 image IDs and 10 volumes. Start bridge creation was
+06:58:24.196007041 UTC, with its ID present in that list. At the end, container,
+image and volume IDs were unchanged, but one network ID was added and one removed.
+A subsequent bridge read reported **22:05:16.764570541 UTC**, with an ID absent from
+the immediately preceding list. Global equality and exact final-difference
+attribution failed again. No retry, restart or configuration change forced equality.
+
+All task-issued Docker operations were read-only; no catalog build/pull, container
+start/stop/create/remove or network mutation was performed. The earlier idle
+lifecycle explanation remains plausible; exact cause/caller attribution is UNKNOWN.
+This is not a complete audit of other actors or Docker Desktop internals. No new
+event-history evidence was collected. The M8B2C certification boundary deliberately
+has no production continuity provider: snapshot equality alone cannot attest an
+uninterrupted runtime, and a mismatch must fail closed.

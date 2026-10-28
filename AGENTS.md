@@ -135,6 +135,18 @@ over speculative interfaces or mocked product features.
   failure/exhaustion cannot erase already-proven in-memory cleanup scope, invent a
   successful receipt or enable more provisioning. Use a fresh cleanup context.
 
+- Closed command argv stays private and disconnected from any subprocess driver.
+  Only opaque revision/lease-bound certificates may record mutation success;
+  exit zero, labels, names and failed inspect never establish ownership/absence.
+- Require qualified continuity; daemon/socket/bridge equality is insufficient.
+  No production provider or mutation driver exists. Never replace this gate with
+  a fabricated epoch or describe synthetic certification as real qualification.
+- Preserve durable attempt slots and already-proven cleanup IDs after recording
+  failure. Unconfirmed/exhausted recording cannot release reservations or enable
+  provisioning. Container state is not worker/proxy/report completion.
+- Dedicated catalog sources are preflight-only, not qualified execution images.
+  Do not build/pull/run them or expose RUN/CLEANUP without separate authorization.
+
 - Use the repository-local Git identity associated with the owner's GitHub account.
 - Make small conventional commits for completed, verified units. Push milestones.
 - Direct main commits are acceptable during initial bootstrap. Larger subsequent

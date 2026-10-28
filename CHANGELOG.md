@@ -6,6 +6,13 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B2C: bounded closed Docker command representations, private attempt records,
+  response/inspection certification and conservative absence/release contracts.
+  No executable mutation driver or qualified continuity provider is connected.
+- Dedicated source-only preflight worker/fixture and independent HTTP contract app
+  recipes. Images were not built/run; preflight reports no execution capability
+  and no measurements. Existing plan/journal and released formats are unchanged.
+
 - M8B2B: fixed account-private supervisor authority, durable reservation history,
   cooperative process leases, bounded exact-ID read-only observations and cleanup
   event reserves. Opaque mutation plans have no executable driver; production

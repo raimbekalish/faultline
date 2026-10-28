@@ -276,6 +276,9 @@ does not qualify an image or network as safe.** Preloaded catalog images and a
 trusted private output directory are required; nothing is pulled or provisioned.
 See the [schema, prerequisites and authorization rules](docs/custom-service-planner.md).
 This command is not in v0.1.0 binaries. Existing execution remains sample-only.
+M8B2C adds [closed transport/certification contracts](docs/design/docker-transport-certification.md)
+and dedicated bootstrap source only. There is no mutation driver or production
+runtime-continuity provider; synthetic certificates do not qualify real resources.
 
 ## Optional distributed tracing
 
