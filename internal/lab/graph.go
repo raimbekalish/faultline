@@ -26,6 +26,7 @@ var resourceKeys = [8]ResourceKey{Edge, Data, Control, Backend, Application, Run
 type PlannedNetwork struct {
 	Key     ResourceKey `json:"key"`
 	Name    string      `json:"name"`
+	Driver  string      `json:"driver"`
 	Profile Network     `json:"profile"`
 }
 type Membership struct {
@@ -36,6 +37,7 @@ type PlannedContainer struct {
 	Key         ResourceKey  `json:"key"`
 	Name        string       `json:"name"`
 	ImageID     string       `json:"image_id"`
+	ImagePolicy string       `json:"image_policy"`
 	Role        Role         `json:"role"`
 	Memberships []Membership `json:"memberships"`
 }
@@ -64,10 +66,10 @@ func GenerateGraph(p Plan) (Graph, error) {
 func graphFor(p Plan) Graph {
 	g := Graph{SchemaVersion: 1, Kind: "faultline-lab-resource-graph", Qualification: "INTENT_ONLY", PlanSHA256: p.AuthorizationSHA256, LaunchID: p.Identity.LaunchID, OwnerNonce: p.Identity.AuthorizationNonce, Profile: Catalog()}
 	for i, n := range g.Profile.Networks {
-		g.Networks[i] = PlannedNetwork{resourceKeys[i], p.Identity.LaunchID + "-" + n.Name, n}
+		g.Networks[i] = PlannedNetwork{resourceKeys[i], p.Identity.LaunchID + "-" + n.Name, "bridge", n}
 	}
 	for i, r := range g.Profile.Roles {
-		c := PlannedContainer{Key: resourceKeys[i+4], Name: p.Identity.LaunchID + "-" + r.Name, ImageID: p.Components[i].ImageID, Role: r, Memberships: []Membership{}}
+		c := PlannedContainer{Key: resourceKeys[i+4], Name: p.Identity.LaunchID + "-" + r.Name, ImageID: p.Components[i].ImageID, ImagePolicy: "local_only_no_pull_no_build", Role: r, Memberships: []Membership{}}
 		for _, n := range r.Networks {
 			alias := r.Name
 			switch c.Key {
