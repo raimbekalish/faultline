@@ -105,9 +105,37 @@ feedback. Windows remains unsupported until filesystem/signal/runtime checks exi
 - [x] Versioned per-condition results and distinct PASS/FAIL/INDETERMINATE exits
 - [x] Real retained 80 ms, 400 ms and SIGTERM-canceled evidence replay
 - [x] Full regression, isolated offline runtime and cross-target determinism checks
-- [ ] Owner code review and merge
+- [x] Owner code review and merge (PR #9; remains Unreleased)
 
 This source feature is not included in v0.1.0 binaries or assets. It changes no
 existing format-1 bundle, report, experiment spec, SQLite schema or comparison
 semantics. Broader policy languages, dashboard execution and statistical/SLO
 claims remain outside this milestone.
+
+## 8A — Safe custom service architecture (design review)
+
+- [x] Inspect fixed-topology assumptions and current validation/cleanup boundaries
+- [x] Compare selected-image, reviewed-adapter and user-owned Compose approaches
+- [x] Propose one closed HTTP adapter, explicit plan authorization and isolated lab
+- [x] Document threat model, layered cleanup, residual risks and adversarial matrix
+- [x] Define legacy compatibility and staged M8B implementation gates
+- [ ] Independent architecture/security review and owner approval
+
+See [ADR 0009](decisions/0009-owner-selected-service-labs.md),
+[design](design/custom-service-lab.md) and
+[threat model](security/custom-service-threat-model.md). This milestone is
+documentation only: no custom execution, runtime qualification, accepted format
+change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
+
+## 8B — One owner-selected service lab (proposed, not started)
+
+- [ ] Strict descriptor, closed adapter catalog and plan-only CLI
+- [ ] Qualified local runtime isolation, scoped journal/teardown and failure tests
+- [ ] One independently built contract app with real latency/timeout/recovery runs
+- [ ] Separate ephemeral custom result and legacy regressions/security review
+
+Begin only after the M8A design is independently approved. No selected app starts
+before isolation/control/DNS/ownership qualification. No user Compose ingestion,
+existing project mutation, arbitrary URLs, host mounts or daemon access inside
+containers. Custom SQLite history, `.flb`/gate support, tracing and additional
+adapters require separate reviewed follow-ups; they are not implicit M8B scope.

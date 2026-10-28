@@ -1,5 +1,12 @@
 # Architecture
 
+Milestone 8A proposes a future owner-selected service boundary in
+[ADR 0009](decisions/0009-owner-selected-service-labs.md), the
+[custom-lab design](design/custom-service-lab.md) and its
+[threat model](security/custom-service-threat-model.md). These are **design-only,
+pending independent review**. Current execution remains sample-only. No custom
+runtime, tracing, SQLite or portable-evidence support is enabled by that proposal.
+
 ## First vertical slice
 
 ```text
