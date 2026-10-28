@@ -186,3 +186,13 @@ unchanged. No resources are created, no actual proof is collected and no runtime
 is qualified. A private consumed journal is not a runnable authorization token.
 See the [bounded bridge follow-up](security/docker-bridge-observation.md) for
 observed idle VM lifecycle evidence and still-unknown causal/caller details.
+
+## M8B2B trusted boundaries (Unreleased)
+
+The [trusted supervisor modules](design/trusted-supervisor-boundaries.md) now
+provide fixed private authority, durable reservations/process leases, strict
+recorded-ID inspections, cleanup event admission and opaque non-executable
+mutation descriptions. No enrollment occurs during planning, no state-directory
+flag is accepted and no execution/cleanup command is enabled. Presence inspection
+is not isolation qualification or certified absence. Plans and their format remain
+unchanged; v0.1.0 contains none of these unreleased supervisor APIs.

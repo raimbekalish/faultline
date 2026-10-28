@@ -267,6 +267,9 @@ See [policy schema, reasons and examples](docs/evidence.md#offline-reliability-g
 ## Custom-service planning — Unreleased
 
 M8B1 source adds `faultline lab plan --application app.json --out PLAN.json`.
+Unreleased [trusted supervisor boundaries](docs/design/trusted-supervisor-boundaries.md)
+add fixed private state, cooperative leases and read-only ownership inspection.
+They expose no custom execution or cleanup command and do not qualify isolation.
 It validates a strict local descriptor, inspects already-local runtime/images
 and writes a private plan. **It cannot run or clean up a custom lab, and a plan
 does not qualify an image or network as safe.** Preloaded catalog images and a

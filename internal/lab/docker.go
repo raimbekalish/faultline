@@ -36,6 +36,11 @@ const (
 	applicationImage
 	labImage
 	proxyImage
+	networkActual
+	appActual
+	runnerActual
+	fixtureActual
+	proxyActual
 )
 
 type readCommand struct {
@@ -95,6 +100,32 @@ func (c readCommand) args() ([]string, error) {
 			return nil, ErrInspection
 		}
 		return append(a, "image", "inspect", "--format", labFormat, c.value), nil
+	case networkActual, appActual, runnerActual, fixtureActual, proxyActual:
+		if !resourceID.MatchString(c.value) {
+			return nil, ErrObservation
+		}
+		kind, format := "container", containerProjection
+		switch c.op {
+		case networkActual:
+			kind, format = "network", networkProjection
+		case appActual:
+			format = strings.ReplaceAll(format, "ENV_CHECK", appEnvCheck)
+		case proxyActual:
+			format = strings.ReplaceAll(format, "ENV_CHECK", proxyEnvCheck)
+		default:
+			format = strings.ReplaceAll(format, "ENV_CHECK", noEnvCheck)
+		}
+		if c.op != networkActual {
+			keys := ownLabelKeys
+			if c.op == runnerActual || c.op == fixtureActual {
+				keys = labLabelKeys
+			}
+			if c.op == proxyActual {
+				keys = proxyLabelKeys
+			}
+			format = strings.ReplaceAll(format, "LABEL_CHECK", labelKeyProjection(keys))
+		}
+		return append(a, kind, "inspect", "--format", format, c.value), nil
 	case proxyImage:
 		if c.value != ProxyReference {
 			return nil, ErrInspection

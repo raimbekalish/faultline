@@ -152,7 +152,13 @@ func (j Journal) Advance(a Authorization, e Event) (Journal, error) {
 	}
 	next := j
 	next.Events = append(append([]Event{}, j.Events...), e)
-	return next, next.Validate()
+	if err := next.Validate(); err != nil {
+		return Journal{}, err
+	}
+	if err := admitEvent(next, e); err != nil {
+		return Journal{}, err
+	}
+	return next, nil
 }
 func (j Journal) Encode() ([]byte, error) {
 	if j.Validate() != nil {
