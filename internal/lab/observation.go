@@ -19,7 +19,7 @@ var ErrObservation = errors.New("recorded resource or runtime inspection mismatc
 // These templates project only intentional ownership/configuration fields.
 // No IP addresses, arbitrary environment/label values, credentials or logs.
 const ownerProjection = `"label_count":{{len .Config.Labels}},"launch":{{json (index .Config.Labels "com.faultline.launch")}},"role":{{json (index .Config.Labels "com.faultline.role")}},"nonce":{{json (index .Config.Labels "com.faultline.owner")}}`
-const containerProjection = `{"id":{{json .Id}},"name":{{json .Name}},"image":{{json .Image}},"configured_image":{{json .Config.Image}},` + ownerProjection + `,"path":{{json .Path}},"args":{{if .Args}}{{json .Args}}{{else}}[]{{end}},"label_keys_ok":LABEL_CHECK,"lab_contract":{{with index .Config.Labels "com.faultline.lab.contract"}}{{json .}}{{else}}""{{end}},"lab_revision":{{if index .Config.Labels "com.faultline.lab.contract"}}{{with index .Config.Labels "org.opencontainers.image.revision"}}{{json .}}{{else}}""{{end}}{{else}}""{{end}},"entrypoint":{{json .Config.Entrypoint}},"command":{{if .Config.Cmd}}{{json .Config.Cmd}}{{else}}[]{{end}},"user":{{json .Config.User}},"workdir":{{json .Config.WorkingDir}},"stop_signal":{{json .Config.StopSignal}},"env_count":{{len .Config.Env}},"environment_ok":ENV_CHECK,"healthcheck":{{if ne (index .Config "Healthcheck") nil}}true{{else}}false{{end}},"memory":{{.HostConfig.Memory}},"swap":{{.HostConfig.MemorySwap}},"nano_cpus":{{.HostConfig.NanoCpus}},"pids":{{json .HostConfig.PidsLimit}},"nofile_ok":{{if eq (len .HostConfig.Ulimits) 1}}{{$n := index .HostConfig.Ulimits 0}}{{and (eq $n.Name "nofile") (eq $n.Soft 256) (eq $n.Hard 256)}}{{else}}false{{end}},"security_ok":{{and (not .HostConfig.Privileged) .HostConfig.ReadonlyRootfs (eq (len .HostConfig.CapAdd) 0) (eq (len .HostConfig.CapDrop) 1) (eq (index .HostConfig.CapDrop 0) "ALL") (eq (len .HostConfig.SecurityOpt) 1) (eq (index .HostConfig.SecurityOpt 0) "no-new-privileges") (eq .HostConfig.PidMode "") (eq .HostConfig.IpcMode "private") (eq .HostConfig.UTSMode "") (eq .HostConfig.UsernsMode "") (eq .HostConfig.CgroupnsMode "private")}},"extras_ok":{{and (not .HostConfig.PublishAllPorts) (eq (len .HostConfig.PortBindings) 0) (eq (len .HostConfig.Binds) 0) (eq (len .HostConfig.VolumesFrom) 0) (eq (len .HostConfig.Devices) 0) (eq (len .HostConfig.DeviceRequests) 0) (eq (len .HostConfig.ExtraHosts) 0) (eq (len .HostConfig.Links) 0) (eq (len .HostConfig.Sysctls) 0) (eq (len .HostConfig.DnsOptions) 0) (eq .HostConfig.RestartPolicy.Name "no") (eq .HostConfig.RestartPolicy.MaximumRetryCount 0) (eq .HostConfig.LogConfig.Type "none") (eq (len .HostConfig.LogConfig.Config) 0)}},"ports_clear":{{$ok := true}}{{range .NetworkSettings.Ports}}{{if .}}{{$ok = false}}{{end}}{{end}}{{$ok}},"dns":{{json .HostConfig.Dns}},"dns_search":{{json .HostConfig.DnsSearch}},"network_mode":{{json .HostConfig.NetworkMode}},"tmpfs":{{if .HostConfig.Tmpfs}}{{json .HostConfig.Tmpfs}}{{else}}{}{{end}},"mounts":[{{$sep := ""}}{{range .Mounts}}{{$sep}}{"type":{{json .Type}},"destination":{{json .Destination}},"rw":{{json .RW}}}{{$sep = ","}}{{end}}],"networks":[{{$sep := ""}}{{range $name,$n := .NetworkSettings.Networks}}{{$sep}}{"name":{{json $name}},"id":{{json $n.NetworkID}},"aliases":{{json $n.Aliases}},"links":{{len $n.Links}},"ipam_configured":{{if $n.IPAMConfig}}true{{else}}false{{end}},"driver_options":{{len $n.DriverOpts}},"gateway_priority":{{$n.GwPriority}}}{{$sep = ","}}{{end}}]}`
+const containerProjection = `{"state":{{json .State.Status}},"id":{{json .Id}},"name":{{json .Name}},"image":{{json .Image}},"configured_image":{{json .Config.Image}},` + ownerProjection + `,"path":{{json .Path}},"args":{{if .Args}}{{json .Args}}{{else}}[]{{end}},"label_keys_ok":LABEL_CHECK,"lab_contract":{{with index .Config.Labels "com.faultline.lab.contract"}}{{json .}}{{else}}""{{end}},"lab_revision":{{if index .Config.Labels "com.faultline.lab.contract"}}{{with index .Config.Labels "org.opencontainers.image.revision"}}{{json .}}{{else}}""{{end}}{{else}}""{{end}},"entrypoint":{{json .Config.Entrypoint}},"command":{{if .Config.Cmd}}{{json .Config.Cmd}}{{else}}[]{{end}},"user":{{json .Config.User}},"workdir":{{json .Config.WorkingDir}},"stop_signal":{{json .Config.StopSignal}},"env_count":{{len .Config.Env}},"environment_ok":ENV_CHECK,"healthcheck":{{if ne (index .Config "Healthcheck") nil}}true{{else}}false{{end}},"memory":{{.HostConfig.Memory}},"swap":{{.HostConfig.MemorySwap}},"nano_cpus":{{.HostConfig.NanoCpus}},"pids":{{json .HostConfig.PidsLimit}},"nofile_ok":{{if eq (len .HostConfig.Ulimits) 1}}{{$n := index .HostConfig.Ulimits 0}}{{and (eq $n.Name "nofile") (eq $n.Soft 256) (eq $n.Hard 256)}}{{else}}false{{end}},"security_ok":{{and (not .HostConfig.Privileged) .HostConfig.ReadonlyRootfs (eq (len .HostConfig.CapAdd) 0) (eq (len .HostConfig.CapDrop) 1) (eq (index .HostConfig.CapDrop 0) "ALL") (eq (len .HostConfig.SecurityOpt) 1) (eq (index .HostConfig.SecurityOpt 0) "no-new-privileges") (eq .HostConfig.PidMode "") (eq .HostConfig.IpcMode "private") (eq .HostConfig.UTSMode "") (eq .HostConfig.UsernsMode "") (eq .HostConfig.CgroupnsMode "private")}},"extras_ok":{{and (not .HostConfig.PublishAllPorts) (eq (len .HostConfig.PortBindings) 0) (eq (len .HostConfig.Binds) 0) (eq (len .HostConfig.VolumesFrom) 0) (eq (len .HostConfig.Devices) 0) (eq (len .HostConfig.DeviceRequests) 0) (eq (len .HostConfig.ExtraHosts) 0) (eq (len .HostConfig.Links) 0) (eq (len .HostConfig.Sysctls) 0) (eq (len .HostConfig.DnsOptions) 0) (eq .HostConfig.RestartPolicy.Name "no") (eq .HostConfig.RestartPolicy.MaximumRetryCount 0) (eq .HostConfig.LogConfig.Type "none") (eq (len .HostConfig.LogConfig.Config) 0)}},"ports_clear":{{$ok := true}}{{range .NetworkSettings.Ports}}{{if .}}{{$ok = false}}{{end}}{{end}}{{$ok}},"dns":{{json .HostConfig.Dns}},"dns_search":{{json .HostConfig.DnsSearch}},"network_mode":{{json .HostConfig.NetworkMode}},"tmpfs":{{if .HostConfig.Tmpfs}}{{json .HostConfig.Tmpfs}}{{else}}{}{{end}},"mounts":[{{$sep := ""}}{{range .Mounts}}{{$sep}}{"type":{{json .Type}},"destination":{{json .Destination}},"rw":{{json .RW}}}{{$sep = ","}}{{end}}],"networks":[{{$sep := ""}}{{range $name,$n := .NetworkSettings.Networks}}{{$sep}}{"name":{{json $name}},"id":{{json $n.NetworkID}},"aliases":{{json $n.Aliases}},"links":{{len $n.Links}},"ipam_configured":{{if $n.IPAMConfig}}true{{else}}false{{end}},"driver_options":{{len $n.DriverOpts}},"gateway_priority":{{$n.GwPriority}}}{{$sep = ","}}{{end}}]}`
 const ownLabelKeys = `(eq $key "com.faultline.launch") (eq $key "com.faultline.role") (eq $key "com.faultline.owner")`
 const labLabelKeys = ownLabelKeys + ` (eq $key "com.faultline.lab.contract") (eq $key "org.opencontainers.image.revision")`
 const proxyLabelKeys = ownLabelKeys + ` (eq $key "org.opencontainers.image.created") (eq $key "org.opencontainers.image.description") (eq $key "org.opencontainers.image.licenses") (eq $key "org.opencontainers.image.revision") (eq $key "org.opencontainers.image.source") (eq $key "org.opencontainers.image.title") (eq $key "org.opencontainers.image.url") (eq $key "org.opencontainers.image.version")`
@@ -48,6 +48,8 @@ type mountObservation struct {
 	RW          bool   `json:"rw"`
 }
 type containerObservation struct {
+	State string `json:"state"`
+
 	LabelKeysOK bool   `json:"label_keys_ok"`
 	LabContract string `json:"lab_contract"`
 	LabRevision string `json:"lab_revision"`
@@ -198,6 +200,8 @@ func selectionFromEnvironment() selection {
 // VerifiedResource cannot be constructed with useful fields outside this package.
 // It is a bounded inspection result, NOT a network isolation qualification.
 type VerifiedResource struct {
+	state string
+
 	proof      Proof
 	key        ResourceKey
 	journalSHA string
@@ -251,7 +255,15 @@ func observeRecorded(ctx context.Context, i inspector, j Journal, key ResourceKe
 		return out, ErrObservation
 	}
 	h, _ := j.Hash()
-	return VerifiedResource{proof, key, h, after}, ctx.Err()
+	state := ""
+	if resourceIndex(key) >= 4 {
+		var actual containerObservation
+		if strictProjection(raw, &actual) != nil {
+			return out, ErrObservation
+		}
+		state = actual.State
+	}
+	return VerifiedResource{state, proof, key, h, after}, ctx.Err()
 }
 func verifyResource(raw []byte, j Journal, key ResourceKey) (Proof, error) {
 	bad := func() (Proof, error) { return Proof{}, ErrObservation }
@@ -352,7 +364,7 @@ func verifyResource(raw []byte, j Journal, key ResourceKey) (Proof, error) {
 		}
 	}
 	firstName := g.LaunchID + "-" + strings.TrimPrefix(string(c.Memberships[0].Network), "network.")
-	if actual.NetworkMode != firstName {
+	if actual.NetworkMode != firstName && actual.NetworkMode != s.Resources[resourceIndex(c.Memberships[0].Network)].Proof.ID {
 		return bad()
 	}
 	seen := map[string]bool{}
