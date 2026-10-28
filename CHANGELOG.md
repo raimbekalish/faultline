@@ -6,6 +6,13 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B2B: fixed account-private supervisor authority, durable reservation history,
+  cooperative process leases, bounded exact-ID read-only observations and cleanup
+  event reserves. Opaque mutation plans have no executable driver; production
+  remains plan-only. Existing plan/journal wire formats and v0.1.0 are unchanged.
+- Explicit legacy consumed-identity import is a blocking tombstone, never cleanup
+  authority. Missing/partial state and uncertified success stay unresolved.
+
 - M8B2A: deterministic closed lab resource graph, conservative ownership/cleanup
   journal state machine and bounded private atomic journal snapshots. Production
   CLI remains plan-only; no Docker mutation, worker or runtime qualification.

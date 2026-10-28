@@ -174,3 +174,34 @@ This supports a lifecycle explanation without establishing exact causal/caller
 attribution. Event queries timed out. Read-only requests do not freeze automatic
 runtime lifecycle; identity/configuration must be rechecked during future
 qualification. No Docker settings, runtime or isolation policy was modified.
+
+## M8B2B trusted boundaries and residual gaps
+
+The [fixed authority](../design/trusted-supervisor-boundaries.md) removes caller
+state-directory selection from future execution. OS effective-UID home lookup,
+private anchors, bounded registry/checkpoint, journal validation and stable locks
+cooperate. Missing/corrupt history cannot initialize itself. Runtime reservations
+survive process exit; cleanup recovery cannot displace a live holder. The current
+implementation conservatively blocks all new custom reservations while any one
+remains unresolved. Sample workflows use neither lock nor ledger.
+
+Only exact journal IDs may be inspected. Selected metadata verifies profile,
+image, ownership and attachment facts without copying payloads, arbitrary label/
+environment values or IPs. Labels, declared hashes, inherited OCI metadata and
+imported journals cannot independently grant ownership. Actual pinned proxy label
+keys/counts were checked read-only; this does not authenticate image publishers.
+
+Opaque mutation intentions cannot be deserialized or changed through detached
+views. There is no executable transport or production mutation call. Caller-supplied
+success events and attempted-resource release are refused until a separate trusted
+response/absence certification path is reviewed. Recording fakes are not evidence
+that resources exist, were removed or have effective isolation.
+
+Residual trust includes the OS account database, parents/ACLs, local filesystem,
+Docker CLI/config/daemon and operator image review. A malicious same-user Docker
+administrator can bypass locks, edit all state or forge metadata; no hash/nonce
+prevents that. Partial state and exhausted quotas stay unresolved, not silently
+repaired. Read-only snapshots can straddle Docker Desktop lifecycle/cache changes;
+exact daemon continuity and real isolation remain unqualified. Cleanup preparation
+retains only already-proven IDs after recording failure and cannot turn unknown
+outcomes into successful receipts or new execution authority.

@@ -67,3 +67,15 @@ an exact-ID attribution of that final network difference. Global inventory
 equality failed; the final-only-default-bridge matching assertion was false.
 The known unrelated networks remain unchanged, but the mismatch is retained as
 an unresolved observation, not repaired by retrying until equality appears.
+
+## M8B2B follow-up (2026-10-28 UTC)
+
+Existing read-only diagnostics again reported unchanged container/image/volume IDs,
+but one network ID changed between snapshots. A subsequent bridge inspection
+reported creation at **06:58:24.196007041 UTC** and an ID absent from the preceding
+network list. Global equality and exact final-difference attribution therefore
+failed again. The reads cannot be represented as an atomic state snapshot.
+No event-history retry or attempt to force equality/restart the VM was made.
+Historical exact cause/wake caller remains UNKNOWN. Fresh binding/configuration
+checks fail closed on visible mismatch, but stable metadata alone cannot attest
+uninterrupted VM life, cache freshness or effective network isolation.

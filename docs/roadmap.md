@@ -135,8 +135,12 @@ change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 - [x] M8B2A: deterministic closed graph, pure ownership/state transitions and private journal snapshots
 - [x] M8B2A: synthetic failure/replay/cleanup and real filesystem interruption tests
 - [x] Bounded read-only bridge investigation; idle lifecycle evidence, exact attribution remains UNKNOWN
-- [ ] M8B2A independent implementation/security review and merge
-- [ ] Fixed execution ledger/runtime lease, trusted observation and bounded mutation transport review
+- [x] M8B2A independent implementation/security review and merge (PR #12)
+- [x] M8B2B fixed authority, durable reservations and cooperative runtime leases
+- [x] M8B2B recorded-ID observation, cleanup reserves and opaque mutation planning
+- [x] M8B2B synthetic/filesystem/process-exit and actual read-only diagnostics
+- [ ] M8B2B independent review/merge
+- [ ] Actual mutation-response/absence certification, executable transport and catalog bootstrap review
 - [ ] Qualified local runtime isolation and actual scoped teardown/failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
 - [ ] Separate ephemeral custom result and legacy regressions/security review
@@ -151,3 +155,8 @@ M8B2A is an internal non-mutating foundation, not runtime qualification or an
 execution feature. See the [contract](design/custom-service-supervisor.md) and
 [bridge observations](security/docker-bridge-observation.md). Do not begin
 provisioning or build the missing catalog image as a side effect of planning.
+
+M8B2B remains non-mutating and unqualified. Its fixed state initialization is
+explicit and not connected to the plan-only CLI. Legacy imports retain tombstones
+without adopting resources. Real runtime qualification/provisioning requires a
+separate owner authorization and reviewed implementation; it is not automatic.

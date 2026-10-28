@@ -9,7 +9,10 @@ Unreleased M8B1 adds only a [strict read-only planner](custom-service-planner.md
 inspection adapter; the native CLI exposes only `lab plan`. There is no generic
 Docker execution API. Unreleased M8B2A adds the internal
 [closed graph and private journal foundation](design/custom-service-supervisor.md),
-without connecting it to an execution consumer or mutation transport. Current execution remains sample-only; no custom runtime,
+without connecting it to an execution consumer or mutation transport. M8B2B adds the [fixed authority and observation boundary](design/trusted-supervisor-boundaries.md)
+([ADR 0010](decisions/0010-authoritative-supervisor-state.md)). It has no executable
+mutation transport, implicit enrollment or custom execution command.
+Current execution remains sample-only; no custom runtime,
 tracing, SQLite or portable-evidence support is enabled.
 
 ## First vertical slice

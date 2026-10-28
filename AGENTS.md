@@ -121,6 +121,20 @@ over speculative interfaces or mocked product features.
   slot. Do not wire journal contracts to a mutation transport or expose RUN/CLEANUP
   before separate review/qualification. Synthetic tests are not Docker isolation.
 
+- Future custom execution must use the OS-account fixed authority, not an env/
+  directory override or a raw JournalStore. Enrollment is explicit; preserve
+  anchors/checkpoints/tombstones and never reset missing/corrupt state to fresh.
+- Kernel lease release is not resource cleanup. Durable unresolved reservations
+  block new work; imported legacy history never adopts resources. Keep waits,
+  registry/file sizes and quotas bounded; no automatic state repair/deletion.
+- Observer commands inspect exact recorded IDs with fixed projections only.
+  Recompute verified profiles; labels/digests alone are not ownership or isolation.
+  Do not connect the opaque mutation interface to a real driver or certify absence/
+  mutation success before separate review. No new RUN/CLEANUP CLI is authorized.
+- Preserve 21-event cleanup plus 21-event retry admission reserves. Recording
+  failure/exhaustion cannot erase already-proven in-memory cleanup scope, invent a
+  successful receipt or enable more provisioning. Use a fresh cleanup context.
+
 - Use the repository-local Git identity associated with the owner's GitHub account.
 - Make small conventional commits for completed, verified units. Push milestones.
 - Direct main commits are acceptable during initial bootstrap. Larger subsequent

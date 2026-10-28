@@ -429,3 +429,19 @@ RUN/CLEANUP command. A fixed authoritative ledger/runtime lease and real isolati
 qualification remain prerequisites before provisioning. The
 [bridge follow-up](../security/docker-bridge-observation.md) records idle stop/start
 windows but leaves exact network-event and wake-caller attribution UNKNOWN.
+
+## M8B2B trusted implementation boundary
+
+[ADR 0010](../decisions/0010-authoritative-supervisor-state.md) and the
+[trusted contract](trusted-supervisor-boundaries.md) implement fixed authority,
+cooperative leases, exact recorded-ID inspection and reserved cleanup recording.
+The runtime key is private daemon-derived state under the OS account's fixed root;
+there is no state-directory override or automatic replacement of missing history.
+Process exit releases a lock, never a reservation. Legacy import is a consumed
+identity tombstone, not permission to adopt or remove resources.
+
+The mutation interface remains opaque/non-executable with recording fakes only.
+Actual response certification/absence proofs and resource provisioning are deferred;
+no attempted-resource reservation may be released based on journal assertions alone.
+No runtime isolation, app conformance or source/Docker execution gate is passed by
+these contracts. The preserved bridge findings still have unknown exact attribution.

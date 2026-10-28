@@ -1,5 +1,10 @@
 # Custom-service supervisor foundation — Unreleased M8B2A
 
+This records the M8B2A foundation. Unreleased M8B2B adds
+[fixed authority, leases and read-only observation](trusted-supervisor-boundaries.md)
+without enabling execution. Historical missing-boundary statements below describe
+M8B2A; future callers must now use that fixed authority rather than raw stores.
+
 This is an internal Go contract and filesystem implementation, **not an executable
 supervisor**. The production CLI still implements only `lab plan`; `lab run`,
 `lab cleanup`, a worker, Docker mutation transport and image provisioning are

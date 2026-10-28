@@ -1574,3 +1574,132 @@ runtime qualification/execution in this increment: fixed ledger/lease wiring,
 trusted actual observation/mutation adapters, catalog bootstrap and explicit
 qualification authorization remain separate reviewed gates. No synthetic proof,
 journal hash or structurally validated graph establishes effective Docker safety.
+
+## M8B2B — Trusted supervisor boundaries (2026-10-28 UTC)
+
+PR #12 was verified OPEN/MERGEABLE at exact approved head
+`8b9e3f339f75b8c7f6488907b9f4026db12bbba2`, base
+`053fc73676cb2116be1ecb2ce85ab7d994770738`, with six identical reviewed commits
+and 20 identical reviewed files. v0.1.0/tag/five assets/protected files matched the
+baseline; working tree was clean. Regular merge produced
+`a7d48f06fdea53e889d47c27ab028abc5bf3fa9e`, with those exact base/head parents.
+GitHub reports merged, all six commits/authorship are preserved and local main
+fast-forwarded to origin/main before the feature branch was created.
+
+Scope: [ADR 0010](decisions/0010-authoritative-supervisor-state.md) and the
+[trusted boundary contract](design/trusted-supervisor-boundaries.md). State-root,
+reservation/lease, strict exact-ID inspection, cleanup admission and opaque intended
+operations are implemented. No production RUN/CLEANUP, actual mutation driver,
+application execution or isolation qualification is enabled. Operator-home state
+was not enrolled; authority/filesystem tests use private temporary homes only.
+
+### Actual checks and outcomes
+
+- `make check` PASS on Go 1.26.8/macOS ARM64: shell syntax/endpoint precedence,
+  two Python packaging tests, full Go formatting/vet and uncached unit race tests.
+  Existing SQLite migration/process-exit recovery, engine/tracing, dashboard API,
+  format-1 bundle/comparison/gate and contract tests passed.
+- `go mod verify` PASS. CGO-disabled tests for lab, bundle, bundlecli, bundlecompare,
+  bundleevaluate and contracts PASS. Native CLI and independent CGO-disabled offline
+  executable built in the new ignored task directory; no release binary rebuilt.
+- Fixed-root tests PASS: OS-account selection ignores HOME/XDG/state variables;
+  an alternate empty directory cannot open authority; consumed identities remain
+  blocked after close/cleanup and partial consumption. Missing anchors, manifests,
+  journals, checkpoints, receipts, corrupt/ambiguous/oversized registry data and
+  uncheckpointed records fail closed. Symlink/FIFO/hard-link/permission/root-inode
+  substitution tests use actual temporary files.
+- Lease tests PASS: eight concurrent attempts yield exactly one reservation;
+  cleanup cannot displace a live process holder within a bounded wait. An actual
+  test child exits with its lease held; kernel lock recovery succeeds while the
+  durable reservation still prevents a new RUN. Closing a process handle does
+  not release durable ownership.
+- Legacy schema-1 journal import tests PASS: validated history is retained and
+  the identity is consumed, but import is a tombstone and never enables RUN,
+  cleanup recovery or foreign-resource adoption. Original input files/bytes are
+  not rewritten. Existing over-budget journals remain readable.
+- Observation tests PASS: exact ID/name/nonce/role/image/configuration checks,
+  fixed attachments, unexpected mount/port/privilege/network rejection, malformed/
+  duplicate/escaped/case-aliased/Unicode/oversized metadata, missing resource,
+  changed daemon/socket/runtime and cancellation. Real template evaluation checks
+  that security/env flags are derived from selected metadata and arbitrary env
+  values are not copied. All full lab observations in these tests are synthetic.
+- Budget tests PASS: every creation stage has required cleanup/retry reserve;
+  repeated optional proxy retries refuse before required capacity is spent;
+  a valid old 96-event history remains readable and can still prepare exact-ID
+  cleanup with recording explicitly unconfirmed. Recorded cleanup attempts never
+  invent success or another RUN after exhaustion/write failure.
+- Opaque mutation-contract tests PASS: detached descriptions cannot change intent,
+  deserialization cannot forge one, unknown/foreign resources cannot reach the
+  recording transport and runtime changes invalidate planning. Public success
+  assertions are refused. A held living lease retains known cleanup scope after
+  recording failure; no successful receipt/release or further provisioning follows.
+- Fourteen retained real 80 ms, 400 ms and canceled-bundle cases matched previous
+  verify/inspect/compare/evaluate JSON byte for byte with unchanged exits, including
+  evaluation 0/3/4. Original `.flb` hashes remained unchanged. Native CLI smoke
+  confirms `lab`, `lab run`, `lab cleanup` remain usage 2 with no stdout.
+
+A prototype compile failure from a misplaced atomic field was corrected before
+verification/commit. The final full suite passed; failed intermediate diagnostics
+are retained separately, not counted as passes. No new fuzz campaign was executed
+in this increment; shared strict parser and existing regression tests ran.
+
+### Actual read-only Docker observations
+
+Trusted local CLI inspection reported Docker Engine 29.8.0/Linux ARM64. The opt-in
+`TestLiveReadOnlyRuntimeWitness` PASS used only context/version/identity reads to
+check real socket/daemon binding and reject an altered socket identity. Its plan
+image/application fields were explicitly synthetic, not a real qualified app.
+No image, container or network was started or provisioned by the test.
+
+Bounded diagnostics inspected the existing default bridge metadata/ID and resource
+ID inventories. A selected IPAM projection executed successfully without copying
+addresses. Read-only inspection of the existing pinned Toxiproxy image found
+**eight inherited OCI label keys**. No arbitrary label values were collected.
+That exposed a real candidate-profile incompatibility: requiring three labels on
+all containers would reject both this image and the lab's two inherited contract
+labels. Fixed role profiles now expect application 3, lab 5 and proxy 11 fixed
+keys/counts; foreign nonce/keys/contracts still reject. OCI values are not ownership
+or provenance authentication. This was image metadata inspection, not runtime testing.
+
+The start inventory had 9 containers, 6 networks, 67 image IDs and 10 volumes.
+End container/image/volume IDs were unchanged. Network inventory changed by one ID
+added/one removed. The final default bridge metadata reported creation
+`2026-10-28T06:58:24.196007041Z`, but that ID was absent from the preceding list.
+**Global inventory equality and exact attribution of that final difference failed.**
+They remain failed; no retries/restarts/settings changes or cleanup forced a pass.
+The earlier idle VM lifecycle evidence remains a plausible explanation, while
+exact causal/caller attribution is UNKNOWN. See the
+[preserved investigation](security/docker-bridge-observation.md).
+
+All task-issued Docker commands were read-only (context/version/identity, selected
+metadata/image inspection and bounded ID snapshots). No create/run/start/exec,
+network modification, build/pull/delete/prune, socket mounting, host policy change
+or application execution occurred. This command audit is not a complete audit of
+other actors or proof that Docker Desktop remained internally unchanged.
+
+### Compatibility, limits and work not run
+
+Plan/catalog/graph encoding, original journal schema/decode, existing sample/CLI
+execution, SQLite, tracing, format-1 evidence, gates, dependencies and release scripts
+are unchanged. Only new journal writes apply cleanup admission. Protected packages,
+evidence/demo hashes and README video URL remain unchanged; no v0.1.0 tag, Release
+or asset was modified. No authority initialization occurred outside test fixtures.
+
+Real fault/tracing integration wrappers were NOT RUN: they create resources outside
+this milestone's authorization. No frontend/browser, real custom-container presence,
+absence/cleanup driver, runtime isolation/app conformance, Linux filesystem or
+power-loss qualification was performed. The missing catalog image was not built
+or pulled. Tests do not establish production readiness, statistical guarantees,
+effective Docker isolation, ACL completeness or unconditional fsync/deadline safety.
+
+Reservations with attempted resources cannot be released until a separate reviewed
+actual absence/result certification path exists. Legacy imports also retain no
+cleanup authority. The fixed ledger/lease is cooperative and does not resist a
+malicious same-user administrator or rollback of all private state. Partial
+checkpoint/enrollment/import and quota exhaustion deliberately remain unresolved;
+there is no automatic reset, compaction, repair or arbitrary recursive deletion.
+
+GO for independent review/merge of non-mutating M8B2B. NO-GO for beginning real
+provisioning/runtime qualification without the separately reviewed driver, certified
+outcomes/absence path, catalog bootstrap and explicit owner authorization. Synthetic
+observations and inspection metadata cannot satisfy those gates.
