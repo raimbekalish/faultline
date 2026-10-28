@@ -399,3 +399,32 @@ func TestInspectionTemplatesNeverCopyPayloadMetadata(t *testing.T) {
 		t.Fatal("application network scope")
 	}
 }
+
+func TestInspectionTemplatesOmittedAndNullOptionalFields(t *testing.T) {
+	for _, config := range []map[string]any{{}, {"Env": nil, "Volumes": nil, "Healthcheck": nil, "OnBuild": nil, "Labels": nil}} {
+		object := map[string]any{"Id": "sha256:" + strings.Repeat("a", 64), "Os": "linux", "Architecture": "arm64", "Config": config}
+		for _, format := range []string{appFormat, labFormat, proxyFormat} {
+			tmpl, err := template.New("Docker-optional-fields").Funcs(template.FuncMap{"json": func(v any) (string, error) { b, e := json.Marshal(v); return string(b), e }}).Parse(format)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var out bytes.Buffer
+			if err := tmpl.Execute(&out, object); err != nil {
+				t.Fatal(err)
+			}
+			var m imageMetadata
+			if err := json.Unmarshal(out.Bytes(), &m); err != nil || m.EnvCount != 0 || m.VolumeCount != 0 || m.Healthcheck || m.OnBuildCount != 0 || m.PinnedDigest {
+				t.Fatal("omitted metadata misinterpreted", out.String(), err)
+			}
+			if format == appFormat {
+				if _, err := metadata(out.Bytes()); err != nil {
+					t.Fatal(err)
+				}
+			} else if format == labFormat {
+				if _, err := metadata(out.Bytes(), "contract", "revision"); err == nil {
+					t.Fatal("absent required catalog declarations accepted")
+				}
+			}
+		}
+	}
+}

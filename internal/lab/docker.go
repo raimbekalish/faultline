@@ -46,10 +46,12 @@ type reader interface {
 	read(context.Context, readCommand) ([]byte, error)
 }
 
-const imageFormat = `{"id":{{json .Id}},"os":{{json .Os}},"arch":{{json .Architecture}},"env_count":{{len .Config.Env}},"volume_count":{{len .Config.Volumes}},"healthcheck":{{if .Config.Healthcheck}}true{{else}}false{{end}},"onbuild_count":{{len .Config.OnBuild}}`
+// Docker inspect formats decoded maps; empty optional fields may be omitted.
+// Count/presence checks must handle both absent and explicit null values.
+const imageFormat = `{"id":{{json .Id}},"os":{{json .Os}},"arch":{{json .Architecture}},"env_count":{{with index .Config "Env"}}{{len .}}{{else}}0{{end}},"volume_count":{{with index .Config "Volumes"}}{{len .}}{{else}}0{{end}},"healthcheck":{{if index .Config "Healthcheck"}}true{{else}}false{{end}},"onbuild_count":{{with index .Config "OnBuild"}}{{len .}}{{else}}0{{end}}`
 const appFormat = imageFormat + `}`
-const labFormat = imageFormat + `,"contract":{{json (index .Config.Labels "com.faultline.lab.contract")}},"revision":{{json (index .Config.Labels "org.opencontainers.image.revision")}}}`
-const proxyFormat = imageFormat + `,"pinned_digest":{{$matched := false}}{{range .RepoDigests}}{{if eq . "` + proxyRepoDigest + `"}}{{$matched = true}}{{end}}{{end}}{{$matched}}}`
+const labFormat = imageFormat + `,"contract":{{with index .Config "Labels"}}{{json (index . "com.faultline.lab.contract")}}{{else}}null{{end}},"revision":{{with index .Config "Labels"}}{{json (index . "org.opencontainers.image.revision")}}{{else}}null{{end}}}`
+const proxyFormat = imageFormat + `,"pinned_digest":{{$matched := false}}{{range index . "RepoDigests"}}{{if eq . "` + proxyRepoDigest + `"}}{{$matched = true}}{{end}}{{end}}{{$matched}}}`
 const runtimeFormat = `{"version":{{json .Server.Version}},"os":{{json .Server.Os}},"arch":{{json .Server.Arch}}}`
 
 func (c readCommand) args() ([]string, error) {
