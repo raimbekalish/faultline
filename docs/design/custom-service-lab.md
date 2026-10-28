@@ -1,7 +1,9 @@
 # Owner-selected HTTP service lab — M8A design
 
-**Proposed, not implemented.** This document defines a small M8B implementation
-candidate, not commands available on main or in v0.1.0. It accompanies
+**Approved architecture; execution unimplemented.** M8B1 source implements only
+the [strict descriptor/catalog and read-only planner](../custom-service-planner.md).
+RUN, CLEANUP and the execution/qualification design below remain future work;
+none of these features is in v0.1.0. This document accompanies
 [ADR 0009](../decisions/0009-owner-selected-service-labs.md) and the
 [threat model](../security/custom-service-threat-model.md). Independent review is
 required before implementation; runtime qualification is required before enabling
@@ -95,7 +97,7 @@ and Compose combinations need separate tests; emulation/build success is not
 runtime qualification. Windows/custom rootless/alternate network drivers are
 unsupported until qualified, without weakening existing offline portability.
 
-Proposed future syntax (not available commands):
+Interface (only `lab plan` is implemented in M8B1 source; run/cleanup are future):
 
 ```text
 faultline lab plan --application app.json --out PLAN.json
@@ -382,7 +384,11 @@ evidence/hashes together; none of this provides cryptographic authenticity.
 Custom SQLite history, portable evidence/gates, tracing and additional adapters
 are a separate later decision, not automatic M8B scope or release authorization.
 
-## Required test matrix — all future/unexecuted for this design
+## Required M8B acceptance matrix
+
+This matrix originated in M8A. M8B1 contract/read-only results are recorded in
+[validation](../validation.md#milestone-8b1--strict-contracts-and-read-only-planning-unreleased).
+All execution, network qualification and custom recovery rows remain future work.
 
 | Area | Positive, negative and adversarial cases | Required observable result |
 | --- | --- | --- |

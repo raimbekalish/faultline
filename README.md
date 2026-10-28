@@ -264,6 +264,16 @@ pass. Decisions describe these samples, not causality, significance or SLO
 compliance. Evaluation needs no Docker, SQLite, Jaeger, network or account.
 See [policy schema, reasons and examples](docs/evidence.md#offline-reliability-gates--unreleased).
 
+## Custom-service planning — Unreleased
+
+M8B1 source adds `faultline lab plan --application app.json --out PLAN.json`.
+It validates a strict local descriptor, inspects already-local runtime/images
+and writes a private plan. **It cannot run or clean up a custom lab, and a plan
+does not qualify an image or network as safe.** Preloaded catalog images and a
+trusted private output directory are required; nothing is pulled or provisioned.
+See the [schema, prerequisites and authorization rules](docs/custom-service-planner.md).
+This command is not in v0.1.0 binaries. Existing execution remains sample-only.
+
 ## Optional distributed tracing
 
 ```sh

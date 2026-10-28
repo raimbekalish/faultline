@@ -119,7 +119,7 @@ claims remain outside this milestone.
 - [x] Propose one closed HTTP adapter, explicit plan authorization and isolated lab
 - [x] Document threat model, layered cleanup, residual risks and adversarial matrix
 - [x] Define legacy compatibility and staged M8B implementation gates
-- [ ] Independent architecture/security review and owner approval
+- [x] Independent architecture/security review and owner approval (PR #10)
 
 See [ADR 0009](decisions/0009-owner-selected-service-labs.md),
 [design](design/custom-service-lab.md) and
@@ -127,9 +127,11 @@ See [ADR 0009](decisions/0009-owner-selected-service-labs.md),
 documentation only: no custom execution, runtime qualification, accepted format
 change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 
-## 8B — One owner-selected service lab (proposed, not started)
+## 8B — One owner-selected service lab (staged, Unreleased)
 
-- [ ] Strict descriptor, closed adapter catalog and plan-only CLI
+- [x] M8B1: strict descriptor, closed catalog and read-only plan-only CLI
+- [x] M8B1: private atomic plans, redaction, authorization lifecycle and negative tests
+- [ ] M8B1 owner implementation review/merge
 - [ ] Qualified local runtime isolation, scoped journal/teardown and failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
 - [ ] Separate ephemeral custom result and legacy regressions/security review

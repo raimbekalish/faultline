@@ -1347,3 +1347,117 @@ No confirmed merge blocker was found in this scoped review. Owner review/merge
 is still required; the feature remains Unreleased. Policy design/thresholds are
 the user's responsibility, and evaluation provides no confidence intervals,
 cross-run aggregation or guarantee about future traffic.
+
+## Milestone 8B1 — strict contracts and read-only planning (Unreleased)
+
+Date: 2026-10-27. PR #10 merged with regular merge commit
+`1374c8c55bcb83c2b6b80d34af88a3f663c9467a`, parents
+`257eab735c16e9daa2a700d88e329f84c72622af` and
+`00286f37c613b480616f3261424c40c2227f1f87`; both reviewed documentation commits
+remain reachable with original authorship. Local main was synchronized/clean
+before creating `codex/custom-service-planner`.
+
+M8B1 adds only descriptor/catalog/plan generation. There is no custom run,
+cleanup, worker, consumed-plan record, resource journal, Docker provisioning or
+network qualification. Source/CLI behavior and private/public plan boundaries
+are specified in [the planner contract](custom-service-planner.md). The plan's
+random identity is for future single-use RUN consumption; journal-bound cleanup
+may later reuse that consumed identity without restoring RUN permission. Neither
+consumer is implemented or implicitly authorized by generating a hash.
+
+### Tests actually executed
+
+Task records are kept separately under private ignored
+`artifacts/m8b1-planner-a13c7e92/`.
+
+- Host Go 1.26.8/macOS ARM64: `make check` PASS (shell endpoint precedence,
+  packaging tests, Go formatting/vet and full uncached unit race suite).
+  `go mod verify` PASS. Existing SQLite migration/write/cancellation/process-exit
+  recovery, sample engine, tracing, API and format-1/evaluation contracts passed.
+- `CGO_ENABLED=0 go test -count=1` for lab, bundle, bundlecli, bundlecompare,
+  bundleevaluate, jsonstrict and contracts: PASS. Native CLI and CGO-disabled
+  offline executable built under the task directory; no release package rebuilt.
+- New race tests cover valid/invalid descriptors, exact keys, Unicode/duplicates,
+  versions/platforms, integer/range/size limits, canonical configuration hashes,
+  distinct plan identities, catalog mutation/revalidation and private/public
+  redaction. The plan codec rejects ignored/ambiguous fields and noncanonical
+  material; cancellation after a full entropy read is checked explicitly.
+  Real temporary files exercise final symlinks/FIFOs, inode replacement,
+  directory privacy, atomic no-replace races, output limits and cancellation.
+- Recording command tests exercise missing images, malformed/conflicting runtime
+  and image responses, changed socket/daemon identity, endpoint precedence and
+  invalid command/flag injection. Read-only operation construction is closed;
+  unknown operations cannot reach a subprocess. Subprocess tests verify bounded
+  stdout/stderr, killed process groups, cancellation and sanitized environment.
+- Full native CLI dispatch through the actual subprocess/filesystem adapters,
+  using a recording **synthetic Docker executable**, successfully wrote a private
+  mode-0600 plan and redacted PLANNED/unqualified JSON. Exactly eight read-only
+  fixture invocations; run/cleanup returned usage 2 without another invocation.
+  These metadata responses are synthetic, not image/runtime qualification.
+- Bounded descriptor fuzz smoke: two workers, 15 seconds requested, 258,168
+  executions, PASS (about 16 seconds elapsed). Not a comprehensive security audit.
+- Fourteen retained real `.flb` replays (five evaluate verdict cases and nine
+  verify/inspect/compare cases) matched the earlier reviewed JSON byte for byte,
+  with original 0/3/4 evaluation exits and unchanged source bundle hashes.
+
+The first focused run exposed two test-fixture assumptions: Go's per-test child
+folder was not mode 0700, and its long name exceeded macOS Unix-socket path limits.
+Fixtures now explicitly create private/short paths; production privacy checks
+were not relaxed. Subsequent focused and full suites passed.
+
+### Real local read-only checks and findings
+
+The existing local Docker daemon was available. It was not explicitly started or
+provisioned. Production planner calls were recorded through a guard that accepted
+only context/version/identity/image inspection; no create/run/start/exec/network
+mutation/build/pull/tag/remove was permitted or invoked.
+
+The initial live inspection found a real compatibility bug: Docker omitted empty
+`Config.Volumes`/other optional map keys, while the template assumed their presence.
+That caused an inspection error, not unsafe execution. Fixed templates now handle
+absent/null counts explicitly. Added regression checks also ensure a declared
+empty healthcheck object is rejected rather than treated as absent. Full checks
+passed after those fixes.
+
+Actual negative planner cases then behaved correctly: a nonexistent immutable
+local image failed with exit 1 and no plan/stdout; the already-local proxy image,
+intentionally unsuitable as an app, failed metadata validation with exit 1. The
+production adapter made eight total allowed read-only calls across these cases.
+Error text excluded endpoint paths and private binding data. The closed
+`faultline-lab:http-work-v1` catalog image is absent; it was **not built, pulled or
+substituted**. A successful plan against a real independent app/catalog pair was
+therefore **not demonstrated**. Successful end-to-end publication uses the clearly
+labeled recording fixture above. No application was started to satisfy planning.
+
+Inventory result is deliberately qualified: container, image, volume and unrelated
+network IDs were unchanged, with no Faultline lab resources created. Docker's
+**default `bridge` network ID was replaced** during the longer observation and
+again across the live check window. The saved prior/current records identify the
+changed network as that default bridge; cause was not established. Global
+inventory equality assertions failed and are retained as such, not reported as a
+pass or repaired by cleanup. All recorded planner commands were read-only; no
+network-create command was issued. This observation provides no network isolation
+qualification and must be considered in later runtime work.
+
+### Compatibility, scope and checks not run
+
+No sample engine, experiment spec, tracing implementation, SQLite migration,
+format-1 bundle, gate semantics, dependencies or release scripts changed. Protected
+original fixtures/packages/demo files and genuine replay evidence remain unchanged;
+README retains the same public video URL. v0.1.0 tag/release/five assets are not
+modified. No external publication, CI, image provisioning or host policy change.
+
+Real fault/tracing Docker integration suites were **not run**: they create
+containers/networks, which this milestone explicitly forbids. Existing host
+regressions ran instead. No frontend/browser tests, custom isolation probes,
+application execution, native Intel/Linux runtime qualification or custom recovery
+qualification was performed. All such claims remain unsupported, and every saved
+plan remains PLANNED / NOT_PERFORMED with execution unavailable.
+
+Security review checked the entire new execution boundary: only fixed read
+commands, exact local selection, bounded data/subprocesses, strict file publication
+and redaction. Trusted parent directories, Docker CLI/config/daemon and operator
+image review remain requirements. Unix sockets, labels and checksums do not
+provide authentication. Future RUN must perform new qualification and durable
+single-use consumption; a private plan is not deletion authority or a safety
+certificate. M8B2 is not started by this work.

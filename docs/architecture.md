@@ -3,9 +3,12 @@
 Milestone 8A proposes a future owner-selected service boundary in
 [ADR 0009](decisions/0009-owner-selected-service-labs.md), the
 [custom-lab design](design/custom-service-lab.md) and its
-[threat model](security/custom-service-threat-model.md). These are **design-only,
-pending independent review**. Current execution remains sample-only. No custom
-runtime, tracing, SQLite or portable-evidence support is enabled by that proposal.
+[threat model](security/custom-service-threat-model.md). M8A was approved/merged.
+Unreleased M8B1 adds only a [strict read-only planner](custom-service-planner.md):
+`internal/lab` owns the closed contracts, private file publication and bounded
+inspection adapter; the native CLI exposes only `lab plan`. There is no generic
+Docker execution API. Current execution remains sample-only; no custom runtime,
+tracing, SQLite or portable-evidence support is enabled.
 
 ## First vertical slice
 

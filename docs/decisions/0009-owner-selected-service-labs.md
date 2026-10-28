@@ -113,3 +113,6 @@ M8B1 clarification: [authorization lifecycle](../design/custom-service-lab.md#au
 consumes a plan once for future RUN, while preserving its identity for journal-bound
 cleanup-only recovery. Cleanup cannot grant RUN replay or ownership from names.
 The planner implements neither consumption nor execution and cannot qualify a lab.
+M8B1's [implementation contract](../custom-service-planner.md) specifies the
+private plan/redacted summary, closed inspection operations and absent-catalog
+failure behavior. No existing experiment/evidence schema or runtime is changed.
