@@ -7,7 +7,9 @@ M8B2B adds fixed authority/read-only observation; M8B2C adds
 [transport preparation and synthetic certification contracts](docker-transport-certification.md).
 No mutation driver or qualified continuity provider exists. M8B3A adds a
 [private measurement engine and ephemeral result contract](custom-worker-measurements.md)
-using local HTTP test harnesses, without changing production preflight.
+using local HTTP test harnesses, without changing production preflight. M8B3B adds
+[measurement message/control integration](custom-worker-protocol.md), still restricted
+to private local test bindings.
 RUN, CLEANUP and the execution/qualification design below remain future work;
 none of these features is in v0.1.0. This document accompanies
 [ADR 0009](../decisions/0009-owner-selected-service-labs.md) and the

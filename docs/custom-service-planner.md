@@ -212,3 +212,13 @@ The [measurement engine](design/custom-worker-measurements.md) runs only through
 scoped dependency-injected tests. The planner, descriptor and existing preflight
 protocol/entrypoint are unchanged. Actual local HTTP observations are not evidence
 of Docker DNS/isolation, which remain [unverified qualification gates](security/custom-lab-dns-qualification.md).
+
+
+## M8B3B internal protocol (Unreleased)
+
+The [measurement protocol/controller](design/custom-worker-protocol.md) now
+integrates validation, local HTTP measurements and scoped API-shaped fault control
+in tests. Its private loopback binding is not RUN authorization or runtime
+qualification. The public preflight worker rejects these requests; no lab run or
+cleanup command is added. [Runtime continuity](security/custom-runtime-continuity.md)
+remains fail-closed with no production provider.

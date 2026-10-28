@@ -6,6 +6,15 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B3B: strict separately named measurement request/response protocol and private
+  one-use local execution adapter. Existing preflight CLI behavior is unchanged.
+- Closed HTTP control adapter for one run-owned latency toxic, with conservative
+  lost-response handling, fresh absence checks and bounded operations. Tested
+  only against owned loopback control servers, never a real Toxiproxy/Docker lab.
+- Local protocol-to-measurement integration, canceled/output-failure and actual
+  SIGTERM/SIGKILL test-process checks. No production custom execution enabled;
+  runtime continuity/qualification and whole-lab cleanup remain separate gates.
+
 - M8B3A: bounded dependency-injected custom worker lifecycle, real local HTTP
   observations, shared statistics and strict separately versioned ephemeral results.
   Fault removal/verification remains independently bounded after cancellation.

@@ -21,6 +21,10 @@ M8B3A adds a [private dependency-injected HTTP worker](design/custom-worker-meas
 ([ADR 0012](decisions/0012-custom-worker-measurements.md)). It reuses spec validation
 and statistics but emits a separately versioned ephemeral result, never a sample
 report/history/bundle. No production caller or real fault driver is connected.
+M8B3B adds [versioned measurement envelopes and a private loopback execution adapter](design/custom-worker-protocol.md)
+([ADR 0013](decisions/0013-worker-protocol-scoped-control.md)). The concrete HTTP
+controller implements only one scoped toxic contract against test-owned servers.
+It does not bind real runtime resources or alter the preflight CLI.
 Current execution remains sample-only; no custom runtime,
 tracing, SQLite or portable-evidence support is enabled.
 

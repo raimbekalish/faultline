@@ -1938,3 +1938,157 @@ NO-GO for real Docker qualification until reviewed production invocation/result
 binding, actual fault controller, qualified continuity/mutation transport,
 restart/reconciliation, authorized image builds and adversarial isolation/lifecycle
 probes, plus explicit owner authorization. Production preflight remains unchanged.
+
+## M8B3B — worker protocol and scoped HTTP control (2026-10-28)
+
+PR #15 was verified OPEN/mergeable at exact reviewed head
+`b3a9c6eddca566a8fd1e3c378124fd411db9d8a4`, base
+`8fb5977887ed3d24c280ce5235485e9133ca8c29`, four original commits and the reviewed
+21 files, with no new commits/file changes. Release/tag/five assets and protected
+hashes matched before merge. Regular merge
+`8f7864d84cda38410c5fa7bd695a45dd6d3d3ffa` has exactly those base/head parents.
+All four originals remain reachable with original authorship. GitHub MERGED and
+clean synchronized main were verified before the integration branch. The GitHub
+integration returned 403 without mutation; authorized owner CLI merged without
+squash/rebase/force or protection bypass.
+
+Ignored private logs/new test evidence: `artifacts/m8b3b-worker-f45d71cb/`.
+Host: macOS ARM64, Go 1.26.8, existing CGO/C toolchain. No operator-home authority
+enrollment, real Docker command or existing experiment rerun was performed.
+
+### Real local protocol end-to-end evidence
+
+Captured from committed implementation
+`cfb44de825c1e0aa07c8491ef15c3e974187f1c0`, with race instrumentation:
+
+| Handler delay | Baseline mean ms | Fault mean ms | Recovery mean ms | Fault HTTP outcomes |
+| --- | --- | --- | --- | --- |
+| 80 ms | 0.47840299999999997 | 82.39293033333333 | 1.0690553333333332 | 200, 200, 200; 0/3 failures |
+| 400 ms | 0.8847916666666666 | 251.892611 | 0.5027499999999999 | 504, 504, 504; 3/3 failures |
+
+Each full run: one readiness request, three each baseline/fault/recovery, ten
+frontend/dependency requests and ten fresh frontend connections. Exactly seven
+control requests (read, POST, read; read, DELETE; read, read) were asserted. The
+strict request was decoded/bound before work; output was encoded and independently
+response-decoded with exact request/revision correlation and byte-stable roundtrip.
+
+HTTP traffic, timings and 504s are real. The control server is a protocol-compatible
+**test implementation**, changing dependency **handler delay**, not a Toxiproxy
+process or real network toxic. App dependency deadline is 250 ms. No statistical,
+causal, SLO or Docker isolation claim is made. Worker completion/fault removal is
+not proxy deletion, whole-lab cleanup or resource certification. All reports retain
+`runtime_qualified: false` and `whole_lab_cleanup: unavailable`. Timing variance
+from scheduler/connections/race instrumentation is expected; no original data was
+edited to obtain these numbers.
+
+Full captured responses: `evidence/protocol-80.json` (SHA-256
+`f7835990e381231714b67ee17fab71a70b5d4392aeaf40bb0ab1066923e0995b`) and
+`evidence/protocol-400.json` (SHA-256
+`8f307a7d849963b6092ee415484d698829abd8992cb550f395c4549a98230dae`).
+`evidence-summary.json` records all seven captured JSON file sizes/hashes. Checksums
+are consistency metadata, not authenticity or qualification.
+
+Cancellation after acknowledged apply captured 3 baseline / 1 canceled fault / 0
+recovery observations, with independently confirmed mock cleanup. Interrupted apply
+captured canceled status with application/removal UNKNOWN. Lost POST reply captured
+an incomplete result with unconfirmed cleanup, no fault/recovery samples and no
+adoption/DELETE of the uncertain mock toxic. Null missing summaries remain null.
+
+Actual Go test subprocesses exercised SIGTERM and SIGKILL against the parent's
+owned servers. SIGTERM captured a validated canceled response with five baseline,
+one canceled fault and no recovery samples, plus confirmed mock removal. SIGKILL
+captured **zero worker-result bytes** and a still-present mock toxic. The latter
+file is explicitly a parent test observation, not a fabricated worker response.
+Only parent-owned test fixtures were closed; no real runtime was cleaned/adopted.
+
+### Checks executed and outcomes
+
+- `make check` PASS: shell syntax; four fake-Docker endpoint precedence/refusal
+  cases; two standard-library packaging tests; formatting; `go vet ./...`; full
+  `go test -race -count=1 ./...` (25 packages with tests). Existing supervisor
+  filesystem/concurrency/process-exit, SQLite migration/rollback/hot-journal and
+  format-1/API/JSON compatibility suites ran. Fake CLI wrapper tests do not invoke
+  the trusted Docker CLI or create a lab.
+- `go mod verify`: all modules verified; no dependency or module-file changes.
+- CGO-disabled offline bundle/CLI/comparison/gate/contracts/parser and worker/
+  preflight tests PASS. Native CGO CLI, CGO-disabled offline verifier and preflight
+  worker builds PASS. These are native macOS checks, not Linux runtime qualification.
+- Pure codec tests also compiled/passed independently using only the earlier
+  measurement files plus the new protocol/codec test, without controller/adapter
+  files. Request/response roundtrips are deterministic for identical data.
+- Strict measurement input tests PASS: unsupported schema/kind, null/unknown/case/
+  escaped-duplicate/Unicode/size/number/spec/hash/binding mismatch, no HTTP effects
+  before validation and no source-revision/target/environment override.
+- Closed HTTP control tests PASS: exact method/path/body/status sequence, public
+  target rejection, foreign launch/proxy/toxic/upstream, missing proxy, redirect,
+  malformed/oversized/duplicate/null replies, failed/lost POST/DELETE, changed toxic,
+  inconsistent absence and bounded calls. No unknown toxic became cleanup authority.
+- End-to-end request→measurement/control→validated result tests PASS for 80/400 ms,
+  cooperative cancellation, interrupted apply, unconfirmed cleanup, short output,
+  correlation mismatch and concurrent single-use consumption. Replaying a binding
+  after output failure made no extra requests. Error output contains no raw body,
+  endpoint, credentials or private control diagnostics.
+- Actual owned Go test subprocess SIGTERM/SIGKILL tests PASS, as recorded above.
+  Internal child exit codes are test coordination, not new public CLI contracts.
+- Fourteen retained real 80/400/canceled-bundle cases matched previous
+  verify/inspect/compare/evaluate JSON byte for byte and preserved exits including
+  0/3/4. Original input hashes were unchanged.
+- Actual native CLI smoke PASS: `lab`, `lab run`, `lab cleanup` stay usage 2 with
+  empty stdout. A valid new measurement request passed to public preflight was
+  rejected with error 1 and empty stdout. The original valid preflight emitted
+  exactly its prior fields/capability, execution unavailable and measurements null.
+- Existing offline verify/inspect/evaluate reject a new response envelope with
+  error 1/no stdout. Evaluate used an existing valid dependency-budget policy;
+  rejection was not due to a missing policy file.
+
+All final checks passed; focused controller, protocol and process tests passed
+before the complete run. No failed final check was treated as a pass. A bounded
+fuzz campaign, frontend/browser rerun, actual Toxiproxy binary test or Docker fault/
+tracing wrappers were NOT RUN. The latter create resources outside authorization.
+Existing Go dashboard/API contracts ran; no frontend behavior changed.
+
+### Security, compatibility and runtime limits
+
+There is no production invocation of the new engine, no runtime controller factory,
+no new public measurement command and no Docker mutation implementation. Codecs
+and selected local control logic are executable in the explicit private test
+harness only. Endpoint bindings are test-owned loopback listeners out of band;
+requests cannot select hosts/URLs, commands, env maps or plugins. The old preflight
+source/encoding and Docker command profile remain unchanged.
+
+The request/response kinds are new, independently versioned data, not authorization
+certificates. Host ledger, plan/journal encodings, sample execution/specification,
+SQLite, format-1 evidence, reliability gates, tracing and dashboard are unchanged.
+v0.1.0 release metadata/five asset identities/digests, annotated tag and peeled
+`38b92ab01849d4fdf2f0c0070bf7ab8586ea23d3` commit match the pre-task snapshots
+(excluding mutable download counters). All 44 protected local artifact/evidence
+hashes and README demo URL remain unchanged. No release, tag, CI or deployment.
+
+**No trusted Docker CLI command ran in M8B3B.** No images built/pulled/run; no
+containers/networks created/started/stopped/removed. No existing proxy was contacted.
+Only owned httptest listeners, test subprocesses and temporary files were created
+and cleaned by their tests. No unrelated services/resources were scanned, pruned
+or changed. There is no fresh global inventory-equality or bridge attribution
+claim; the historical anomaly remains UNKNOWN.
+
+Actual network faults, custom-container conformance, DNS/control/backend/host
+isolation, daemon/VM lifecycle, catalog build/provenance, Linux filesystem/power-loss
+and whole-lab cleanup/release certification were NOT qualified. IO deadlines remain
+cooperative; arbitrary blocked readers/writers need owner-driven interruption.
+API names/metadata do not authenticate a server or prove creation generation.
+Lost apply acknowledgements deliberately leave unresolved faults for a future
+independent host cleanup layer rather than adopting/deleting by matching name.
+
+The [runtime-continuity review](security/custom-runtime-continuity.md) explicitly
+keeps Docker Desktop custom execution fail-closed. Resource Saver/proxy/daemon
+snapshots and missing events cannot independently provide the required continuity.
+A directly supervised native Linux daemon is only a narrower candidate requiring
+new review, witnesses and qualification; no provider is implemented and no new
+platform is supported here. Daemon/worker exit never establishes resource absence.
+
+GO for independent review/merge of M8B3B local protocol/control integration.
+**NO-GO for actual custom Docker execution.** Required: explicit owner authorization,
+reviewed real invocation/response and authenticated host/worker binding, feasible
+qualified continuity, lost-response/restart reconciliation, reviewed catalog builds
+and provenance, adversarial isolation/conformance, and exact-resource whole-lab
+teardown with durable cleanup/reservation-release certification.
