@@ -1703,3 +1703,110 @@ GO for independent review/merge of non-mutating M8B2B. NO-GO for beginning real
 provisioning/runtime qualification without the separately reviewed driver, certified
 outcomes/absence path, catalog bootstrap and explicit owner authorization. Synthetic
 observations and inspection metadata cannot satisfy those gates.
+
+## M8B2C — transport preparation and certification (2026-10-28)
+
+Approved PR #13 was verified OPEN/mergeable at exact head
+`bed799951dedf844b1c57ac7d3a4d6833843311f`, base
+`a7d48f06fdea53e889d47c27ab028abc5bf3fa9e`, six commits and the reviewed 27 files.
+Regular merge `120cd00948a821be74a122f65ae9e63337f33a48` has exactly those base/head
+parents. GitHub MERGED, all six original commits reachable and clean synchronized
+main were verified before creating `codex/custom-service-transport-certification`.
+No squash, history rewrite, force push or protection override occurred.
+
+Private local logs/artifacts are under ignored
+`artifacts/m8b2c-certification-7e31ad04/`. Host: macOS ARM64, Go 1.26.8, existing
+CGO/C toolchain. Tests used a canonical temporary directory; no OS-account
+supervisor enrollment or existing evidence/history modification occurred.
+
+### Checks executed
+
+- `make check`: shell syntax and all four endpoint-precedence/refusal scenarios;
+  two Python packaging tests; formatting; `go vet ./...`; full
+  `go test -race -count=1 ./...`. Includes SQLite real-file migration/rollback/
+  process-exit/hot-journal recovery, strict parsers, format-1/JSON contracts,
+  existing ownership/cancellation/cleanup, journal concurrency/process-exit,
+  private filesystem and new certification tests. The final complete run passed.
+- Separate formatting inspection includes `examples/custom-service/http-work`,
+  outside the Makefile's `cmd internal` formatting search. `git diff --check` passed.
+- `go mod verify`: all modules verified. No module/dependency changes.
+- `CGO_ENABLED=0 go test -count=1` for offline command, bundle, bundlecli,
+  bundlecompare, bundleevaluate, contracts, jsonstrict and labprotocol passed.
+  Native CGO CLI and CGO-disabled offline verifier built into ignored artifacts.
+- Focused race regressions passed for deterministic commands, rejected mutations
+  of detached descriptions/argv, forged JSON capabilities, known/foreign IDs,
+  missing/stale intent, stopped-container creation, lifecycle versus worker
+  success, lost/malformed responses, uncertain deletion, inconsistent presence,
+  changed/unavailable runtime/continuity, cancellation, expiry and lease release.
+- Filesystem tests exercise private attempt records, replay refusal after loss of
+  in-memory tickets, malformed records/symlinks, write failure and retained proven
+  cleanup scope. Attempt exhaustion preserves exact cleanup preparation while
+  forbidding a receipt. Synthetic full teardown requires every certificate and
+  a fresh absence sweep; missing continuity/certificates refuse release.
+- Production-boundary source regression confirms no production activation,
+  handoff or result-channel calls, and no new subprocess import boundary beyond
+  existing read-only CLI/process helpers. CLI smoke confirms `lab`, `lab run`
+  and `lab cleanup` return usage 2 with empty stdout. No mutation path is exposed.
+- Dedicated preflight worker/fixture and independent contract-app tests passed
+  using bounded JSON, fake HTTP transports and in-process handlers. Preflight
+  emits no measurements/execution capability. No app/catalog container was run.
+- Fourteen retained real 80 ms, 400 ms and canceled-bundle
+  verify/inspect/compare/evaluate cases matched prior JSON byte for byte and exits,
+  including evaluate 0/3/4. Original evidence hashes were unchanged.
+- Opt-in `FAULTLINE_READONLY_RUNTIME_TEST=1 go test -race -count=1 ./internal/lab
+  -run '^TestLiveReadOnlyRuntimeWitness$'` passed against the existing local
+  Docker Unix socket. This verifies read-only binding checks with synthetic plan
+  fields, not custom image qualification or any network isolation.
+
+Intermediate compile failures and two overly narrow source-import checks were
+corrected before final verification. An early cleanup test exposed revision
+binding to the cached journal instead of the proven volatile cleanup snapshot;
+cleanup descriptions now bind the actual validated source revision. Failed logs
+are retained separately and are not counted as passing runs. No fuzz campaign or
+claim of comprehensive security auditing is made.
+
+### Read-only runtime and unchanged release evidence
+
+Trusted CLI reported Engine 29.8.0/Linux ARM64, 9 containers, 6 networks, 67 images
+and 10 volumes. Final container/image/volume IDs matched. One network ID changed;
+the final bridge creation time was `2026-10-28T22:05:16.764570541Z`, but that bridge
+ID was absent from the preceding list. **Global inventory equality and exact
+final-difference attribution failed.** Historical exact attribution remains UNKNOWN;
+prior idle-lifecycle evidence remains plausible. No settings/restart/prune or
+retry-to-green occurred. See the [preserved investigation](security/docker-bridge-observation.md).
+
+All task-issued Docker commands were read-only, with bounded context/version/
+identity and selected bridge/resource-ID diagnostics. No real mutation transport
+was connected; no create/run/start/stop/exec/delete/build/pull, image relabel,
+network change or application execution was issued. This is a task command audit,
+not proof that concurrent actors or Desktop internals stayed unchanged.
+
+Release metadata and all five v0.1.0 asset identities/digests/metadata match the
+pre-task snapshot (excluding mutable download counters). The original annotated
+tag and peeled `38b92ab01849d4fdf2f0c0070bf7ab8586ea23d3` commit remain unchanged.
+All 44 protected local artifact/evidence/fixture hashes match previous records;
+README's public video URL remains unchanged. No release, tag, CI or deployment
+was created. Plan/catalog/graph and journal encoding/decoder, sample execution,
+specification, SQLite, format-1 evidence, gates, dashboard and tracing are unchanged.
+
+### Not run and remaining gates
+
+Real fault/tracing integration wrappers were **NOT RUN** because they create/start/
+remove resources outside this increment's explicit authorization. No frontend or
+browser rerun, actual image build, custom service execution, real creation/absence
+certification, runtime isolation, Linux filesystem or power-loss qualification was
+performed. Existing Go dashboard/API compatibility tests ran; no frontend behavior
+changed. Real evidence was reused without rerunning or modifying experiments.
+
+There is no production runtime-continuity provider or mutation invocation/response
+driver. Positive certificates/epochs and full teardown/release tests are explicitly
+synthetic, never qualification. The source worker validates preflight only; a
+measurement-capable worker/result protocol remains to be implemented/reviewed.
+Interrupted/lost creates and restarted certificate state remain unresolved; no
+prefix/label reconciliation or automatic repair is supplied. Filesystem durability
+and deadlines remain subject to tested OS/filesystem and cooperative IO behavior.
+
+GO for independent review of non-mutating M8B2C. NO-GO for real provisioning or
+runtime qualification until the prerequisites in the
+[transport contract](design/docker-transport-certification.md#before-any-real-qualification)
+are reviewed and explicitly authorized. v0.1.0 does not include these changes.

@@ -12,6 +12,11 @@ Docker execution API. Unreleased M8B2A adds the internal
 without connecting it to an execution consumer or mutation transport. M8B2B adds the [fixed authority and observation boundary](design/trusted-supervisor-boundaries.md)
 ([ADR 0010](decisions/0010-authoritative-supervisor-state.md)). It has no executable
 mutation transport, implicit enrollment or custom execution command.
+M8B2C adds [closed command/result certification](design/docker-transport-certification.md)
+([ADR 0011](decisions/0011-closed-transport-certification.md)) and dedicated
+source-only catalog preflight/fixture definitions. No mutation invocation or
+qualified runtime-continuity provider exists; positive certification is tested
+only with explicit fakes. Plan/journal wire formats remain unchanged.
 Current execution remains sample-only; no custom runtime,
 tracing, SQLite or portable-evidence support is enabled.
 

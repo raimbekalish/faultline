@@ -37,6 +37,7 @@ type MutationDescription struct {
 type MutationIntent struct {
 	description MutationDescription
 	lease       *TrustedLease
+	revision    string
 }
 
 func (m MutationIntent) MarshalJSON() ([]byte, error) { return json.Marshal(m.description) }
@@ -123,7 +124,7 @@ func (l *TrustedLease) PlanCreation(ctx context.Context, key ResourceKey) (Mutat
 		c := g.Containers[idx-4]
 		m.Container = &c
 	}
-	return MutationIntent{m, l}, nil
+	return sealMutation(l, m), nil
 }
 
 // PlanCleanup uses only previously proven exact identities and a fresh opaque
@@ -155,12 +156,12 @@ func (l *TrustedLease) PlanCleanup(ctx context.Context, v VerifiedResource) (Mut
 	if resourceIndex(v.key) < 4 {
 		kind = RemoveNetwork
 	}
-	return MutationIntent{MutationDescription{Kind: kind, Key: v.key, ID: v.proof.ID, ExecutionAvailable: false, JournalRecording: "cleanup_result_not_confirmed"}, l}, nil
+	return MutationIntent{MutationDescription{Kind: kind, Key: v.key, ID: v.proof.ID, ExecutionAvailable: false, JournalRecording: "cleanup_result_not_confirmed"}, l, h}, nil
 }
 func (l *TrustedLease) planLifecycle(ctx context.Context, v VerifiedResource, kind MutationKind) (MutationIntent, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	j, e := l.live(ctx)
+	j, e := l.operationJournal(ctx, kind)
 	if e != nil || resourceIndex(v.key) < 4 || v.runtime != l.witness {
 		return MutationIntent{}, ErrMutationContract
 	}
@@ -182,7 +183,7 @@ func (l *TrustedLease) planLifecycle(ctx context.Context, v VerifiedResource, ki
 	if e := l.checkRuntime(ctx); e != nil {
 		return MutationIntent{}, e
 	}
-	return MutationIntent{MutationDescription{Kind: kind, Key: v.key, ID: v.proof.ID, ExecutionAvailable: false, JournalRecording: "lifecycle_result_not_confirmed"}, l}, nil
+	return MutationIntent{MutationDescription{Kind: kind, Key: v.key, ID: v.proof.ID, ExecutionAvailable: false, JournalRecording: "lifecycle_result_not_confirmed"}, l, h}, nil
 }
 
 // A living, still-held lease retains its already durable consumed identity and
@@ -201,5 +202,23 @@ func (l *TrustedLease) cleanupSnapshot(ctx context.Context) (Journal, error) {
 	if ctx.Err() != nil {
 		return Journal{}, ctx.Err()
 	}
+	if l.volatileCleanup != nil {
+		return *l.volatileCleanup, nil
+	}
 	return l.journal, nil
+}
+
+func sealMutation(l *TrustedLease, d MutationDescription) MutationIntent {
+	h, _ := l.journal.Hash()
+	return MutationIntent{d, l, h}
+}
+
+func (l *TrustedLease) operationJournal(ctx context.Context, k MutationKind) (Journal, error) {
+	if cleanupKind(k) {
+		return l.cleanupSnapshot(ctx)
+	}
+	if l.recordingUnconfirmed {
+		return Journal{}, ErrStateIO
+	}
+	return l.live(ctx)
 }

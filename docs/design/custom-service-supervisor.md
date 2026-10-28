@@ -2,7 +2,9 @@
 
 This records the M8B2A foundation. Unreleased M8B2B adds
 [fixed authority, leases and read-only observation](trusted-supervisor-boundaries.md)
-without enabling execution. Historical missing-boundary statements below describe
+without enabling execution. M8B2C adds
+[transport preparation and synthetic certification](docker-transport-certification.md),
+with no real invocation or qualified continuity provider. Historical missing-boundary statements below describe
 M8B2A; future callers must now use that fixed authority rather than raw stores.
 
 This is an internal Go contract and filesystem implementation, **not an executable

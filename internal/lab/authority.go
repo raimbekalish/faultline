@@ -418,6 +418,9 @@ type TrustedLease struct {
 	closed               bool
 	recordingUnconfirmed bool
 	imported             bool
+	transportAttempts    map[string]*attemptState
+	volatileCleanup      *Journal
+	confirmedAbsent      map[ResourceKey]Proof
 }
 
 // Begin reserves/consumes only. No Docker mutations or isolation qualification.
@@ -566,15 +569,28 @@ func (l *TrustedLease) Append(ctx context.Context, event Event) error {
 func (l *TrustedLease) ConfirmCleanup(ctx context.Context) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	return l.confirmCleanupLocked(ctx, nil)
+}
+func (l *TrustedLease) confirmCleanupLocked(ctx context.Context, verifier *certifier) error {
 	if l.closed || l.authority == nil || l.imported || !settled(l.journal) {
 		return ErrAuthority
 	}
-	// Presence inspection is implemented here; actual absence verification and
-	// mutation-response certification require a later reviewed transport. Never
-	// release a reservation for attempted/observed resources from assertions alone.
-	for _, e := range l.journal.Events {
-		if e.Operation == CreateIntent {
-			return ErrObservation
+	attempted := false
+	for _, event := range l.journal.Events {
+		if event.Operation == CreateIntent {
+			attempted = true
+		}
+	}
+	if attempted {
+		if verifier == nil {
+			system, e := systemCertifier()
+			if e != nil {
+				return e
+			}
+			verifier = &system
+		}
+		if e := l.verifyFinalAbsence(ctx, *verifier); e != nil {
+			return e
 		}
 	}
 	if e := l.checkRuntime(ctx); e != nil {

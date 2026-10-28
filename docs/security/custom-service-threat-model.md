@@ -205,3 +205,31 @@ repaired. Read-only snapshots can straddle Docker Desktop lifecycle/cache change
 exact daemon continuity and real isolation remain unqualified. Cleanup preparation
 retains only already-proven IDs after recording failure and cannot turn unknown
 outcomes into successful receipts or new execution authority.
+
+
+## M8B2C result boundary and residual races
+
+See [ADR 0011](../decisions/0011-closed-transport-certification.md) and the
+[exact contract](../design/docker-transport-certification.md). Closed argv cannot
+be supplied or deserialized by a caller. New attempt sidecars bind consumed plan,
+revision, runtime and one-use token; they do not replace the journal or grant
+ownership. An ID is adopted only after durable intent, unambiguous response and
+fresh matching inspection/continuity. Lost creates stay UNKNOWN; labels/names
+never repair that gap. Failed inspect is never absence. Removal needs a successful
+exact-ID response and repeated scoped queries, with no ambiguous attachments.
+
+No production continuity provider exists: same daemon ID/socket and repeated
+metadata do not exclude hidden restart/cache behavior. Activation fails closed.
+Synthetic epochs and positive result tests are deliberately not real qualification.
+Lease/revision/freshness checks narrow but cannot eliminate command/inspection
+races or changes after the last read. A malicious same-user Docker/OS administrator
+can forge observations or change resources between checks. No daemon transaction,
+unconditional cleanup or durable crash recovery of an unrecorded ID is claimed.
+
+Known IDs survive failed recording only in the living lease's validated cleanup
+snapshot. Recording exhaustion/failure blocks new provisioning and reservation
+release, not exact-owned cleanup preparation. Attempt history is never recycled;
+restart cannot reconstruct certification from copied JSON. No worker/proxy success
+is inferred from running/exited container state. The dedicated worker is preflight
+only; a contract label does not authenticate image code or prove it can execute an
+experiment. Source recipes are not built or connected to production execution.

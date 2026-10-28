@@ -41,6 +41,8 @@ const (
 	runnerActual
 	fixtureActual
 	proxyActual
+	containerPresence
+	networkPresence
 )
 
 type readCommand struct {
@@ -126,6 +128,19 @@ func (c readCommand) args() ([]string, error) {
 			format = strings.ReplaceAll(format, "LABEL_CHECK", labelKeyProjection(keys))
 		}
 		return append(a, kind, "inspect", "--format", format, c.value), nil
+	case containerPresence, networkPresence:
+		if !resourceID.MatchString(c.value) {
+			return nil, ErrObservation
+		}
+		kind := "network"
+		args := []string{"--host", c.endpoint}
+		if c.op == containerPresence {
+			kind = "container"
+			args = append(args, kind, "ls", "--all")
+		} else {
+			args = append(args, kind, "ls")
+		}
+		return append(args, "--no-trunc", "--filter=id="+c.value, "--format", `{{json .ID}}`), nil
 	case proxyImage:
 		if c.value != ProxyReference {
 			return nil, ErrInspection

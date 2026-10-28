@@ -196,3 +196,11 @@ mutation descriptions. No enrollment occurs during planning, no state-directory
 flag is accepted and no execution/cleanup command is enabled. Presence inspection
 is not isolation qualification or certified absence. Plans and their format remain
 unchanged; v0.1.0 contains none of these unreleased supervisor APIs.
+
+## M8B2C preparation (Unreleased)
+
+[Transport contracts](design/docker-transport-certification.md) add closed private
+command plans, attempt recording and conservative certification logic. Production
+continues to expose only this read-only planner. Dedicated bootstrap sources are
+preflight-only and were not built. No runtime continuity provider, mutation driver
+or custom RUN/CLEANUP command exists. Existing plans are not rewritten or upgraded.
