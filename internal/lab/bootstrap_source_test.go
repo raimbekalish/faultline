@@ -26,6 +26,14 @@ func TestBootstrapDefinitionsAreSeparatePinnedPreparation(t *testing.T) {
 			t.Fatal("unsafe bootstrap", bad)
 		}
 	}
+	for _, needed := range []string{"RUN go mod download", "COPY internal/experiment", "COPY internal/localhttp", "COPY internal/provenance", "COPY internal/telemetry", "COPY internal/toxiproxy"} {
+		if !strings.Contains(s, needed) {
+			t.Fatal("missing preflight spec dependency", needed)
+		}
+	}
+	if strings.Contains(s, "COPY internal/labworker") {
+		t.Fatal("measurement engine silently included in preflight image")
+	}
 	app := filepath.Join(root, "examples/custom-service/http-work/main.go")
 	ast, e := parser.ParseFile(token.NewFileSet(), app, nil, parser.ImportsOnly)
 	if e != nil {

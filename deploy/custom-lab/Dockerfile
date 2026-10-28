@@ -5,7 +5,15 @@ ARG SOURCE_REVISION
 WORKDIR /src
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=arm64 GOTOOLCHAIN=local
 COPY go.mod go.sum ./
+# spec reuses the existing engine's numeric validation. Its compile-time closure
+# includes the packages below and locked Go modules, even for preflight-only use.
+RUN go mod download
 COPY internal/spec ./internal/spec
+COPY internal/experiment ./internal/experiment
+COPY internal/localhttp ./internal/localhttp
+COPY internal/provenance ./internal/provenance
+COPY internal/telemetry ./internal/telemetry
+COPY internal/toxiproxy ./internal/toxiproxy
 COPY internal/jsonstrict ./internal/jsonstrict
 COPY internal/labprotocol ./internal/labprotocol
 COPY cmd/lab-worker ./cmd/lab-worker
