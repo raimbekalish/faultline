@@ -394,3 +394,51 @@ func TestCreationProofAndDependenciesFailClosed(t *testing.T) {
 		}
 	}
 }
+
+func (f *syntheticTransport) remove(k ResourceKey, p Proof) error {
+	f.calls = append(f.calls, "remove:"+string(k)+":"+p.ID)
+	f.count++
+	if f.count == f.failAt {
+		return errors.New("synthetic cleanup response lost")
+	}
+	return nil
+}
+func TestRecordingCleanupTransportOnlyReceivesProvenIDs(t *testing.T) {
+	j, a := consumed(t)
+	j = createAll(t, j, a)
+	j = advance(t, j, a, Event{Operation: CleanupBegin})
+	f := syntheticTransport{failAt: 1}
+	k := Application
+	p := syntheticProof(t, j, k)
+	for attempt := 0; attempt < 2; attempt++ {
+		if !j.CleanupEligible(a, k, p) {
+			t.Fatal("owned retry denied")
+		}
+		j = advance(t, j, a, Event{Operation: DeleteIntent, Key: k, Proof: p})
+		err := f.remove(k, p)
+		event := Event{Operation: DeleteAbsent, Key: k, Proof: p}
+		if err != nil {
+			event.Operation = DeleteUnknown
+			event.Reason = "transport_failure"
+		}
+		j = advance(t, j, a, event)
+	}
+	if len(f.calls) != 2 || f.calls[0] != f.calls[1] {
+		t.Fatal("retry changed identity")
+	}
+	if j.CleanupEligible(a, k, p) {
+		t.Fatal("already absent ID sent to removal again")
+	}
+	foreign := p
+	foreign.ID = strings.Repeat("f", 64)
+	if j.CleanupEligible(a, k, foreign) {
+		_ = f.remove(k, foreign)
+	}
+	if len(f.calls) != 2 {
+		t.Fatal("foreign ID reached transport")
+	}
+	s, _ := j.State()
+	if s.Resources[4].State != "absent" {
+		t.Fatal("confirmed retry not retained")
+	}
+}
