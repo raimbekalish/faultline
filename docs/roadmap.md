@@ -142,9 +142,13 @@ change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 - [x] M8B2B independent review/merge (PR #13)
 - [x] M8B2C closed command preparation, private attempts and synthetic result/absence certification
 - [x] M8B2C dedicated source-only preflight worker/fixture and independent contract app
-- [ ] M8B2C independent code/security review and merge
+- [x] M8B2C independent code/security review and merge (PR #14)
 - [ ] Qualified continuity provider, actual mutation driver and restart reconciliation review
-- [ ] Executing worker/result protocol and authorized catalog builds/qualification
+- [x] M8B3A private measurement engine, local HTTP integration and ephemeral result validation
+- [x] M8B3A preflight compatibility, DNS source review and qualification test plan
+- [ ] M8B3A independent implementation/security review and merge
+- [ ] Production worker invocation/result binding and real fault-control adapter review
+- [ ] Authorized catalog builds/qualification
 - [ ] Qualified local runtime isolation and actual scoped teardown/failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
 - [ ] Separate ephemeral custom result and legacy regressions/security review
@@ -171,3 +175,10 @@ activation/certification; daemon metadata equality is insufficient. The worker
 source validates preflight only, with measurements null. See the
 [transport contract](design/docker-transport-certification.md) for prerequisites
 and residual TOCTOU/recovery limitations. This work is Unreleased.
+
+M8B3A records actual local HTTP timings with handler-delay/fake fault control; it
+is not a real network fault experiment. The existing worker entrypoint remains
+preflight-only. New ephemeral results are not accepted by sample history, bundles
+or gates. [DNS analysis](security/custom-lab-dns-qualification.md) preserves the
+prepared profile and marks all runtime probes UNVERIFIED. No runtime resources
+were started, no image built, and no new released feature is advertised.

@@ -279,6 +279,10 @@ This command is not in v0.1.0 binaries. Existing execution remains sample-only.
 M8B2C adds [closed transport/certification contracts](docs/design/docker-transport-certification.md)
 and dedicated bootstrap source only. There is no mutation driver or production
 runtime-continuity provider; synthetic certificates do not qualify real resources.
+The unreleased [measurement-worker foundation](docs/design/custom-worker-measurements.md)
+now measures real loopback HTTP baseline/fault/recovery in scoped tests. Its fault
+controller is a recording fake; production preflight and custom-execution boundaries
+remain unchanged.
 
 ## Optional distributed tracing
 

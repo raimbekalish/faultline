@@ -233,3 +233,27 @@ restart cannot reconstruct certification from copied JSON. No worker/proxy succe
 is inferred from running/exited container state. The dedicated worker is preflight
 only; a contract label does not authenticate image code or prove it can execute an
 experiment. Source recipes are not built or connected to production execution.
+
+
+## M8B3A measurement and DNS boundaries
+
+The [private measurement engine](../design/custom-worker-measurements.md) has no
+production caller. Its only endpoint constructor is private and requires explicit
+loopback binding; configuration accepts no URL. Fresh serial connections, disabled
+proxies/redirects/compression, request/body/header limits and total/readiness bounds
+prevent hidden measured retries or payload collection. Only fixed error codes are
+reported. Real HTTP handler-delay tests do not certify real network fault injection.
+
+A typed controller must honor context and scope ownership to the exact run. Cleanup
+is registered before apply, uses a fresh timeout and needs acknowledged removal
+plus verified absence. Ambiguous apply/removal, partial data and cancellation stay
+explicit. The result never establishes Docker ownership/absence, proxy deletion or
+whole-lab cleanup, and cannot enter existing sample bundles/history/gates. The
+unchanged preflight CLI still reports measurements null and execution unavailable.
+
+[DNS analysis and the future probe matrix](custom-lab-dns-qualification.md) explain
+why a loopback upstream does not necessarily disable embedded service discovery.
+No real DNS or isolation property was tested here, and the prepared profile was not
+weakened. Same-user administrator, runtime continuity, restart/reconciliation and
+host/control/backend bypass risks remain unresolved. The historical bridge anomaly
+was not re-investigated or declared fixed. No Docker commands ran for this increment.

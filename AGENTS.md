@@ -147,6 +147,14 @@ over speculative interfaces or mocked product features.
 - Dedicated catalog sources are preflight-only, not qualified execution images.
   Do not build/pull/run them or expose RUN/CLEANUP without separate authorization.
 
+- The measurement engine remains dependency-injected and disconnected from the
+  preflight CLI. HTTP handler-delay tests are real timings, not Toxiproxy or Docker
+  qualification. No loopback harness binding becomes a user target flag.
+- Custom worker results have their own kind/schema; reuse spec validation and
+  summarization. Null missing summaries, redacted codes, bounded attempts and
+  independent fault-removal verification are mandatory. Worker completion/fault
+  removal is not proxy deletion, Docker absence, whole-lab cleanup or gate input.
+
 - Use the repository-local Git identity associated with the owner's GitHub account.
 - Make small conventional commits for completed, verified units. Push milestones.
 - Direct main commits are acceptable during initial bootstrap. Larger subsequent

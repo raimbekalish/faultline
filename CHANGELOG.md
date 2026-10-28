@@ -6,6 +6,15 @@ and published assets; no release date is inferred here.
 
 ## Unreleased
 
+- M8B3A: bounded dependency-injected custom worker lifecycle, real local HTTP
+  observations, shared statistics and strict separately versioned ephemeral results.
+  Fault removal/verification remains independently bounded after cancellation.
+- Local tests cover 80 ms handler delay and real 504s at a 250 ms dependency
+  timeout, not Toxiproxy/Docker isolation. Preflight CLI remains unchanged; no
+  production execution or fault driver is enabled.
+- Correct the source-only preflight catalog recipe's transitive dependency closure;
+  no image built/pulled/run. Document DNS source analysis and unverified probes.
+
 - M8B2C: bounded closed Docker command representations, private attempt records,
   response/inspection certification and conservative absence/release contracts.
   No executable mutation driver or qualified continuity provider is connected.
