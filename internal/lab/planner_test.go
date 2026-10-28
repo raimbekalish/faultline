@@ -443,3 +443,50 @@ func TestInspectionTemplateRejectsDeclaredEmptyHealthcheck(t *testing.T) {
 		t.Fatal("declared empty healthcheck was confused with missing/null")
 	}
 }
+
+func TestPlanCodecRejectsAmbiguousOrIgnoredMaterial(t *testing.T) {
+	p, err := buildPlan(context.Background(), descriptor(t), testSnapshot(t), fixedEntropy())
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := p.Encode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, raw := range []string{
+		strings.Replace(string(b), `"schema_version": 1`, `"schema_version": 1,"EXTRA":"private"`, 1),
+		strings.Replace(string(b), `"schema_version": 1`, `"SCHEMA_VERSION": 1`, 1),
+		strings.Replace(string(b), `"schema_version": 1`, `"schema_version": 1,"\u0073chema_version":1`, 1),
+		strings.Replace(string(b), `"image_id"`, `"IMAGE_ID"`, 1),
+		strings.Replace(string(b), `"application_environment": [`, `"application_environment": [null,`, 1),
+		string(b) + `{}`, strings.Repeat(" ", MaxPlanBytes+1),
+	} {
+		var decoded Plan
+		if json.Unmarshal([]byte(raw), &decoded) == nil {
+			t.Fatal("ambiguous plan accepted")
+		}
+	}
+	var compact bytes.Buffer
+	_ = json.Compact(&compact, b)
+	var decoded Plan
+	if json.Unmarshal(compact.Bytes(), &decoded) != nil || decoded.Validate() != nil {
+		t.Fatal("canonical compact plan refused")
+	}
+}
+
+type cancelEntropy struct{ cancel context.CancelFunc }
+
+func (r cancelEntropy) Read(b []byte) (int, error) {
+	for i := range b {
+		b[i] = 1
+	}
+	r.cancel()
+	return len(b), nil
+}
+func TestPlanCancellationDuringFullEntropyRead(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if _, err := buildPlan(ctx, descriptor(t), testSnapshot(t), cancelEntropy{cancel}); !errors.Is(err, context.Canceled) {
+		t.Fatal("cancellation discarded after full entropy read", err)
+	}
+}

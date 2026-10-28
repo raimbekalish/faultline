@@ -1,10 +1,12 @@
 package lab
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/raimbekalish/faultline/internal/jsonstrict"
 	"io"
 	"reflect"
 	"regexp"
@@ -55,6 +57,37 @@ type Plan struct {
 	AuthorizationSHA256 string `json:"authorization_sha256"`
 }
 
+// Plans are generated canonical records, unlike human-authored descriptors.
+// Reject unknown/case-aliased fields, ignored array elements and alternate wire
+// spellings rather than silently dropping material covered by authorization.
+// This codec grants no RUN/CLEANUP capability and performs no I/O.
+func (p *Plan) UnmarshalJSON(b []byte) error {
+	if len(b) > MaxPlanBytes || jsonstrict.Validate(b) != nil {
+		return ErrPlan
+	}
+	type wire Plan
+	var decoded wire
+	d := json.NewDecoder(bytes.NewReader(b))
+	d.DisallowUnknownFields()
+	if d.Decode(&decoded) != nil {
+		return ErrPlan
+	}
+	canonical, err := json.Marshal(decoded)
+	if err != nil {
+		return ErrPlan
+	}
+	var compact bytes.Buffer
+	if json.Compact(&compact, b) != nil || !bytes.Equal(compact.Bytes(), canonical) {
+		return ErrPlan
+	}
+	result := Plan(decoded)
+	if err := result.Validate(); err != nil {
+		return err
+	}
+	*p = result
+	return nil
+}
+
 type Summary struct {
 	SchemaVersion            int          `json:"schema_version"`
 	Kind                     string       `json:"kind"`
@@ -85,6 +118,10 @@ func buildPlan(ctx context.Context, d Descriptor, s inspected, entropy io.Reader
 	}
 	var random [96]byte
 	if _, err := io.ReadFull(ctxReader{ctx, entropy}, random[:]); err != nil {
+		return p, err
+	}
+	// ReadFull can discard a reader error when it also received all 96 bytes.
+	if err := ctx.Err(); err != nil {
 		return p, err
 	}
 	p.payload = payload{
