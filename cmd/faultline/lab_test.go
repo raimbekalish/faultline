@@ -59,3 +59,17 @@ func (labShortOutput) Write(b []byte) (int, error) { return len(b) / 2, nil }
 type labFailedOutput struct{}
 
 func (labFailedOutput) Write([]byte) (int, error) { return 0, errors.New("PRIVATE-SECRET") }
+
+func TestTopLevelUsageIncludesPlanOnlyLab(t *testing.T) {
+	var out, stderr bytes.Buffer
+	if code := execute(context.Background(), nil, &out, &stderr); code != 2 || out.Len() != 0 || !strings.Contains(stderr.String(), "|lab}") {
+		t.Fatal(code, out.String(), stderr.String())
+	}
+	for _, verb := range []string{"run", "cleanup"} {
+		out.Reset()
+		stderr.Reset()
+		if execute(context.Background(), []string{"lab", verb}, &out, &stderr) != 2 || out.Len() != 0 {
+			t.Fatal("execution enabled")
+		}
+	}
+}
