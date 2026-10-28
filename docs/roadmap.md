@@ -131,8 +131,13 @@ change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 
 - [x] M8B1: strict descriptor, closed catalog and read-only plan-only CLI
 - [x] M8B1: private atomic plans, redaction, authorization lifecycle and negative tests
-- [ ] M8B1 owner implementation review/merge
-- [ ] Qualified local runtime isolation, scoped journal/teardown and failure tests
+- [x] M8B1 owner implementation review/merge (PR #11)
+- [x] M8B2A: deterministic closed graph, pure ownership/state transitions and private journal snapshots
+- [x] M8B2A: synthetic failure/replay/cleanup and real filesystem interruption tests
+- [x] Bounded read-only bridge investigation; idle lifecycle evidence, exact attribution remains UNKNOWN
+- [ ] M8B2A independent implementation/security review and merge
+- [ ] Fixed execution ledger/runtime lease, trusted observation and bounded mutation transport review
+- [ ] Qualified local runtime isolation and actual scoped teardown/failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
 - [ ] Separate ephemeral custom result and legacy regressions/security review
 
@@ -141,3 +146,8 @@ before isolation/control/DNS/ownership qualification. No user Compose ingestion,
 existing project mutation, arbitrary URLs, host mounts or daemon access inside
 containers. Custom SQLite history, `.flb`/gate support, tracing and additional
 adapters require separate reviewed follow-ups; they are not implicit M8B scope.
+
+M8B2A is an internal non-mutating foundation, not runtime qualification or an
+execution feature. See the [contract](design/custom-service-supervisor.md) and
+[bridge observations](security/docker-bridge-observation.md). Do not begin
+provisioning or build the missing catalog image as a side effect of planning.

@@ -1,6 +1,7 @@
 # Custom-service lab threat model — proposed M8A design
 
-Status: architecture review only. Nothing here enables custom execution. Reviewed
+Status: approved architecture; M8B1 planning and Unreleased M8B2A internal contracts
+are implemented. Nothing here enables custom execution. Reviewed
 source: `257eab735c16e9daa2a700d88e329f84c72622af`; research date: 2026-10-27.
 See [ADR 0009](../decisions/0009-owner-selected-service-labs.md) and the
 [interface/lifecycle/test plan](../design/custom-service-lab.md).
@@ -149,3 +150,27 @@ These sources inform the proposed controls; documentation is not runtime testing
   Separate administration and data-plane control; do not rely on newer features.
 - [Docker security](https://docs.docker.com/engine/security/): runtime/daemon
   authority remains a trust boundary rather than an image-sandbox guarantee.
+
+## M8B2A findings and preserved boundaries
+
+The [supervisor foundation](../design/custom-service-supervisor.md) validates
+intended configuration and replayed private journal transitions; it cannot attest
+actual Docker observations. Future drivers must check complete effective profiles
+and immutable IDs, not turn labels or plan hashes into cleanup authority. Unknown
+creation has no adopted ID. Ambiguous container attachments retain networks.
+A consumed identity stays consumed after failure, interruption or final receipt.
+
+The ledger root and advisory guard are trusted local state, not authenticated
+execution attestation. Future RUN must use a fixed authoritative namespace and
+exclusive runtime slot; a caller-selected fresh directory cannot reset replay
+protection. Store/event limits and I/O failure must never prevent independent
+cleanup of already proven in-memory IDs. Corrupt committed history is unresolved,
+not permission to fall back and provision again. Private paths/nonces/bindings and
+resource IDs remain outside public evidence.
+
+The [read-only bridge investigation](docker-bridge-observation.md) found Docker
+Desktop idle stop/start records coinciding with historical bridge creation times.
+This supports a lifecycle explanation without establishing exact causal/caller
+attribution. Event queries timed out. Read-only requests do not freeze automatic
+runtime lifecycle; identity/configuration must be rechecked during future
+qualification. No Docker settings, runtime or isolation policy was modified.

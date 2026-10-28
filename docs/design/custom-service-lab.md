@@ -2,6 +2,7 @@
 
 **Approved architecture; execution unimplemented.** M8B1 source implements only
 the [strict descriptor/catalog and read-only planner](../custom-service-planner.md).
+Unreleased M8B2A adds internal [graph/journal contracts](custom-service-supervisor.md).
 RUN, CLEANUP and the execution/qualification design below remain future work;
 none of these features is in v0.1.0. This document accompanies
 [ADR 0009](../decisions/0009-owner-selected-service-labs.md) and the
@@ -152,7 +153,7 @@ observed resource ownership. It grants no permission to adopt resources, search
 by prefix or delete unrelated IDs. No journal, corrupt binding or unknown ID means
 refusal; cleanup must never re-enable RUN, launch traffic or modify old evidence.
 
-M8B1 only produces PLANNED, unqualified plans and their hashes. It creates no
+The M8B1 CLI only produces PLANNED, unqualified plans and their hashes. It creates no
 consumption records, leases or resource journals, and implements no RUN/CLEANUP
 command. Hashes bind content, not a human identity or resource ownership. Future
 execution must revalidate the plan/catalog/runtime and satisfy the implementation
@@ -409,3 +410,22 @@ documentation review, link/schema-example/scope checks and protected-file/releas
 comparisons. No new app, topology, network isolation, cleanup, Go test, Docker or
 browser execution is claimed by this design. No qualification cell above is
 checked off merely because existing sample or offline tests passed earlier.
+
+## M8B2A implementation boundary
+
+The internal [supervisor foundation](custom-service-supervisor.md) implements the
+closed typed graph, single-use consumption contracts, replay-validated event model
+and private immutable journal snapshots. It deliberately chooses append-only
+no-replace updates rather than mutable journal rename replacement: committed
+history remains inspectable, and interrupted/corrupt revisions fail closed.
+This is not a new plan format or a custom result/evidence schema.
+
+Ambiguous creation with no accepted ID remains unresolved in this increment;
+matching names/labels cannot adopt an ID. Cleanup candidates must already have a
+matching intent and accepted identity, plus a fresh exact-ID proof. A future
+trusted observation driver must derive actual configuration rather than trust a
+label hash. There is no driver, Docker mutation implementation or production
+RUN/CLEANUP command. A fixed authoritative ledger/runtime lease and real isolation
+qualification remain prerequisites before provisioning. The
+[bridge follow-up](../security/docker-bridge-observation.md) records idle stop/start
+windows but leaves exact network-event and wake-caller attribution UNKNOWN.

@@ -104,12 +104,22 @@ over speculative interfaces or mocked product features.
 
 ## Git workflow
 
-- M8B1 exposes only `lab plan`. Keep Docker inspection on the closed read-only
+- The production custom-lab CLI exposes only `lab plan`. Keep Docker inspection on the closed read-only
   operation set; no generic subprocess/Compose hooks, provisioning, run or cleanup.
 - Plans stay PLANNED/unqualified. Private runtime bindings/nonce never enter
   stdout; publish only to an owned private directory with atomic no-replace writes.
 - Future RUN consumption is single-use; cleanup identity requires that run's
   verified journal/IDs and cannot re-enable RUN or gain authority from a prefix.
+
+- M8B2A graph/journal code is a non-mutating foundation, never runtime proof.
+  Future cleanup needs consumed matching private history plus fresh exact-ID,
+  nonce/config/runtime proof; no prefix/label adoption or unknown-create success.
+- Keep journal snapshots private, bounded, append-only and no-replace. Never
+  reset consumption after cancellation/cleanup or recover corrupt committed
+  history by assuming no resources exist. Retain unresolved state and receipts.
+- A future RUN needs one authoritative state namespace and exclusive runtime
+  slot. Do not wire journal contracts to a mutation transport or expose RUN/CLEANUP
+  before separate review/qualification. Synthetic tests are not Docker isolation.
 
 - Use the repository-local Git identity associated with the owner's GitHub account.
 - Make small conventional commits for completed, verified units. Push milestones.

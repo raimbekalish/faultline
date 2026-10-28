@@ -1,6 +1,6 @@
 # Custom-service planner — Unreleased M8B1
 
-Only `faultline lab plan` is implemented. **RUN, CLEANUP, a worker command and
+Only `faultline lab plan` is exposed by the CLI. **RUN, CLEANUP, a worker command and
 custom container execution are unavailable.** This source-only feature is absent
 from v0.1.0 binaries. It does not qualify network isolation or application behavior.
 The approved [design](design/custom-service-lab.md) and
@@ -175,3 +175,14 @@ Existing sample specs, engine, tracing, SQLite, format-1 bundles and gates are
 unchanged. A plan is neither an experiment report nor portable evidence, and no
 custom evaluation or release is implied. Qualification and execution remain M8B2
 or later review gates; they are not enabled by producing or sharing a hash.
+
+## M8B2A internal foundation (Unreleased)
+
+[Supervisor contracts](design/custom-service-supervisor.md) now generate and
+structurally validate the closed resource graph and provide pure ownership/state
+transitions plus private bounded journal persistence. These APIs are not connected
+to `lab plan` or an execution command. Existing plan format/files and stdout are
+unchanged. No resources are created, no actual proof is collected and no runtime
+is qualified. A private consumed journal is not a runnable authorization token.
+See the [bounded bridge follow-up](security/docker-bridge-observation.md) for
+observed idle VM lifecycle evidence and still-unknown causal/caller details.
