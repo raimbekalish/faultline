@@ -1,6 +1,6 @@
 # ADR 0012: Dependency-injected custom worker measurements
 
-Status: proposed for M8B3A independent review (Unreleased).
+Status: accepted/merged for M8B3A in PR #15 (Unreleased).
 
 ## Context
 

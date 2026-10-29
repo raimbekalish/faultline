@@ -1,5 +1,10 @@
 # Measurement-capable worker foundation — Unreleased M8B3A
 
+This records M8B3A. M8B3B adds the
+[versioned internal protocol and closed HTTP control adapter](custom-worker-protocol.md)
+without production activation. Historical missing-controller statements below
+describe M8B3A; the measurement/result formats and behavior are preserved.
+
 `internal/labworker` contains real HTTP measurement code and a bounded lifecycle,
 exercised only by scoped dependency-injected tests. **Production still has only
 `lab plan`; `cmd/lab-worker lab-worker` remains preflight-only.** No production

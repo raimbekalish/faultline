@@ -146,8 +146,11 @@ change or expansion of today's sample allowlist. v0.1.0 remains unchanged.
 - [ ] Qualified continuity provider, actual mutation driver and restart reconciliation review
 - [x] M8B3A private measurement engine, local HTTP integration and ephemeral result validation
 - [x] M8B3A preflight compatibility, DNS source review and qualification test plan
-- [ ] M8B3A independent implementation/security review and merge
-- [ ] Production worker invocation/result binding and real fault-control adapter review
+- [x] M8B3A independent implementation/security review and merge (PR #15)
+- [x] M8B3B strict measurement protocol, private one-use adapter and closed HTTP control
+- [x] M8B3B real loopback end-to-end, ambiguity/cancellation and process-interruption tests
+- [ ] M8B3B independent implementation/security review and merge
+- [ ] Production worker invocation/result binding and actual runtime fault-control qualification
 - [ ] Authorized catalog builds/qualification
 - [ ] Qualified local runtime isolation and actual scoped teardown/failure tests
 - [ ] One independently built contract app with real latency/timeout/recovery runs
@@ -182,3 +185,10 @@ preflight-only. New ephemeral results are not accepted by sample history, bundle
 or gates. [DNS analysis](security/custom-lab-dns-qualification.md) preserves the
 prepared profile and marks all runtime probes UNVERIFIED. No runtime resources
 were started, no image built, and no new released feature is advertised.
+
+M8B3B joins validated messages, real local measurements and a concrete closed HTTP
+control contract, but its endpoints are private test-owned loopback listeners.
+The control-server behavior is simulated handler delay, not real Toxiproxy network
+fault injection. Preflight remains unchanged. Desktop custom execution stays
+fail-closed; the [continuity review](security/custom-runtime-continuity.md) describes
+a narrower unqualified native-Linux candidate, not a new supported environment.

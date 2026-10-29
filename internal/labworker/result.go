@@ -1,5 +1,5 @@
 // Package labworker implements dependency-injected custom HTTP measurements.
-// There is no production caller, real fault driver or Docker execution boundary.
+// There is no production caller, runtime-bound fault driver or Docker execution.
 package labworker
 
 import (

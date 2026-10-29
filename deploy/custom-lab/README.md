@@ -64,3 +64,10 @@ entrypoint recipe and does not change the preflight response. A host-side
 `go list -deps` inspection confirms all ten first-party preflight/fixture packages
 are represented by selective COPY entries; this is source-closure evidence, not a
 successful Docker build or qualification of the image profile.
+
+
+M8B3B adds internal measurement request/response and a closed HTTP control adapter
+for test-owned loopback listeners. The production entrypoint, selective source
+recipe and preflight capability are unchanged. No new measurement code is copied
+into this image and no build/pull/run was performed. Real worker invocation and
+runtime fault-control/provenance still require separate review/authorization.

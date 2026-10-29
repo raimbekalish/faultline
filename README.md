@@ -280,9 +280,10 @@ M8B2C adds [closed transport/certification contracts](docs/design/docker-transpo
 and dedicated bootstrap source only. There is no mutation driver or production
 runtime-continuity provider; synthetic certificates do not qualify real resources.
 The unreleased [measurement-worker foundation](docs/design/custom-worker-measurements.md)
-now measures real loopback HTTP baseline/fault/recovery in scoped tests. Its fault
-controller is a recording fake; production preflight and custom-execution boundaries
-remain unchanged.
+measures real loopback HTTP baseline/fault/recovery in scoped tests. M8B3B adds a
+[strict internal protocol and scoped HTTP controller](docs/design/custom-worker-protocol.md),
+validated against owned control servers that change handler delay. Production
+preflight remains unchanged; no custom execution or real network isolation is enabled.
 
 ## Optional distributed tracing
 

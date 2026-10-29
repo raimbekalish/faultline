@@ -257,3 +257,31 @@ No real DNS or isolation property was tested here, and the prepared profile was 
 weakened. Same-user administrator, runtime continuity, restart/reconciliation and
 host/control/backend bypass risks remain unresolved. The historical bridge anomaly
 was not re-investigated or declared fixed. No Docker commands ran for this increment.
+
+
+## M8B3B message/control and continuity review
+
+[Versioned measurement messages](../design/custom-worker-protocol.md) accept no
+endpoints, environment or revision claims. Strict request validation and exact
+private binding precede side effects. One-use in-memory consumption prevents
+concurrent/repeated execution of a harness session, but is not durable host RUN
+authority. The response is validated data, never a journal/cleanup certificate.
+
+The closed controller uses only exact-proxy reads, one fixed toxic POST and an
+exact-toxic DELETE. Fresh profile checks and bounded repeated absence observations
+fail closed on malformed/foreign state. A lost apply response cannot grant removal
+authority from a matching name. A lost delete reply stays unconfirmed despite
+apparent absence. API fields cannot authenticate an arbitrary/replacing server;
+exclusive owned-server trust and actual runtime binding remain unqualified.
+
+Real Go test subprocesses show cooperative cancellation can remove the mock fault,
+while SIGKILL leaves no worker report and a still-present mock fault. This mandates
+independent host cleanup and honest unresolved reservations. No process-exit or
+missing-output inference can release the authority ledger. Actual Toxiproxy has
+not been invoked, and mock handler delay does not prove isolation or packet faults.
+
+The [continuity review](custom-runtime-continuity.md) keeps Docker Desktop custom
+execution disabled: metadata/stream equality is not a generation witness. A
+future dedicated directly supervised native Linux daemon is a narrower candidate
+requiring review and real qualification, not existing support or authorization.
+No daemon, host setting or topology was changed and no Docker query was issued.

@@ -155,6 +155,17 @@ over speculative interfaces or mocked product features.
   independent fault-removal verification are mandatory. Worker completion/fault
   removal is not proxy deletion, Docker absence, whole-lab cleanup or gate input.
 
+- Measurement RPC and endpoint/session factories remain private harness code.
+  The public worker must still reject measurement requests. One in-memory consume
+  is not the authoritative host ledger or permission to run a custom container.
+- Scoped fault HTTP control permits only exact-proxy reads, one expected toxic
+  POST/DELETE and bounded verification. Lost/malformed apply replies do not grant
+  toxic ownership; names/profile equality are not authentication. No generic
+  proxy management, reset, prefix adoption or real runtime constructor.
+- SIGKILL may leave faults and no worker output. Never fabricate a canceled
+  report/cleanup receipt from process exit. Desktop snapshot metadata cannot
+  provide the required continuity epoch; retain fail-closed reservations.
+
 - Use the repository-local Git identity associated with the owner's GitHub account.
 - Make small conventional commits for completed, verified units. Push milestones.
 - Direct main commits are acceptable during initial bootstrap. Larger subsequent

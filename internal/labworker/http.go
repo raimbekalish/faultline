@@ -15,8 +15,8 @@ import (
 const contractURL = "http://frontend:8080/work"
 const maxBody = 64 << 10
 
-// contractClient has no public endpoint constructor. Only same-package scoped
-// tests construct it. No production CLI/worker imports or activates this engine.
+// contractClient has no public endpoint constructor. The scoped internal harness
+// and same-package tests construct it. No production CLI activates this engine.
 // A future real-runtime binding requires a separate reviewed implementation.
 type contractClient struct {
 	client    *http.Client
